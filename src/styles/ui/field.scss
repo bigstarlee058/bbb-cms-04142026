@@ -1,0 +1,21 @@
+.form-group {
+    @apply relative;
+    input {
+      @apply w-full border border-gray-300 py-2 px-3 bg-white text-sm leading-sm focus:bg-secondary focus:outline-none focus:ring-[#87C6E8] focus:border-[#87C6E8]
+    }
+    svg {
+      @apply absolute top-9 right-3 text-light-200 z-[1] cursor-pointer;
+    }
+  }
+  
+  .fieldLabel {
+    @apply text-xs font-medium text-black block mb-2;
+  }
+  
+textarea {
+  @apply w-full resize-none h-20 border border-gray-300 bg-white p-3 text-sm leading-sm focus:bg-secondary focus:outline-none focus:ring-[#87C6E8] focus:border-[#87C6E8];
+
+  &.resizable {
+    resize: vertical !important;
+  }
+}
