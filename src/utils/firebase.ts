@@ -5,13 +5,13 @@ import { FirebaseError } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA-zgT_JVekSOxXSp-61WC85qut-rydJyY",
-  authDomain: "bbb-app-664f4.firebaseapp.com",
-  projectId: "bbb-app-664f4",
-  storageBucket: "bbb-app-664f4.appspot.com",
-  messagingSenderId: "1090945027872",
-  appId: "1:1090945027872:web:55437075a9a54d788ed145",
-  measurementId: "G-X1ZT061HGM"
+  apiKey: "AIzaSyBZr5BnHeA-4eLzEacmHC4M-tKnpXCA-T4",
+  authDomain: "bbb-app-d4b41.firebaseapp.com",
+  projectId: "bbb-app-d4b41",
+  storageBucket: "bbb-app-d4b41.appspot.com",
+  messagingSenderId: "693919444814",
+  appId: "1:693919444814:web:fa9035568f3e1067f8f81f",
+  measurementId: "G-Q6ZCD3369N"
 };
 
 export const firebaseapp = initializeApp(firebaseConfig);
