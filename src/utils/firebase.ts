@@ -5,7 +5,7 @@ import { FirebaseError } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBZr5BnHeA-4eLzEacmHC4M-tKnpXCA-T4",
+  apiKey: "AIzaSyBZr5BnHeA-4eLzEacmHC4M-tKnpXCA-T5",
   authDomain: "bbb-app-d4b41.firebaseapp.com",
   projectId: "bbb-app-d4b41",
   storageBucket: "bbb-app-d4b41.appspot.com",
