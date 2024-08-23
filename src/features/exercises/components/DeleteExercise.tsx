@@ -34,14 +34,14 @@ export const DeleteExercise = ({ exerciseId }: DeleteExerciseProps) => {
         }
         confirmButton={
           <Button
+            variant="danger"
             isLoading={isLoading}
             type="button"
-            className="bg-red-600"
             onClick={async () => {
               await mutate(exerciseId);
             }}
           >
-            Delete Exercise
+            Delete
           </Button>
         }
       />

@@ -1,13 +1,15 @@
-import { Equipment, ErrorMessage, ResponseMessage } from '@/types';
+import { Equipment, EquipmentsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { storage } from '@/utils/firebase';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
-export const fetchEquipments = async (): Promise<Equipment[]> => {
+export const fetchEquipments = async (filters: Filters) => {
   try {
-    const equipmentData = (await axios.get('/equipments')) as Equipment[];
-    return Promise.resolve(equipmentData);
+    const result = (await axios.get(`/equipments/admin/get`, {
+      params: filters,
+    })) as EquipmentsResponse;
+    return result;
   } catch (err: any) {
     const error: ErrorMessage = {
       status: true,
@@ -19,7 +21,7 @@ export const fetchEquipments = async (): Promise<Equipment[]> => {
 
 export const fetchEquipment = async (equipmentId: string) => {
   try {
-    const result = (await axios.get(`/equipments/${equipmentId}`)) as Equipment;
+    const result = (await axios.get(`/equipments/admin/get/${equipmentId}`)) as Equipment;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -32,8 +34,8 @@ export const fetchEquipment = async (equipmentId: string) => {
 
 export const createEquipment = async (payload: {
   title: string;
+  description: string;
   link: string;
-  price: number;
   image: File;
 }) => {
   try {
@@ -48,7 +50,7 @@ export const createEquipment = async (payload: {
       thumbnail: downloadURL,
       createdAt: Date.now(),
     };
-    const result = (await axios.post('/equipments', newEquipment)) as ResponseMessage;
+    const result = (await axios.post('/equipments/admin', newEquipment)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-equipments');
       return 'Equipment successfully created.';
@@ -68,10 +70,9 @@ export const updateEquipment = async ({
   payload,
 }: {
   equipmentId: string;
-  payload: { title: string; link: string; price: number; image: File };
+  payload: { title: string; description: string; link: string; image: File };
 }) => {
   try {
-    console.log(payload);
     let downloadURL = undefined;
     if (payload.image.name) {
       const storageRef = ref(
@@ -86,10 +87,11 @@ export const updateEquipment = async ({
       ...payload,
       _id: equipmentId,
       thumbnail: downloadURL,
-      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
-    const result = (await axios.put('/equipments', updatedEquipment)) as ResponseMessage;
+    const result = (await axios.put('/equipments/admin', updatedEquipment)) as ResponseMessage;
     if (result.result === true) {
+      queryClient.invalidateQueries('get-equipments');
       queryClient.invalidateQueries(['get-equipment', equipmentId]);
       return 'Equipment successfully updated.';
     }
@@ -105,7 +107,7 @@ export const updateEquipment = async ({
 
 export const deleteEquipment = async (equipmentId: string) => {
   try {
-    const result = (await axios.delete(`/equipments/${equipmentId}`)) as ResponseMessage;
+    const result = (await axios.delete(`/equipments/admin/${equipmentId}`)) as ResponseMessage;
     if (result.result === true) {
       return 'Successfully deleted.';
     }

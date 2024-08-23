@@ -6,7 +6,7 @@ import { queryClient } from '@/lib/react-query';
 
 export const fetchExercises = async (filters: Filters) => {
   try {
-    const result = (await axios.get(`/exercises/admin`, { params: filters })) as ExercisesResponse;
+    const result = (await axios.get(`/exercises/admin/get`, { params: filters })) as ExercisesResponse;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -19,7 +19,7 @@ export const fetchExercises = async (filters: Filters) => {
 
 export const fetchExercise = async (exerciseId: string) => {
   try {
-    const result = (await axios.get(`/exercises/admin/${exerciseId}`)) as Exercise;
+    const result = (await axios.get(`/exercises/admin/get/${exerciseId}`)) as Exercise;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -48,6 +48,7 @@ export const createExercise = async (payload: {
     const result = (await axios.post('/exercises/admin', newExercise)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-exercises');
+      queryClient.invalidateQueries('get-exercise-titles');
       return 'Exercise successfully created.';
     }
     return result.message;
@@ -70,20 +71,27 @@ export const updateExercise = async ({
   try {
     let downloadURL = undefined;
     if (payload.image.name) {
-      const storageRef = ref(storage, 'exercise_thumbnails/' + payload.image.name);
+      const storageRef = ref(
+        storage,
+        'exercise_thumbnails/' + Date.now() + '_' + payload.image.name
+      );
       await uploadBytes(storageRef, payload.image);
       downloadURL = await getDownloadURL(storageRef);
     }
 
-    const updatedCollection = {
+    console.log(downloadURL);
+    const updatedExercise = {
       ...payload,
       _id: exerciseId,
       thumbnail: downloadURL,
       updatedAt: Date.now(),
     };
-    const result = (await axios.put('/exercises/admin', updatedCollection)) as ResponseMessage;
+    const result = (await axios.put('/exercises/admin', updatedExercise)) as ResponseMessage;
     if (result.result === true) {
+      queryClient.invalidateQueries('get-exercises');
+      queryClient.invalidateQueries('get-exercise-titles');
       queryClient.invalidateQueries(['get-exercise', exerciseId]);
+      console.log('success');
       return 'Exercise successfully updated.';
     }
     return result.message;

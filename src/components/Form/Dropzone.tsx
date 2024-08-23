@@ -1,5 +1,5 @@
 import { FormikProps } from 'formik';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BiTrash } from 'react-icons/bi';
 
 import { getFormikError, hasError } from '@/utils/formik';
@@ -11,9 +11,10 @@ interface Props {
   name: string;
   onDrop: (file: File) => void;
   onDelete: () => void;
+  file?: File;
 }
 
-export const Dropzone = ({ defaultImg, label, formik, name, onDrop, onDelete }: Props) => {
+export const Dropzone = ({ defaultImg, label, formik, name, onDrop, onDelete, file }: Props) => {
   const [preview, setPreview] = useState('');
   const ref = useRef<HTMLInputElement>(null);
   const error = getFormikError({ formik, name });
@@ -33,10 +34,18 @@ export const Dropzone = ({ defaultImg, label, formik, name, onDrop, onDelete }: 
     onDrop(file);
   };
 
+  useEffect(() => {
+    if (!file) return;
+    if (file.type === undefined) return;
+    if (!file.type.includes('image')) return;
+    setPreview(URL.createObjectURL(file));
+    onDrop(file);
+  }, [file]);
+
   return (
     <div className="px-2 py-3">
-      <label className="fieldLabel">{label}</label>
-      <div className="w-full md:w-[200px] h-[220px] border-2 border-tertiary border-dashed rounded-xl flex items-center justify-center relative cursor-pointer overflow-hidden">
+      {/* <label className="fieldLabel">{label}</label> */}
+      <div className="w-full h-[80px] border-2 border-gray-400 border-tertiary border-dashed rounded-xl flex items-center justify-center relative cursor-pointer overflow-hidden">
         <input
           type="file"
           className="text-[0] border-0 absolute inset-0 cursor-pointer opacity-0 z-[5]"
@@ -49,7 +58,7 @@ export const Dropzone = ({ defaultImg, label, formik, name, onDrop, onDelete }: 
         {preview || defaultImg ? (
           <div className="flex items-center justify-center">
             <img
-              className="absolute w-full h-full inset-0 !bg-no-repeat !bg-center"
+              className="absolute inset-0 m-auto w-auto h-full !bg-no-repeat bg-center"
               src={preview || defaultImg}
               alt="Thumbnail"
             />

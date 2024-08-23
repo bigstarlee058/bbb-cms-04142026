@@ -1,54 +1,52 @@
-import { Table, Spinner, Link, ConfirmationDialog } from '@/components/Elements';
-import { formatDate } from '@/utils/format';
+import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
 import { fetchExercises } from '../api';
 import { Exercise, Filters } from '@/types';
 import { DeleteExercise } from './DeleteExercise';
 import { useEffect, useState } from 'react';
-import useDebounce from '@/lib/useDebounce';
+import { EyeIcon } from '@heroicons/react/solid';
+import { UpdateExercise } from './UpdateExercise';
+import { fetchExerciseTitles } from '@/features/workouts/api';
+import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
-import ReactSelect from 'react-select';
-import reactSelectStylesConfig from '@/lib/react-select';
-import { SearchField } from '@/components/ui/SearchField';
-
-const SortOption = [
-  // { label: 'Popularity', value: 'Popularity' },
-  { label: 'Name: A to Z', value: 'NameAtoZ' },
-  { label: 'Name: Z to A', value: 'NameZtoA' },
-  { label: 'Newest Added', value: 'NewestAdded' },
-  { label: 'Oldest Added', value: 'OldestAdded' },
-];
 
 export const ExercisesList = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOption, setSortOption] = useState(SortOption[0]);
+  const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
     page: 1,
-    search: '',
-    sortBy: sortOption.value,
-    filter: {},
   });
-
-  const { data, isLoading, refetch } = useQuery(['get-exercises'], () => fetchExercises(filters));
-
-  const handleSortOptionChange = (val: any) => {
-    setSortOption(val);
-    setFilters({
-      ...filters,
-      sortBy: val.value,
-    });
-  };
+  const {
+    data: exercises,
+    isLoading,
+    refetch,
+  } = useQuery(['get-exercises'], () => fetchExercises(filters));
+  const { data: titles } = useQuery('get-exercise-titles', () =>
+    fetchExerciseTitles({ filterString: '' })
+  );
 
   useEffect(() => {
     refetch();
   }, [filters]);
+
   useEffect(() => {
     setFilters({
       ...filters,
       page: currentPage,
     });
   }, [currentPage]);
+
+  useEffect(() => {
+    setFilters((p) => ({ ...p, search: search }));
+  }, [search]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      sortBy: sortBy?.value,
+    });
+  }, [sortBy]);
 
   if (isLoading) {
     return (
@@ -58,24 +56,12 @@ export const ExercisesList = () => {
     );
   }
 
-  if (!data) return null;
+  if (!exercises) return null;
 
   return (
     <>
-      <div className="flex gap-3 mb-3">
-        <SearchField setSearchQuery={(val) => setFilters((p) => ({ ...p, search: val }))} />
-        <ReactSelect
-          styles={reactSelectStylesConfig}
-          className="w-56 shrink hover:shrink-0 whitespace-nowrap"
-          placeholder="Sort by"
-          name="sortby"
-          options={SortOption}
-          value={sortOption}
-          onChange={handleSortOptionChange}
-        />
-      </div>
       <Table<Exercise>
-        data={data.exercises}
+        data={exercises.exercises}
         columns={[
           {
             title: 'Title',
@@ -84,6 +70,24 @@ export const ExercisesList = () => {
           {
             title: 'Description',
             field: 'description',
+            Cell({ entry: { description } }) {
+              return (
+                <p>{description.length > 50 ? `${description.slice(0, 50)}...` : description}</p>
+              );
+            },
+          },
+          {
+            title: 'Categories',
+            field: 'categories',
+            Cell({ entry: { categories } }) {
+              return (
+                <p>
+                  {categories.map((category) => {
+                    return category + ' ';
+                  })}
+                </p>
+              );
+            },
           },
           {
             title: 'Thumbnail',
@@ -104,7 +108,18 @@ export const ExercisesList = () => {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <Link to={`./${_id}`}>View</Link>;
+              return (
+                <Link to={`./${_id}`}>
+                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
+                </Link>
+              );
+            },
+          },
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <UpdateExercise exerciseId={_id} exercises={exercises} titles={titles} />;
             },
           },
           {
@@ -119,7 +134,7 @@ export const ExercisesList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(data.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(exercises.count / (filters?.perPage || 10))}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

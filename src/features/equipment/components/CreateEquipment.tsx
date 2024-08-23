@@ -11,7 +11,7 @@ import { createEquipment } from '../api';
 
 interface FormikState {
   title: string;
-  price: number;
+  description: string;
   link: string;
   image: any;
   deleteImage: boolean;
@@ -31,7 +31,7 @@ export const CreateEquipment = () => {
 
   const initialValues: FormikState = {
     title: '',
-    price: 0,
+    description: '',
     link: '',
     image: '',
     deleteImage: false,
@@ -49,20 +49,20 @@ export const CreateEquipment = () => {
       <FormDrawer
         isDone={isSuccess}
         triggerButton={
-          <Button size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4" />}>
             Create Equipment
           </Button>
         }
         title="Create Equipment"
         submitButton={
-          <Button form="create-equipment" type="submit" size="sm" isLoading={isLoading}>
+          <Button form="create-equipment" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }
       >
         <form id="create-equipment" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Field label="Price" formik={formik} name="price" />
+          <Field label="Description" formik={formik} name="description" />
           <Field label="Link" formik={formik} name="link" />
           <Dropzone
             label="Thumbnail"

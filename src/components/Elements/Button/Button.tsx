@@ -6,7 +6,7 @@ import { Spinner } from '@/components/Elements/Spinner';
 const variants = {
   primary: 'bg-blue-600 text-white',
   inverse: 'bg-white text-blue-600',
-  danger: 'bg-red-600 text-white',
+  danger: 'bg-bbb text-white',
 };
 
 const sizes = {
@@ -45,14 +45,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={clsx(
-          'flex justify-center items-center border border-gray-300 disabled:opacity-70 disabled:cursor-not-allowed rounded-md shadow-sm font-medium focus:outline-none hover:opacity-80',
+          'flex justify-center items-center rounded-xl disabled:opacity-70 disabled:cursor-not-allowed shadow-sm font-medium focus:outline-none hover:opacity-80',
           variants[variant],
           sizes[size],
           className
         )}
         {...props}
       >
-        {isLoading && <Spinner size="sm" className="text-current" />}
+        {isLoading && <Spinner size="sm" className="text-current"/>}
         {!isLoading && startIcon}
         <span className="">{props.children}</span> {!isLoading && endIcon}
       </button>

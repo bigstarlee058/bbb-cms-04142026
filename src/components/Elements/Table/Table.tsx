@@ -4,13 +4,16 @@ import * as React from 'react';
 type TableColumn<Entry> = {
   title: string;
   field: keyof Entry;
-  Cell?({ entry }: { entry: Entry }): React.ReactElement;
+  Cell?: ({ entry }: { entry: Entry }) => React.ReactElement;
 };
 
 export type TableProps<Entry> = {
   data: Entry[];
   columns: TableColumn<Entry>[];
 };
+
+// Utility type to check if a type is renderable as ReactNode
+type Renderable = string | number | React.ReactNode;
 
 export const Table = <Entry extends { _id: string }>({ data, columns }: TableProps<Entry>) => {
   if (!data?.length) {
@@ -48,7 +51,12 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
                         key={title + columnIndex}
                         className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap"
                       >
-                        {Cell ? <Cell entry={entry} /> : entry[field]}
+                        {Cell ? (
+                          <Cell entry={entry} />
+                        ) : (
+                          // Type assertion here to assure TypeScript that this is a valid ReactNode
+                          (entry[field] as Renderable)
+                        )}
                       </td>
                     ))}
                   </tr>

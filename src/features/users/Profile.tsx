@@ -2,6 +2,8 @@ import { ContentLayout } from '@/components/Layout';
 import { useAuth } from '@/lib/auth';
 
 import { UpdateProfile } from './components/UpdateProfile';
+import { useUserStore } from '@/stores/user';
+import { useEffect } from 'react';
 
 type EntryProps = {
   label?: string;
@@ -16,6 +18,13 @@ const Entry = ({ label, value }: EntryProps) => (
 
 export const Profile = () => {
   const { user } = useAuth();
+
+  const { setCurrentPage } = useUserStore();
+
+  useEffect(() => {
+    setCurrentPage("profile");
+  }, []);
+
   if (!user) return null;
 
   return (

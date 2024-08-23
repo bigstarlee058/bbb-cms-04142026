@@ -1,12 +1,50 @@
-import { Table, Spinner, Link, ConfirmationDialog } from '@/components/Elements';
+import { useEffect, useState } from 'react';
+import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { useQuery } from 'react-query';
 import { fetchEquipments } from '../api';
-import { Equipment } from '@/types';
+import { Equipment, Filters } from '@/types';
 import { DeleteEquipment } from './DeleteEquipment';
+import { EyeIcon } from '@heroicons/react/outline';
+import { UpdateEquipment } from './UpdateEquipment';
+import { useFilteringStore } from '@/stores/filter';
+import Pagination from '@/components/Elements/Pagination';
 
 export const EquipmentList = () => {
-  const { data, isLoading } = useQuery('get-equipments', fetchEquipments);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { search, sortBy } = useFilteringStore();
+  const [filters, setFilters] = useState<Filters>({
+    perPage: 10,
+    page: 1,
+  });
+
+  const {
+    data: equipmentData,
+    isLoading,
+    refetch,
+  } = useQuery(['get-equipments'], () => fetchEquipments(filters));
+
+  useEffect(() => {
+    refetch();
+  }, [filters]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      page: currentPage,
+    });
+  }, [currentPage]);
+
+  useEffect(() => {
+    setFilters((p) => ({ ...p, search: search }));
+  }, [search]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      sortBy: sortBy?.value,
+    });
+  }, [sortBy]);
 
   if (isLoading) {
     return (
@@ -16,60 +54,83 @@ export const EquipmentList = () => {
     );
   }
 
-  if (!data) return null;
-
+  if (!equipmentData) return null;
   return (
-    <Table<Equipment>
-      data={data}
-      columns={[
-        {
-          title: 'Title',
-          field: 'title',
-        },
-        {
-          title: 'Price',
-          field: 'price',
-        },
-        {
-          title: 'Thumbnail',
-          field: 'thumbnail',
-          Cell({ entry: { thumbnail } }) {
-            return <img className="w-24" src={thumbnail} />;
+    <>
+      <Table<Equipment>
+        data={equipmentData.equipments}
+        columns={[
+          {
+            title: 'Title',
+            field: 'title',
           },
-        },
-        {
-          title: 'Created At',
-          field: 'createdAt',
-          Cell({ entry: { createdAt } }) {
-            return <span>{formatDate(createdAt)}</span>;
+          {
+            title: 'Thumbnail',
+            field: 'thumbnail',
+            Cell({ entry: { thumbnail } }) {
+              return (
+              <div className="justify-center items-center">
+                <img className="h-24 object-contain" src={thumbnail} />
+              </div>);
+            },
           },
-        },
-        {
-          title: 'Product',
-          field: 'link',
-          Cell({ entry: { link } }) {
-            return (
-              <a href={link} target="_blank">
-                Visit Product
-              </a>
-            );
+          {
+            title: 'Description',
+            field: 'description',
           },
-        },
-        {
-          title: '',
-          field: '_id',
-          Cell({ entry: { _id } }) {
-            return <Link to={`./${_id}`}>View</Link>;
+          {
+            title: 'URL',
+            field: 'link',
+            Cell({ entry: { link } }) {
+              return (
+                <a href={link} target="_blank">
+                  Visit Product
+                </a>
+              );
+            },
           },
-        },
-        {
-          title: '',
-          field: '_id',
-          Cell({ entry: { _id } }) {
-            return <DeleteEquipment equipmentId={_id} />;
+          {
+            title: 'Created At',
+            field: 'createdAt',
+            Cell({ entry: { createdAt } }) {
+              return <span>{formatDate(createdAt)}</span>;
+            },
           },
-        },
-      ]}
-    />
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return (
+                <Link to={`./${_id}`}>
+                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
+                </Link>
+              );
+            },
+          },
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <UpdateEquipment equipmentId={_id} equipments={equipmentData} />;
+            },
+          },
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <DeleteEquipment equipmentId={_id} />;
+            },
+          },
+        ]}
+      />
+      <div className="flex justify-center mt-6">
+        <Pagination
+          currentPage={currentPage}
+          lastPage={Math.ceil(equipmentData.count / (filters?.perPage || 10))}
+          maxLength={7}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
+    </>
   );
 };

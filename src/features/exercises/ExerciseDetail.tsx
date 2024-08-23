@@ -1,13 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import { Spinner, MDPreview } from '@/components/Elements';
-import { Head } from '@/components/Head';
+import { Spinner } from '@/components/Elements';
 import { ContentLayout } from '@/components/Layout';
 import { formatDate } from '@/utils/format';
-import { UpdateExercise } from './components/UpdateExercise';
 import { useQuery } from 'react-query';
 import { fetchExercise } from './api';
 import { useNotificationStore } from '@/stores/notifications';
-import { ErrorMessage, Tag } from '@/types';
+import { ErrorMessage } from '@/types';
+import { fetchExerciseTitles } from '../workouts/api';
 import Vimeo from '@u-wave/react-vimeo';
 
 export const ExerciseDetail = () => {
@@ -24,6 +23,10 @@ export const ExerciseDetail = () => {
     },
   });
 
+  const { data: titles } = useQuery('get-exercise-titles', () =>
+    fetchExerciseTitles({ filterString: '' })
+  );
+
   if (isLoading || !data) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -34,13 +37,9 @@ export const ExerciseDetail = () => {
 
   return (
     <>
-      <Head title={data.title} />
       <ContentLayout title={data.title}>
         <span className="text-xs font-bold">{formatDate(data.createdAt)}</span>
         <div className="mt-6 flex flex-col space-y-16">
-          <div className="flex justify-end">
-            <UpdateExercise exerciseId={exerciseId} />
-          </div>
           <div>
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:px-6">
@@ -50,10 +49,19 @@ export const ExerciseDetail = () => {
                   </div>
                 </div>
                 <Vimeo className="w-full mt-3" video={data.vimeoId} autoplay={false} />
-
-                <div className="mt-5 max-w-2xl text-sm text-gray-500">
+                {/* <div className="mt-5 max-w-2xl text-sm text-gray-500">
                   <MDPreview value={data.title + ' Exercise with id = ' + data._id} />
-                </div>
+                </div> */}
+                <p className="font-bold">Categories</p>
+                <p>{data.categories}</p>
+                <p className="font-bold">Description</p>
+                <p>{data.description}</p>
+                <p className="font-bold">Guide</p>
+                <p>{data.guide}</p>
+                <p className="font-bold">Related Exercises</p>
+                {titles ? (
+                 titles.filter(title => data.relatedExercises.includes(title.id)).map(exercise => exercise.title).join(', ')
+                ) : null}
               </div>
             </div>
           </div>

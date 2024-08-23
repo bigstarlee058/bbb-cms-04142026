@@ -1,5 +1,4 @@
 import { ContentLayout } from '@/components/Layout';
-import * as z from 'zod';
 import { CreateCategory } from './components/CreateCategory';
 import { CategoriesList } from './components/CategoriesList';
 

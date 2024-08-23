@@ -29,7 +29,7 @@
 
 .page-link:hover,
 .page-link:focus {
-  color: rgba(0,0,255,0.6);
+  color: #903350;
   background-color: #e9ecef;
 }
 
@@ -40,7 +40,7 @@
 .page-link.active {
   z-index: 2;
   color: #ffffff;
-  background-color: rgba(0,0,255,0.6);
+  background-color: #903350;
 }
 
 .page-link.disabled {

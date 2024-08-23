@@ -1,4 +1,3 @@
-import { act } from 'react-dom/test-utils';
 import actualCreate from 'zustand';
 
 // a variable to hold reset functions for all stores declared in the app
@@ -11,10 +10,5 @@ const create = (createState: any) => {
   storeResetFns.add(() => store.setState(initialState, true));
   return store;
 };
-
-// Reset all stores after each test run
-afterEach(() => {
-  act(() => storeResetFns.forEach((resetFn: any) => resetFn()));
-});
 
 export default create;

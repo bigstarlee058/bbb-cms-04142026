@@ -1,9 +1,16 @@
 import { ContentLayout } from '@/components/Layout';
 import { useAuth } from '@/lib/auth';
 import { ROLES } from '@/lib/authorization';
+import { useUserStore } from '@/stores/user';
+import { useEffect } from 'react';
 
 export const Dashboard = () => {
   const { user } = useAuth();
+  const { setCurrentPage } = useUserStore();
+
+  useEffect(() => {
+    setCurrentPage("dashboard");
+  }, []);
 
   return (
     <ContentLayout title="Dashboard">

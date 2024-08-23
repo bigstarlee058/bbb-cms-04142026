@@ -14,7 +14,7 @@ export const Select = ({ formik, label, name, ...rest }: Props & ReactSelectProp
   const error = getFormikError({ formik, name });
   const isInvalid = hasError({ formik, name });
   return (
-    <div className="px-3 py-2">
+    <div className="py-2">
       <label className="fieldLabel">{label}</label>
       <ReactSelect styles={reactSelectStylesConfig} {...rest} />
       {isInvalid && <p className="text-xs text-danger mt-1">{error}</p>}

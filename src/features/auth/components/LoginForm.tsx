@@ -57,9 +57,9 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   return (
     <div>
       <form id="login-form" onSubmit={formik.handleSubmit}>
-        <Field label="Email Address" formik={formik} name="email" />
+        <Field label="Email Address" formik={formik} type='email' name="email" />
         <Field type="password" label="Password" formik={formik} name="password" />
-        <Button isLoading={loading} type="submit" className="mt-6 w-full">
+        <Button isLoading={loading} size='md' type="submit" variant='danger' className="mt-6 w-full rounded-full">
           Log in
         </Button>
       </form>

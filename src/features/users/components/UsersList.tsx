@@ -9,10 +9,13 @@ import Pagination from '@/components/Elements/Pagination';
 import { useEffect, useState } from 'react';
 import useDebounce from '@/lib/useDebounce';
 import { SearchField } from '@/components/ui/SearchField';
+import { useFilteringStore } from '@/stores/filter';
 
 export const UsersList = () => {
   const { data, isLoading, refetch } = useQuery('get-users', () => fetchUsers(filters));
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
     page: 1,
@@ -31,6 +34,10 @@ export const UsersList = () => {
     });
   }, [currentPage]);
 
+  useEffect(() => {
+    setFilters((p) => ({ ...p, search: search }));
+  }, [search]);
+
   if (isLoading) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -43,9 +50,9 @@ export const UsersList = () => {
 
   return (
     <>
-      <div className="flex gap-3 mb-3">
+      {/* <div className="flex gap-3 mb-3">
         <SearchField setSearchQuery={(val) => setFilters((p) => ({ ...p, search: val }))} />
-      </div>
+      </div> */}
       <Table<User>
         data={data.users}
         columns={[

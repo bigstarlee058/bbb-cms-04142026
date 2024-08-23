@@ -1,4 +1,4 @@
-const storagePrefix = 'fitness_cms_';
+const storagePrefix = 'bbb_cms_';
 
 const storage = {
   getToken: () => {

@@ -1,8 +1,16 @@
+import { useEffect } from 'react';
 import { ContentLayout } from '@/components/Layout';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { UsersList } from './components/UsersList';
+import { useUserStore } from '@/stores/user';
 
 export const Users = () => {
+  const { setCurrentPage } = useUserStore();
+
+  useEffect(() => {
+    setCurrentPage("users");
+  }, []);
+
   return (
     <ContentLayout title="">
       <div className="mt-4">

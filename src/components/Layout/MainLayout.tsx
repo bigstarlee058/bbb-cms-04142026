@@ -5,7 +5,10 @@ import {
   FolderIcon,
   HomeIcon,
   TagIcon,
+  MenuAlt1Icon,
   MenuAlt2Icon,
+  MenuAlt3Icon,
+  MenuAlt4Icon,
   UsersIcon,
   XIcon,
   CollectionIcon,
@@ -19,6 +22,13 @@ import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useAuthorization, ROLES } from '@/lib/authorization';
 import logo from '@/assets/bbb-logo.png';
+import { SearchField } from '../ui/SearchField';
+import { useEffect, useState } from 'react';
+import { Filters } from '@/types';
+import { useFilteringStore } from '@/stores/filter';
+import { useUserStore } from '@/stores/user';
+import ReactSelect from 'react-select';
+import reactSelectStylesConfig from '@/lib/react-select';
 
 type SideNavigationItem = {
   name: string;
@@ -40,7 +50,11 @@ const SideNavigation = () => {
     // { name: 'Tags', to: './tags', icon: TagIcon },
     // { name: 'Categories', to: './categories', icon: ClipboardListIcon },
     // { name: 'Collections', to: './collections', icon: CollectionIcon },
-    { name: 'Exercises', to: './exercises', icon: FolderIcon },
+    { name: 'Workouts', to: './workouts', icon: MenuAlt1Icon },
+    { name: 'Exercises', to: './exercises', icon: MenuAlt2Icon },
+    { name: 'Warm ups', to: './warmups', icon: MenuAlt3Icon },
+    { name: 'Equipment', to: './equipments', icon: MenuAlt4Icon },
+    { name: 'Rest Days', to: './restdays', icon: MenuAlt4Icon },
     // { name: 'Shop Equipment', to: './equipment', icon: CurrencyDollarIcon },
   ].filter(Boolean) as SideNavigationItem[];
 
@@ -100,7 +114,7 @@ const UserNavigation = () => {
           <div>
             <Menu.Button className="max-w-xs  bg-gray-200 p-2 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               <span className="sr-only">Open user menu</span>
-              <UserIcon className="h-8 w-8 rounded-full" />
+              <UserIcon className="h-5 w-5 rounded-full" />
             </Menu.Button>
           </div>
           <Transition
@@ -217,7 +231,7 @@ const Sidebar = () => {
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
         <div className="flex flex-col h-0 flex-1">
-          <div className="flex items-center h-20 flex-shrink-0 px-4 bg-bbb">
+          <div className="flex items-center h-16 flex-shrink-0 px-4" style={{ backgroundColor: 'black' }} >
             <Logo />
           </div>
           <div className="flex-1 flex flex-col overflow-y-auto">
@@ -233,7 +247,7 @@ const Sidebar = () => {
 
 const Logo = () => {
   return (
-    <Link className="flex items-center text-white m-5" to=".">
+    <Link className="flex items-center text-white m-5 w-24" to=".">
       <img src={logo} alt="CSP logo" />
     </Link>
   );
@@ -243,8 +257,33 @@ type MainLayoutProps = {
   children: React.ReactNode;
 };
 
+const SortOption = [
+  // { label: 'Popularity', value: 'Popularity' },
+  { label: 'Name: A to Z', value: 'NameAtoZ' },
+  { label: 'Name: Z to A', value: 'NameZtoA' },
+  { label: 'Newest Added', value: 'NewestAdded' },
+  { label: 'Oldest Added', value: 'OldestAdded' },
+];
+
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  
+  const { currentPage } = useUserStore();
+  const { setSearchBoxValue, setSortByValue, sortBy } = useFilteringStore();
+  const handleSortOptionChange = (val: any) => {
+    setSortByValue(val.label, val.value);
+  };
+
+  useEffect(() => {
+    console.log(currentPage);
+    console.log(`flex-1 px-4 flex items-center ${(
+      currentPage == "users" || 
+      currentPage == "workouts" || 
+      currentPage == "exercises" || 
+      currentPage == "warmups" || 
+      currentPage == "equipments" || 
+      currentPage == "restdays") ? "justify-between" : "justify-end"}`);
+  }, [currentPage]);
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
@@ -259,7 +298,37 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <span className="sr-only">Open sidebar</span>
             <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
           </button>
-          <div className="flex-1 px-4 flex justify-end">
+          <div className={`flex-1 px-4 flex items-center ${(
+                currentPage == "users" || 
+                currentPage == "exercises" || 
+                currentPage == "warmups" || 
+                currentPage == "equipments" || 
+                currentPage == "restdays") ? "justify-between" : "justify-end"}`}>
+            {
+              (
+                currentPage == "users" || 
+                currentPage == "exercises" || 
+                currentPage == "warmups" || 
+                currentPage == "equipments" || 
+                currentPage == "restdays"
+              ) &&
+              <div className='flex-1 px-4 flex justify-start items-center'>
+                <div className='p-1'>
+                  <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
+                </div>
+                <div className='p-4'>
+                  <ReactSelect
+                    styles={reactSelectStylesConfig}
+                    className="w-56 shrink hover:shrink-0 whitespace-nowrap"
+                    placeholder="Sort by"
+                    name="sortby"
+                    options={SortOption}
+                    value={sortBy}
+                    onChange={handleSortOptionChange}
+                  />
+                </div>
+              </div>
+            }
             <div className="ml-4 flex items-center md:ml-6">
               <UserNavigation />
             </div>

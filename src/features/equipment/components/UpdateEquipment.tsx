@@ -8,23 +8,16 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createEquipmentSchema } from '@/utils/yup';
 
-type UpdateEquipmentProps = {
-  equipmentId: string;
-};
-
 interface FormikState {
   title: string;
-  price: number;
+  description: string;
   link: string;
-  image: any;
+  image: string;
   deleteImage: boolean;
 }
 
-export const UpdateEquipment = ({ equipmentId }: UpdateEquipmentProps) => {
+export const UpdateEquipment = ({ equipmentId, equipments }) => {
   const { addNotification } = useNotificationStore();
-  const { data } = useQuery(['get-equipment', equipmentId], () =>
-    fetchEquipment(equipmentId)
-  );
   const { mutate, isLoading, isSuccess } = useMutation(updateEquipment, {
     onSuccess: (message: string) => {
       addNotification({
@@ -34,11 +27,13 @@ export const UpdateEquipment = ({ equipmentId }: UpdateEquipmentProps) => {
     },
   });
 
+  const equipmentData = equipments.equipments.find(ex => ex._id === equipmentId);
+
   const initialValues: FormikState = {
-    title: data?.title || '',
-    price: data?.price || 0,
-    link: data?.link || '',
-    image: data?.thumbnail,
+    title: equipmentData?.title || '',
+    description: equipmentData?.description || '',
+    link: equipmentData?.link || '',
+    image: equipmentData?.thumbnail || '',
     deleteImage: false,
   };
   const formik = useFormik({
@@ -49,30 +44,25 @@ export const UpdateEquipment = ({ equipmentId }: UpdateEquipmentProps) => {
   const onSubmit = (state: any) => {
     mutate({ equipmentId, payload: state });
   };
-
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
         isDone={isSuccess}
-        triggerButton={
-          <Button startIcon={<PencilIcon className="h-4 w-4" />} size="sm">
-            Update Equipment
-          </Button>
-        }
+        triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
         title="Update Equipment"
         submitButton={
-          <Button form="update-equipment" type="submit" size="sm" isLoading={isLoading}>
+          <Button form="update-equipment" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }
       >
         <form id="update-equipment" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Field label="Price" formik={formik} name="price" />
+          <Field label="Description" formik={formik} name="description" />
           <Field label="Link" formik={formik} name="link" />
           <Dropzone
             label="Thumbnail"
-            name="image"
+            name="thumbnail"
             formik={formik}
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}

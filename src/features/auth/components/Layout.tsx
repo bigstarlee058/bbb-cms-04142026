@@ -13,11 +13,11 @@ export const Layout = ({ children, title }: LayoutProps) => {
   return (
     <>
       <Head title={title} />
-      <div className="min-h-screen bg-bbb flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div style={{ backgroundColor: 'black' }} className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <div className="flex justify-center">
             <Link className="flex items-center text-white" to="/">
-              <img className="w-auto" src={logo} alt="Workflow" />
+              <img className="w-48" src={logo} alt="Workflow" />
             </Link>
           </div>
           <h2 className="mt-3 text-center text-3xl font-extrabold text-gray-900">{title}</h2>
