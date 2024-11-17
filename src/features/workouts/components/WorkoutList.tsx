@@ -29,7 +29,7 @@ export const WorkoutList = () => {
     () => fetchWorkouts(filters),
     {
       onSuccess: (data) => {
-        const months = data.months.sort((a, b) => a.index - b.index);
+        const months = data.months?.sort((a, b) => a.index - b.index);
         setAllMonths(months);
         setLoadingMonths(false); // Data fetched, no longer loading
       },
