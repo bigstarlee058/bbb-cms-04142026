@@ -1,0 +1,101 @@
+import { PencilIcon } from '@heroicons/react/solid';
+import { Button } from '@/components/Elements';
+import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
+import { Authorization, ROLES } from '@/lib/authorization';
+import { useMutation } from 'react-query';
+import { updateStaff } from '../api';
+import { useNotificationStore } from '@/stores/notifications';
+import { useFormik } from 'formik';
+import { createStaffSchema } from '@/utils/yup';
+import { SelectOption } from '@/types';
+
+interface FormikState {
+  title: string;
+  type: number;
+  bio: string;
+  image?: any;
+  deleteImage: boolean;
+}
+
+const COACH_TYPE_OPTIONS: SelectOption[] = [
+  {
+    label: 'Staff',
+    value: '1'
+  },
+  {
+    label: 'Athlete',
+    value: '2'
+  }
+];
+
+export const UpdateStaff = ({ staffId, staffs }) => {
+  const { addNotification } = useNotificationStore();
+  const { mutate, isLoading, isSuccess } = useMutation(updateStaff, {
+    onSuccess: (message: string) => {
+      addNotification({
+        type: 'success',
+        title: message
+      });
+    }
+  });
+
+  const staffData = staffs.staffs.find((ex) => ex._id === staffId);
+  console.log("staffData", staffData)
+
+  const initialValues: FormikState = {
+    title: staffData?.title || '',
+    type: staffData?.type || 0,
+    bio: staffData?.bio || '',
+    image: staffData?.photo || '',
+    deleteImage: false
+  };
+  const formik = useFormik({
+    initialValues,
+    validationSchema: createStaffSchema,
+    onSubmit: (v) => onSubmit(v)
+  });
+  const onSubmit = (state: FormikState) => {
+    const { title, image, type, bio, deleteImage } = state;
+    console.log("sumit")
+    mutate({ staffId, title, image, type, bio, deleteImage });
+  };
+  return (
+    <Authorization allowedRoles={[ROLES.ADMIN]}>
+      <FormDrawer
+        isDone={isSuccess}
+        triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
+        title="Update Staff"
+        submitButton={
+          <Button form="update-staff" variant="danger" type="submit" size="sm" isLoading={isLoading}>
+            Submit
+          </Button>
+        }
+      >
+        <form id="update-staff" onSubmit={formik.handleSubmit}>
+          <Field label="Title" formik={formik} name="title" />
+          <Textarea label="Bio" formik={formik} name="bio" />
+          <Dropzone
+            label="Photo"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Select
+            formik={formik}
+            label="Coach Type"
+            name="type"
+            options={COACH_TYPE_OPTIONS}
+            value={
+              formik.values.type == 1
+                ? { label: COACH_TYPE_OPTIONS[0].label, value: COACH_TYPE_OPTIONS[0].value }
+                : { label: COACH_TYPE_OPTIONS[1].label, value: COACH_TYPE_OPTIONS[1].value }
+            }
+            onChange={({ value }: SelectOption) => formik.setFieldValue('type', value)}
+          />
+        </form>
+      </FormDrawer>
+    </Authorization>
+  );
+};

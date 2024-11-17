@@ -81,6 +81,13 @@ export const createCategorySchema = Yup.object().shape({
   image: Yup.mixed().required('Thumbnail is required'),
 });
 
+export const createStaffSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  type: Yup.string().max(255).required(),
+  bio: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Photo is required'),
+});
+
 export const createQuizSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   level: Yup.string().max(255).required(),

@@ -207,6 +207,18 @@ export interface DayWarmup extends WorkoutsBaseEntity {
   formats: string[];
 }
 
+export interface Staff extends BaseEntity {
+  title: string;
+  photo: string;
+  type: number;
+  bio: string;
+
+}
+export interface StaffsResponse {
+  count: number;
+  staffs: Staff[];
+}
+
 export type SelectOption = {
   label: string;
   value: string;
