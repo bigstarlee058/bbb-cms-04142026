@@ -10,9 +10,6 @@
 /cypress/videos
 /cypress/screenshots
 
-# production
-/build
-
 # misc
 .DS_Store
 .env

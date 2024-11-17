@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkbbb_cms=self.webpackChunkbbb_cms||[]).push([[496],{5496:(s,e,t)=>{t.r(e),t.d(e,{AuthRoutes:()=>c});var h=t(1030),b=t(9820),n=t(7929);const c=()=>(0,n.jsxs)(h.BV,{children:[(0,n.jsx)(h.qh,{path:"login",element:(0,n.jsx)(b.a,{})}),(0,n.jsx)(h.qh,{path:"*",element:(0,n.jsx)(h.C5,{to:"./login"})})]})}}]);
+//# sourceMappingURL=496.dc35dfa6.chunk.js.map
