@@ -1,51 +1,45 @@
-import { Field, Textarea, Dropzone } from '@/components/Form';
-import { useFormik } from 'formik';
-import { useEffect } from 'react';
+import { Field, Textarea, Dropzone, Select } from './custom';
+import { useQuery } from 'react-query';
+import { fetchRestdayTitles } from '../api';
+import { TitleResponse } from '@/types';
 
 export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
+  const { data: titles, isLoading } = useQuery('get-restday-titles', () => fetchRestdayTitles({ filterString: '' }));
 
-  const formik = useFormik({
-    initialValues: week,
-    validationSchema: null,
-    onSubmit: (v) => console.log('submit'),
-  });
-  
-  useEffect(() => {
-    formik.setFieldValue('description', week.description);
-    formik.setFieldValue('vimeoId', week.vimeoId);
-  },[week]);
-
-  useEffect(() => {
-    const updatedWeek = {
-      ...week,
-      description: formik.values.description,
-      vimeoId: formik.values.vimeoId,
-      thumbnail: formik.values.thumbnail,
-    };
+  const updateWeekDetail = (key, value) => {
+    const updatedWeek = { ...week, [key]: value };
     updateWeek(monthIndex, weekIndex, updatedWeek);
-  }, [formik.values]);
+  }
+  const handleChange = (key, value) => {
+    updateWeekDetail(key, value);
+  };
 
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea
-          label="Description"
-          formik={formik}
-          name="description"
-          placeholder="Description"
-        />
+        <Textarea label="Description" name="description" value={week.description} onChange={handleChange}/>
       </div>
-      <div className="w-1/2 ml-4 mr-4">
-        <Dropzone
-          label="Thumbnail"
-          name="image"
-          formik={formik}
-          defaultImg={formik.values.thumbnail}
-          onDrop={(img) => formik.setFieldValue('thumbnail', img)}
-          onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
+      <div className="w-1/2 ml-4 mr-4 mt-6">
+        {/* <Dropzone
+          defaultImg={week.thumbnail}
+          onDrop={(img) => {handleChange('thumbnail', img)}}
+          onDelete={() => {handleChange('thumbnail', null)}}
           file={week.thumbnail}
+        /> */}
+        {/* <Field label="Vimeo Id" name="vimeoId" value={week.vimeoId} onChange={handleChange}/> */}
+        <Select
+          label="Rest Day"
+          options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
+          value={(() => {
+            const selectedTitle = titles?.find((title) => title.id === week.restdayId);
+            return selectedTitle ? { label: selectedTitle.title, value: selectedTitle.id } : null;
+          })()}
+          isLoading={isLoading}
+          className="w-[300px]"
+          onChange={(newValue: TitleResponse) => {
+            handleChange('restdayId', newValue.id);
+          }}
         />
-        <Field label="Vimeo Id" formik={formik} name="vimeoId" />
       </div>
     </div>
   );

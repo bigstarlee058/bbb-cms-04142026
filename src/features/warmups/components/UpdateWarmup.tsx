@@ -7,6 +7,7 @@ import { fetchWarmup, updateWarmup } from "../api";
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createWarmupSchema } from '@/utils/yup';
+import { Textarea } from '@/components/Form';
 
 interface FormikState {
   title: string;
@@ -60,11 +61,11 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
         <form id="update-warmup" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Field label="Description" formik={formik} name="description" />
+          <Textarea label="Description" formik={formik} name="description" />
           <Select
             isMulti
             formik={formik}
-            label="Equipments"
+            label="Equipment"
             name="equipments"
             options={equipmentTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
             value={formik.values.equipments.map((id) => {

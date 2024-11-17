@@ -10,21 +10,7 @@ export interface ResponseMessage {
   result: boolean;
   message: string;
 }
-export type User = {
-  firstname: string;
-  lastname: string;
-  email: string;
-  role: number;
-} & BaseEntity;
-export interface UserPayload {
-  firstname?: string | null;
-  lastname?: string | null;
-}
-export interface UsersResponse {
-  count: number;
-  users: User[];
-}
-
+////////////////////useless////////////////////
 export interface Tag extends BaseEntity {
   name: string;
   featuredCollections: Collection[];
@@ -33,16 +19,6 @@ export interface TagPayload {
   name: string;
   featuredCollections: string[];
 }
-export interface Category extends BaseEntity {
-  title: string;
-  count: number;
-  thumbnail: string;
-}
-export interface CategoryPayload {
-  title: string;
-  thumbnail: string;
-}
-
 export interface Collection extends BaseEntity {
   title: string;
   thumbnail: string;
@@ -53,6 +29,35 @@ export interface CollectionPayload {
   thumbnail: string;
   tags: string[];
 }
+export interface Quiz extends BaseEntity {
+  title: string;
+  level: number;
+}
+export interface QuizPayload {
+  title: string;
+  level: number;
+}
+////////////////////useless////////////////////
+export interface User extends BaseEntity {
+  workoutsHistory: UserWorkout[];
+  name: string;
+  email: string;
+  role: number;
+}
+export interface UsersResponse {
+  count: number;
+  users: User[];
+}
+export interface Category extends BaseEntity {
+  title: string;
+  thumbnail: string;
+  exerciseCount: number;
+}
+export interface CategoriesResponse {
+  count: number;
+  categories: Category[];
+}
+
 export interface Equipment extends BaseEntity {
   title: string;
   thumbnail: string;
@@ -69,6 +74,17 @@ export interface Warmup extends BaseEntity {
   description: string;
   equipments: string[];
 }
+export interface UserWorkout extends BaseEntity {
+  workoutId: string;
+  date: Date;
+  monthIndex: number;
+  weekIndex: number;
+  dayIndex: number;
+  day: string;
+  daySplit: number;
+  exercises: DayExercise[];
+}
+
 export interface WarmupsResponse {
   count: number;
   warmups: Warmup[];
@@ -88,28 +104,24 @@ export interface Exercise extends BaseEntity {
   description: string;
   vimeoId: string;
   thumbnail: string;
-  categories: string[];
   guide: string;
+  categories: string[];
+  usedEquipments: string[];
   relatedExercises: string[];
 }
 export interface ExercisesResponse {
   count: number;
   exercises: Exercise[];
 }
-export interface Quiz extends BaseEntity {
-  title: string;
-  level: number;
-}
-export interface QuizPayload {
-  title: string;
-  level: number;
-}
 
-export interface VimeoType extends BaseEntity {
+export interface Screen extends BaseEntity {
   vimeoId: string;
+  imgUrl: string;
 }
-export interface VimeoPayload {
+export interface ScreensResponse {
   vimeoId: string;
+  imgUrl: string;
+  description: string;
 }
 
 export interface Filters {
@@ -124,38 +136,39 @@ export interface Filters {
 export interface TitleFilters {
   filterString: string;
 }
-export interface WarmupTitleResponse {
+export interface TitleResponse {
   title: string;
   id: string;
 }
-export interface ExerciseTitleResponse {
+export interface WorkoutsResponse {
+  count: number;
+  months: Month[];
+}
+export interface WorkoutsBaseEntity {
+  _id?: string;
+}
+export interface Month extends WorkoutsBaseEntity {
+  index?: number;
   title: string;
-  id: string;
-}
-export interface EquipmentTitleResponse {
-  title: string;
-  id: string;
-}
-export interface DayExercise {
-  typeId: number;
-  id: string;
-  guide: string;
-  sets: number;
-  reps: number;
-  weight: number;
-  rest: number;
-  formats: string[];
-}
+  description: string;
+  vimeoId: string;
+  thumbnail: any;
+  startDate: Date;
+  endDate: Date;
 
-export interface DayWarmup {
-  typeId: number;
-  id: string;
-  title: string;
-  guide: string;
-  formats: string[];
+  weeks: Week[];
 }
+export interface Week extends WorkoutsBaseEntity {
+  index?: number;
+  title: string;
+  description: string;
+  vimeoId: string;
+  thumbnail: any;
+  restdayId: string;
 
-export interface Day {
+  days: Day[];
+}
+export interface Day extends WorkoutsBaseEntity {
   typeId: number;
   title: string;
   description: string;
@@ -166,29 +179,35 @@ export interface Day {
   warmups: DayWarmup[];
   exercises: DayExercise[];
 }
-
-export interface Week {
+export interface ExtraExercise {
+  sets: number;
+  reps: number;
+  weight: number;
+  rest: number;
+  load: number;
+  type: 1 | 2; // 1: Warm up, 2: Back set
+}
+export interface DayExercise extends WorkoutsBaseEntity {
+  typeId: number;
+  exerciseId: string;
+  guide: string;
+  sets: number;
+  reps: number;
+  weight: number;
+  rest: number;
+  formats: string[];
+  status: string;
+  extra: ExtraExercise[];
+}
+export interface DayWarmup extends WorkoutsBaseEntity {
+  typeId: number;
+  warmupId: string;
   title: string;
-  description: string;
-  vimeoId: string;
-  thumbnail: any;
-  startDate: Date;
-  endDate: Date;
-
-  days: Day[];
+  guide: string;
+  formats: string[];
 }
 
-export interface Month {
-  index: number;
-  title: string;
-  description: string;
-  vimeoId: string;
-  thumbnail: any;
-
-  weeks: Week[];
-}
-
-export interface WorkoutsResponse {
-  count: number;
-  months: Month[];
+export type SelectOption = {
+  label: string;
+  value: string;
 }

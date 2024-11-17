@@ -16,7 +16,7 @@ export const WarmupDetail = () => {
   const { data, isLoading } = useQuery(['get-warmup', warmupId], () => fetchWarmup(warmupId), {
     onError: (err: ErrorMessage) => {
       addNotification({
-        type: 'success',
+        type: 'error',
         title: err.message,
       });
       navigate('/app/warmups');
@@ -45,7 +45,7 @@ export const WarmupDetail = () => {
                 <Vimeo className="w-full mt-3" video={data.vimeoId} autoplay={false} />
                 <p className="font-bold">Description</p>
                 <p>{data.description}</p>
-                <p className="font-bold">Equipments</p>
+                <p className="font-bold">Equipment</p>
                 {titles ? (
                  titles.filter(title => data.equipments.includes(title.id)).map(title => title.title).join(', ')
                 ) : null}

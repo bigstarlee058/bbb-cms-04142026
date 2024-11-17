@@ -1,6 +1,4 @@
 import { Exercise, ErrorMessage, Filters, ExercisesResponse, ResponseMessage } from '@/types';
-import { storage } from '@/utils/firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
@@ -35,74 +33,82 @@ export const createExercise = async (payload: {
   description: string;
   vimeoId: string;
   image: File;
+  categories: [];
+  usedEquipments: [],
+  relatedExercises: [],
 }) => {
-  try {
-    const storageRef = ref(storage, 'exercise_thumbnails/' + payload.image.name);
-    await uploadBytes(storageRef, payload.image);
-    const downloadURL = await getDownloadURL(storageRef);
-    const newExercise = {
-      ...payload,
-      thumbnail: downloadURL,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.post('/exercises/admin', newExercise)) as ResponseMessage;
-    if (result.result === true) {
-      queryClient.invalidateQueries('get-exercises');
-      queryClient.invalidateQueries('get-exercise-titles');
-      return 'Exercise successfully created.';
+    try {
+      const formData = new FormData();
+      formData.append('title', payload.title);
+      formData.append('image', payload.image);
+      formData.append('description', payload.description);
+      formData.append('vimeoId', payload.vimeoId);
+      formData.append('categories', JSON.stringify(payload.categories));
+      formData.append('usedEquipments', JSON.stringify(payload.usedEquipments));
+      formData.append('relatedExercises', JSON.stringify(payload.relatedExercises));
+      // Post the new category data (including the image) to your backend
+      const result = (await axios.post('/exercises/admin', formData)) as ResponseMessage;
+      // Invalidate cache or update your frontend state if needed
+      if (result.result === true) {
+        console.log(result);
+        queryClient.invalidateQueries('get-exercises');
+        return 'Exercise successfully created.';
+      }
+      return result.message;
+    } catch (err: any) {
+      const error: ErrorMessage = {
+        status: true,
+        message: err as string,
+      };
+      console.log(error);
+      return Promise.reject(error);
     }
-    return result.message;
-  } catch (err: any) {
-    const error: ErrorMessage = {
-      status: true,
-      message: err as string,
-    };
-    return Promise.reject(error);
-  }
-};
+  };
 
-export const updateExercise = async ({
-  exerciseId,
-  payload,
-}: {
-  exerciseId: string;
-  payload: { title: string; description: string; vimeoId: string; image: File };
-}) => {
-  try {
-    let downloadURL = undefined;
-    if (payload.image.name) {
-      const storageRef = ref(
-        storage,
-        'exercise_thumbnails/' + Date.now() + '_' + payload.image.name
-      );
-      await uploadBytes(storageRef, payload.image);
-      downloadURL = await getDownloadURL(storageRef);
-    }
 
-    console.log(downloadURL);
-    const updatedExercise = {
-      ...payload,
-      _id: exerciseId,
-      thumbnail: downloadURL,
-      updatedAt: Date.now(),
+  export const updateExercise = async ({
+    exerciseId,
+    payload,
+  }: {
+    exerciseId: string;
+    payload: 
+    {
+      title: string;
+      description: string;
+      vimeoId: string;
+      image: File;
+      categories: [];
+      usedEquipments: [],
+      relatedExercises: [], 
     };
-    const result = (await axios.put('/exercises/admin', updatedExercise)) as ResponseMessage;
-    if (result.result === true) {
-      queryClient.invalidateQueries('get-exercises');
-      queryClient.invalidateQueries('get-exercise-titles');
-      queryClient.invalidateQueries(['get-exercise', exerciseId]);
-      console.log('success');
-      return 'Exercise successfully updated.';
+  }) => {
+    try {
+      const formData = new FormData();
+      formData.append('_id', exerciseId);
+      formData.append('title', payload.title);
+      formData.append('image', payload.image);
+      formData.append('description', payload.description);
+      formData.append('vimeoId', payload.vimeoId);
+      formData.append('categories', JSON.stringify(payload.categories));
+      formData.append('usedEquipments', JSON.stringify(payload.usedEquipments));
+      formData.append('relatedExercises', JSON.stringify(payload.relatedExercises));
+      const result = (await axios.put('/exercises/admin', formData)) as ResponseMessage;
+      if (result.result === true) {
+        queryClient.invalidateQueries('get-exercises');
+        queryClient.invalidateQueries('get-exercise-titles');
+        queryClient.invalidateQueries(['get-exercise', exerciseId]);
+        console.log('success');
+        return 'Exercise successfully updated.';
+      }
+      return result.message;
+    } catch (err: any) {
+      const error: ErrorMessage = {
+        status: true,
+        message: err as string,
+      };
+      return Promise.reject(error);
     }
-    return result.message;
-  } catch (err: any) {
-    const error: ErrorMessage = {
-      status: true,
-      message: err as string,
-    };
-    return Promise.reject(error);
-  }
-};
+  };
 
 export const deleteExercise = async (exerciseId: string) => {
   try {

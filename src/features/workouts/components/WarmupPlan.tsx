@@ -1,14 +1,12 @@
 import { Button } from '@/components/Elements';
 import { DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
-import { DayWarmup, WarmupTitleResponse } from '@/types';
+import { TitleResponse } from '@/types';
 import { CustomTitle } from './CustomTitle';
-import { Select } from './Select';
-import { DeleteConfirmation } from './DeleteConfirmation';
+import { Field, Select, DeleteConfirmation } from './custom';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { fetchWarmupTitles } from '../api';
 import _ from 'lodash';
-import { debug } from 'console';
 
 export const WarmupPlan = ({
   monthIndex,
@@ -22,7 +20,6 @@ export const WarmupPlan = ({
   updateMonths,
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
-  const [selectedOption, setSelectedOption] = useState<WarmupTitleResponse | null>(null);
 
   const { data: titles, isLoading } = useQuery('get-warmup-titles', () => fetchWarmupTitles({ filterString: '' }));
   useEffect(() => {
@@ -47,7 +44,6 @@ export const WarmupPlan = ({
     if(!nextFormat){
       newWarmup.typeId = nextTypeId;
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
-      console.log('newone');
     }
     else
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex + 1, 0, newWarmup);
@@ -221,26 +217,21 @@ export const WarmupPlan = ({
           </div>
           <div>
             <Select
+              label=""
               options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
               value={titles?.map((title) => {
-                if(title.id === warmup.id)
+                if(title.id === warmup.warmupId)
                   return { label: title?.title || '', value: title.id };
               })}
-              onChange={(newValue: WarmupTitleResponse) => {
-                setSelectedOption(newValue);
-                handleChange('id', newValue.id);
+              isLoading={isLoading}
+              onChange={(newValue: TitleResponse) => {
+                handleChange('warmupId', newValue.id);
               }}
             />
           </div>
         </div>
         <div>
-          <label className="block mb-1">Guideline:</label>
-          <input
-            type="text"
-            value={warmup.guide || ''}
-            onChange={(e) => handleChange('guide', e.target.value)}
-            className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+          <Field label="Guideline" name="guide" value={warmup.guide} onChange={handleChange}/>
         </div>
       </div>
       {warmupIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].warmups.length - 1 ? (

@@ -37,7 +37,7 @@ export const CreateCategory = () => {
     validationSchema: createCategorySchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (value: { title: string; image: File }) => {
+  const onSubmit = (value: any) => {
     mutate(value);
   };
 
@@ -46,13 +46,13 @@ export const CreateCategory = () => {
       <FormDrawer
         isDone={isSuccess}
         triggerButton={
-          <Button size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4" />}>
             Create Category
           </Button>
         }
         title="Create Category"
         submitButton={
-          <Button form="create-category" type="submit" size="sm" isLoading={isLoading}>
+          <Button form="create-category" variant="danger" type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }

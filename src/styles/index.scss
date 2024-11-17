@@ -86,6 +86,11 @@ body {
 }
 
 .expanded {
-  max-height: 10000px; /* Arbitrary large value to accommodate content */
+  //max-height: 100000px; /* Arbitrary large value to accommodate content */
   opacity: 1;
+}
+
+.custom-modal-content {
+  width: 800px;
+  max-width: 800px;
 }

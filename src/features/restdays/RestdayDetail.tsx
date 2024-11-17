@@ -43,9 +43,9 @@ export const RestdayDetail = () => {
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:px-6">
                 <Vimeo className="w-full mt-3" video={data.vimeoId} autoplay={false} />
-                <p className="font-bold">Description</p>
+                <p className="font-bold">Note</p>
                 <p>{data.description}</p>
-                <p className="font-bold">Equipments</p>
+                <p className="font-bold">Equipment</p>
                 {titles ? (
                  titles.filter(title => data.equipments.includes(title.id)).map(title => title.title).join(', ')
                 ) : null}

@@ -1,10 +1,8 @@
-import { ErrorMessage, User, UserPayload, ResponseMessage, Filters, UsersResponse } from '@/types';
-import { db_firestore, storage } from '@/utils/firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { ErrorMessage, User, ResponseMessage, Filters, UsersResponse } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
-export const updateProfile = async (payload: UserPayload) => {
+export const updateProfile = async (payload) => {
   try {
     const updatedProfile = {
       ...payload,
@@ -38,7 +36,7 @@ export const fetchUsers = async (filters: Filters): Promise<UsersResponse> => {
   }
 };
 
-export const updateUser = async ({ userId, payload }: { userId: string; payload: UserPayload }) => {
+export const updateUser = async ({ userId, payload }: { userId: string, payload }) => {
   try {
     const updatedUser = {
       ...payload,

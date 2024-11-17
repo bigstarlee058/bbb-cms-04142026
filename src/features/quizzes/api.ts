@@ -1,17 +1,4 @@
 import { Quiz, ErrorMessage, ResponseMessage } from '@/types';
-import { db_firestore, storage } from '@/utils/firebase';
-import {
-  collection,
-  doc,
-  addDoc,
-  getDoc,
-  deleteDoc,
-  getDocs,
-  DocumentData,
-  query,
-  updateDoc,
-} from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 

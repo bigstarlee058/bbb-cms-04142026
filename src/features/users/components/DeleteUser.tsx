@@ -1,6 +1,6 @@
 import { TrashIcon } from '@heroicons/react/outline';
 import { Button, ConfirmationDialog } from '@/components/Elements';
-import { useAuth } from '@/lib/auth';
+import { useAuthStore } from '@/stores/auth';
 import { useNotificationStore } from '@/stores/notifications';
 import { useMutation } from 'react-query';
 import { deleteUser } from '../api';
@@ -11,7 +11,8 @@ type DeleteUserProps = {
 };
 
 export const DeleteUser = ({ id }: DeleteUserProps) => {
-  const { user } = useAuth();
+  console.log(id);
+  const { user } = useAuthStore();
   const { addNotification } = useNotificationStore();
 
   const { mutate, isSuccess, isLoading } = useMutation(deleteUser, {

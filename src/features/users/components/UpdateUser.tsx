@@ -14,13 +14,13 @@ type UpdateUserProps = {
 };
 
 interface FormikState {
-  firstname: string;
-  lastname: string;
+  name: string;
 }
 
 export const UpdateUser = ({ userId }: UpdateUserProps) => {
   const { addNotification } = useNotificationStore();
   const { data, refetch } = useQuery('get-category', () => fetchUser(userId));
+  console.log(data);
   const { mutate, isLoading, isSuccess } = useMutation(updateUser, {
     onSuccess: (message: string) => {
       addNotification({
@@ -31,8 +31,7 @@ export const UpdateUser = ({ userId }: UpdateUserProps) => {
   });
 
   const initialValues: FormikState = {
-    firstname: data?.firstname || '',
-    lastname: data?.lastname || '',
+    name: data?.name || '',
   };
   const formik = useFormik({
     initialValues,
@@ -60,8 +59,7 @@ export const UpdateUser = ({ userId }: UpdateUserProps) => {
         }
       >
         <form id="update-user" onSubmit={formik.handleSubmit}>
-          <Field label="First Name" formik={formik} name="firstname" />
-          <Field label="Last Name" formik={formik} name="lastname" />
+          <Field label="name" formik={formik} name="name" />
         </form>
       </FormDrawer>
     </Authorization>

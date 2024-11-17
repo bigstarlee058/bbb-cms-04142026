@@ -1,10 +1,21 @@
+import React from 'react';
 import { Button } from '@/components/Elements';
+import { Month } from '@/types';
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
 import { useState, useRef, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { FaGripVertical } from 'react-icons/fa';
 
-export const Navbar = ({ currentPage, months, setMonths, onScrollToMonth, onScrollToWeek, onScrollToDay }) => {
+interface Props {
+  currentPage: number;
+  months: Month[];
+  allMonths: Month[];
+  setAllMonths: (months: Month[]) => void;
+  onScrollToMonth: (monthIndex: number) => void;
+  onScrollToWeek: (monthIndex: number, weekIndex: number) => void;
+  onScrollToDay: (monthIndex: number, weekIndex: number, dayIndex: number) => void;
+}
+export const Navbar = React.memo(({ currentPage, months, allMonths, setAllMonths, onScrollToMonth, onScrollToWeek, onScrollToDay } : Props) => {
   const [collapsed, setCollapsed] = useState(months.map(() => false));
   const refs = useRef([]);
 
@@ -46,30 +57,35 @@ export const Navbar = ({ currentPage, months, setMonths, onScrollToMonth, onScro
     }
   };
 
+  const getRealIndex = index => {
+    return 5 * (currentPage - 1) + index;
+  }
+
   const handleDragEnd = (result) => {
     const { destination, source, type } = result;
     if (!destination) return;
-    console.log(result);
-    const updatedMonths = [...months];
+    const updatedMonths = [...allMonths];
 
     if (type === 'month') {
-      const [movedMonth] = updatedMonths.splice(source.index, 1);
-      updatedMonths.splice(destination.index, 0, movedMonth);
-    } else if (type === 'week') {
-      const sourceMonthIndex = parseInt(source.droppableId.split('-')[1], 10);
-      const destMonthIndex = parseInt(destination.droppableId.split('-')[1], 10);
+      const [movedMonth] = updatedMonths.splice(getRealIndex(source.index), 1);
+      updatedMonths.splice(getRealIndex(destination.index), 0, movedMonth);
+    } 
+    else if (type === 'week') {
+      const sourceMonthIndex = getRealIndex(parseInt(source.droppableId.split('-')[1], 10));
+      const destMonthIndex = getRealIndex(parseInt(destination.droppableId.split('-')[1], 10));
       const [movedWeek] = updatedMonths[sourceMonthIndex].weeks.splice(source.index, 1);
       updatedMonths[destMonthIndex].weeks.splice(destination.index, 0, movedWeek);
-    } else if (type === 'day') {
-      const sourceMonthIndex = parseInt(source.droppableId.split('-')[1], 10);
-      const destMonthIndex = parseInt(destination.droppableId.split('-')[1], 10);
-      const sourceWeekIndex = parseInt(source.droppableId.split('-')[3], 10);
-      const destWeekIndex = parseInt(destination.droppableId.split('-')[3], 10);
-      const [movedDay] = updatedMonths[sourceMonthIndex].weeks[sourceWeekIndex].days.splice(source.index, 1);
-      updatedMonths[destMonthIndex].weeks[destWeekIndex].days.splice(destination.index, 0, movedDay);
-    }
+    } 
+    // else if (type === 'day') {
+    //   const sourceMonthIndex = parseInt(source.droppableId.split('-')[1], 10);
+    //   const destMonthIndex = parseInt(destination.droppableId.split('-')[1], 10);
+    //   const sourceWeekIndex = parseInt(source.droppableId.split('-')[3], 10);
+    //   const destWeekIndex = parseInt(destination.droppableId.split('-')[3], 10);
+    //   const [movedDay] = updatedMonths[sourceMonthIndex].weeks[sourceWeekIndex].days.splice(source.index, 1);
+    //   updatedMonths[destMonthIndex].weeks[destWeekIndex].days.splice(destination.index, 0, movedDay);
+    // }
 
-    setMonths(updatedMonths);
+    setAllMonths(updatedMonths);
 
     setTimeout(() => {
       refs.current.forEach((ref, index) => {
@@ -174,7 +190,7 @@ export const Navbar = ({ currentPage, months, setMonths, onScrollToMonth, onScro
       </DragDropContext>
     </div>
   );
-};
+});
 
   // return (
   //   <div>

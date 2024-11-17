@@ -1,12 +1,22 @@
 import { Button } from '@/components/Elements';
 import { DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
-import { Select } from './Select';
+import { Select, Field, DeleteConfirmation } from './custom';
 import { useQuery } from 'react-query';
 import { fetchExerciseTitles } from '../api';
-import { ExerciseTitleResponse } from '@/types';
-import { DeleteConfirmation } from './DeleteConfirmation';
+import { ExtraExercise, SelectOption, TitleResponse } from '@/types';
 import _ from 'lodash';
+
+const EXTRA_EXERCISE_OPTIONS: SelectOption[] = [
+  {
+    label: 'Warn Up',
+    value: '1'
+  },
+  {
+    label: 'Back Set',
+    value: '2'
+  }
+];
 
 export const ExercisePlan = ({
   monthIndex,
@@ -20,7 +30,6 @@ export const ExercisePlan = ({
   updateMonths
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
-  const [selectedOption, setSelectedOption] = useState<ExerciseTitleResponse | null>(null);
 
   const { data: titles, isLoading } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
 
@@ -43,11 +52,10 @@ export const ExercisePlan = ({
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
     const updatedMonths = [...months];
-    if(!nextFormat){
+    if (!nextFormat) {
       newExercise.typeId = nextTypeId;
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.push(newExercise);
-    }
-    else
+    } else
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex + 1, 0, newExercise);
     updateMonths(updatedMonths);
   };
@@ -60,6 +68,18 @@ export const ExercisePlan = ({
     updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex, 1);
     updateMonths(updatedMonths);
     if (countSameType === 1) reassignExerciseTypeIds(exercise.typeId);
+  };
+
+  const deleteExtraExercise = (monthIndex, weekIndex, dayIndex, exerciseIndex, extraIndex) => {
+    const updatedMonths = [...months];
+    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.splice(extraIndex, 1);
+    updateMonths(updatedMonths);
+  };
+
+  const updateExtraExerciseDetail = (index, key, value) => {
+    const updatedExtraExercise = [...exercise.extra];
+    updatedExtraExercise[index][key] = value;
+    updateExerciseDetail('extra', updatedExtraExercise);
   };
 
   const updateExerciseDetail = (key, value) => {
@@ -132,7 +152,7 @@ export const ExercisePlan = ({
     });
 
     return availableFormats.length > 0 && availableFormats.length < 3 ? availableFormats[0] : null;
-  }
+  };
 
   const handleAddExerciseClick = () => {
     const nextFormat = getNextFormat();
@@ -149,11 +169,26 @@ export const ExercisePlan = ({
 
   // Determine the next type ID
   const getNextTypeId = () => {
-    const typeIds = months.flatMap((month) =>
-      month.weeks.flatMap((week) => week.days.flatMap((day) => day.exercises.map((ex) => ex.typeId)))
-    );
+    // const typeIds = months.flatMap((month) =>
+    //   month.weeks.flatMap((week) => week.days.flatMap((day) => day.exercises.map((ex) => ex.typeId)))
+    // );
+    const typeIds = [...months][monthIndex].weeks[weekIndex].days[dayIndex].exercises.flatMap((ex) => ex.typeId);
     const maxTypeId = Math.max(0, ...typeIds);
     return maxTypeId + 1;
+  };
+
+  const handleAddExtraExerciseClick = () => {
+    const updatedMonths = [...months];
+    const newExtraExercise: ExtraExercise = {
+      sets: 0,
+      reps: 0,
+      weight: 0,
+      rest: 0,
+      load: 0,
+      type: 1
+    };
+    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.push(newExtraExercise);
+    updateMonths(updatedMonths);
   };
 
   return (
@@ -209,65 +244,98 @@ export const ExercisePlan = ({
           </div>
           <div>
             <Select
+              label=""
               options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
               value={titles?.map((title) => {
-                if(title.id === exercise.id)
-                  return { label: title?.title || '', value: title.id };
+                if (title.id === exercise.exerciseId) return { label: title?.title || '', value: title.id };
               })}
-              onChange={(newValue: ExerciseTitleResponse) => {
-                setSelectedOption(newValue);
-                handleChange('id', newValue.id);
+              isLoading={isLoading}
+              onChange={(newValue: TitleResponse) => {
+                handleChange('exerciseId', newValue.id);
               }}
             />
           </div>
         </div>
         <div>
-          <label className="block mb-1">Guideline:</label>
-          <input
-            type="text"
-            value={exercise.guide || ''}
-            onChange={(e) => handleChange('guide', e.target.value)}
-            className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
+          <Field label="Guideline" name="guide" value={exercise.guide} onChange={handleChange} />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block mb-1">Sets</label>
-            <input
-              type="number"
-              value={exercise.sets || ''}
-              onChange={(e) => handleChange('sets', e.target.value)}
-              className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Reps</label>
-            <input
-              type="number"
-              value={exercise.reps || ''}
-              onChange={(e) => handleChange('reps', e.target.value)}
-              className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Weight</label>
-            <input
-              type="number"
-              value={exercise.weight || ''}
-              onChange={(e) => handleChange('weight', e.target.value)}
-              className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Rest</label>
-            <input
-              type="number"
-              value={exercise.rest || ''}
-              onChange={(e) => handleChange('rest', e.target.value)}
-              className="border rounded px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <Field label="Sets" type="number" name="sets" value={exercise.sets} onChange={handleChange} />
+          <Field label="Reps" type="number" name="reps" value={exercise.reps} onChange={handleChange} />
+          <Field label="Weight" type="number" name="weight" value={exercise.weight} onChange={handleChange} />
+          <Field label="Rest" type="number" name="rest" value={exercise.rest} onChange={handleChange} />
         </div>
+        {exercise?.extra?.length && exercise.extra.length > 0 ? (
+          <>
+            {exercise.extra.map((extra: ExtraExercise, index: number) => (
+              <div className="p-4 bg-teal-100 rounded shadow-md mt-4">
+                <div className="flex mb-2 justify-between items-center">
+                  <h2 className="text-md font-bold">EXTRA EXERCISE</h2>
+                  <div className="flex gap-3">
+                    <DeleteConfirmation
+                      deleteFunction={() => deleteExtraExercise(monthIndex, weekIndex, dayIndex, exerciseIndex, index)}
+                      name={'Extra Exercise'}
+                    />
+                  </div>
+                </div>
+                <Select
+                  label="Extra Exercise Type"
+                  options={EXTRA_EXERCISE_OPTIONS}
+                  value={{ label: `${extra.type === 1 ? 'Warm Up' : 'Back Set'}`, value: extra.type }}
+                  className="w-[50%]"
+                  onChange={({ value }: SelectOption) => {
+                    updateExtraExerciseDetail(index, 'type', value);
+                  }}
+                />
+                <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Field
+                    label="Sets"
+                    type="number"
+                    name="sets"
+                    value={extra.sets}
+                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                  />
+                  <Field
+                    label="Reps"
+                    type="number"
+                    name="reps"
+                    value={extra.reps}
+                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                  />
+                  <Field
+                    label="Weight"
+                    type="number"
+                    name="weight"
+                    value={extra.weight}
+                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                  />
+                  <Field
+                    label="Rest"
+                    type="number"
+                    name="rest"
+                    value={extra.rest}
+                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                  />
+                  <Field
+                    label="Load"
+                    type="number"
+                    name="load"
+                    value={extra.load}
+                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                  />
+                </div>
+              </div>
+            ))}
+          </>
+        ) : null}
+        <Button
+          variant="danger"
+          onClick={handleAddExtraExerciseClick}
+          startIcon={<PlusIcon className="h-4 w-4" />}
+          className="mt-4"
+        >
+          Add Extra
+        </Button>
       </div>
       {exerciseIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].exercises.length - 1 ? (
         <Button

@@ -84,13 +84,13 @@ export const EquipmentList = () => {
             Cell({ entry: { link } }) {
               return (
                 <a href={link} target="_blank">
-                  Visit Product
+                  {link}
                 </a>
               );
             },
           },
           {
-            title: 'Created At',
+            title: 'Created On',
             field: 'createdAt',
             Cell({ entry: { createdAt } }) {
               return <span>{formatDate(createdAt)}</span>;

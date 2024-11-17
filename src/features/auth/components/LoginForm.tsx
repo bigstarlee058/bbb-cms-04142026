@@ -1,12 +1,15 @@
 import { useFormik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { useMutation } from 'react-query';
+import { USER_ADMIN, User } from '@/features/users/types';
 import { Button } from '@/components/Elements';
 import { Field } from '@/components/Form';
-import { useAuth } from '@/lib/auth';
-import { useNotificationStore } from '@/stores/notifications';
+import { login } from '@/features/auth/api/auth';
+import { useAuthStore } from '@/stores/auth';
 import { userLoginSchema } from '@/utils/yup';
+import { useNotificationStore } from '@/stores/notifications';
+import { ErrorMessage } from '@/types';
 
 interface FormikState {
   email: string;
@@ -18,41 +21,57 @@ type LoginFormProps = {
 };
 
 export const LoginForm = ({ onSuccess }: LoginFormProps) => {
+  const { mutate } = useMutation(login);
   const navigate = useNavigate();
-  const { signIn, user } = useAuth();
-  const [loading, SetLoading] = useState(false);
+  const { user, setUser, setIsLogged } = useAuthStore();
+  const [loading, setLoading] = useState(false);
   const { addNotification } = useNotificationStore();
 
   useEffect(() => {
     if (user) {
       navigate('/app');
     }
-  }, [user]);
+  }, [user, navigate]);
 
   const initialValues: FormikState = {
     email: '',
     password: '',
   };
+
   const formik = useFormik({
     initialValues,
     validationSchema: userLoginSchema,
-    onSubmit: (v) => onSubmit(v),
-  });
-  const onSubmit = async (value: any) => {
-    SetLoading(true);
-    signIn(value.email, value.password)
-      .then(() => {
-        onSuccess();
-      })
-      .catch((e) => {
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: e.message,
-        });
-        SetLoading(false);
+    onSubmit: async (values) => {
+      setLoading(true);
+      mutate(values, {
+        onSuccess: (resp: { success: boolean; data: { uid: string; _id: string }; message?: string }) => {
+          setLoading(false);
+          if (resp.success) {
+            setIsLogged(true);
+            const newUser: User = {
+              uid: resp.data.uid,
+              _id: resp.data._id,
+              email: values.email,
+              name: 'Admin User', // Ensure this aligns with your logic
+              role: USER_ADMIN,  // Ensure this aligns with your logic
+            };
+            setUser(newUser);
+            onSuccess();
+            navigate('/app');
+          } else {
+            console.log("Error", resp.message || "Unexpected Error");
+          }
+        },
+        onError: (err: ErrorMessage) => {
+          addNotification({
+            type: 'success',
+            title: err.message
+          });
+          setLoading(false);
+        }
       });
-  };
+    }
+  });
 
   return (
     <div>
@@ -65,4 +84,4 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
       </form>
     </div>
   );
-};
+}

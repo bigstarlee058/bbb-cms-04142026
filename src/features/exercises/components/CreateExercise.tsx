@@ -15,12 +15,13 @@ interface FormikState {
   vimeoId: string;
   categories: string[];
   guide: string;
+  usedEquipments: string[];
   relatedExercises: string[];
   image: any;
   deleteImage: boolean;
 }
 
-export const CreateExercise = ({titles}) => {
+export const CreateExercise = ({exerciseTitles, equipmentTitles, categoryTitles}) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createExercise, {
     onSuccess: (message: string) => {
@@ -32,14 +33,13 @@ export const CreateExercise = ({titles}) => {
     },
   });
 
-  const exerciseTitles = titles || [];
-  
   const initialValues: FormikState = {
     title: '',
     description: '',
     vimeoId: '',
     categories: [],
     guide: '',
+    usedEquipments: [],
     relatedExercises: [],
     image: '',
     deleteImage: false,
@@ -55,12 +55,6 @@ export const CreateExercise = ({titles}) => {
     mutate(values);
   };
 
-  const categoryOptions = [
-    { label: 'Upper Chest', value: 'upperchest' },
-    { label: 'Leg', value: 'leg' },
-    { label: 'Back', value: 'back' },
-    // Add more categories as needed
-  ];
 
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -96,12 +90,29 @@ export const CreateExercise = ({titles}) => {
           />
           <Select
             isMulti
+            formik={formik}
+            label="Categories"
+            name="categories"
+            options={categoryTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={formik.values.categories.map((id) => {
+              const category = categoryTitles?.find((c) => c._id === id);
+              return { label: category?.title || '', value: id };
+            })}
+            onChange={(value: any) =>
+              formik.setFieldValue(
+                'categories',
+                value.map((v: any) => v.value)
+              )
+            }
+          />
+          {/* <Select
+            isMulti
             label="Categories"
             formik={formik}
             name="categories"
             options={categoryOptions}
             onChange={(value: any) => formik.setFieldValue('categories', value.map((v: any) => v.value))}
-          />
+          /> */}
           {/* <Field label="Categories" formik={formik} name="categories" /> */}
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />
@@ -109,11 +120,28 @@ export const CreateExercise = ({titles}) => {
           <Select
             isMulti
             formik={formik}
+            label="Equipment used"
+            name="usedEquipments"
+            options={equipmentTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={formik.values.usedEquipments.map((id) => {
+              const equipment = equipmentTitles?.find((e) => e._id === id);
+              return { label: equipment?.title || '', value: id };
+            })}
+            onChange={(value: any) =>
+              formik.setFieldValue(
+                'usedEquipments',
+                value.map((v: any) => v.value)
+              )
+            }
+          />
+          <Select
+            isMulti
+            formik={formik}
             label="Related Exercises"
             name="relatedExercises"
             options={exerciseTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
             value={formik.values.relatedExercises.map((id) => {
-              const exercise = exerciseTitles?.find((exercise) => exercise._id === id);
+              const exercise = exerciseTitles?.find((e) => e._id === id);
               return { label: exercise?.title || '', value: id };
             })}
             onChange={(value: any) =>

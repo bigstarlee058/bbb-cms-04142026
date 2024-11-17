@@ -8,6 +8,7 @@ import { Button } from '@/components/Elements';
 import { FormDrawer, Select } from '@/components/Form';
 import { Field } from '@/components/Form';
 import { createWarmup } from '../api';
+import { Textarea } from '@/components/Form';
 
 interface FormikState {
   title: string;
@@ -50,10 +51,10 @@ export const CreateWarmUp = ({titles}) => {
         isDone={isSuccess}
         triggerButton={
           <Button size="sm" variant='danger' startIcon={<PlusIcon className="h-4 w-4" />}>
-            Create WarmUp
+            Create Warm-Up
           </Button>
         }
-        title="Create WarmUp"
+        title="Create Warm-Up"
         submitButton={
           <Button form="create-warmup" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit
@@ -63,11 +64,11 @@ export const CreateWarmUp = ({titles}) => {
         <form id="create-warmup" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Field label="Description" formik={formik} name="description" />
+          <Textarea label="Description" formik={formik} name="description" />
           <Select
             isMulti
             formik={formik}
-            label="Related Equipments"
+            label="Related Equipment"
             name="relatedEquipments"
             options={equipmentTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
             value={formik.values.equipments.map((id) => {

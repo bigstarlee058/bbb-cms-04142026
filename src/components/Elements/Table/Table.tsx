@@ -36,7 +36,7 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
                     <th
                       key={column.title + index}
                       scope="col"
-                      className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
+                      className="px-3 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
                     >
                       {column.title}
                     </th>
@@ -49,7 +49,9 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
                     {columns.map(({ Cell, field, title }, columnIndex) => (
                       <td
                         key={title + columnIndex}
-                        className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap"
+                        className={`${
+                          columnIndex === 0 ? 'pl-4' : 'px-2'
+                        } py-4 text-sm font-medium text-gray-900 whitespace-nowrap`}
                       >
                         {Cell ? (
                           <Cell entry={entry} />

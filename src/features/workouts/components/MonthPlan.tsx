@@ -1,3 +1,4 @@
+import React, { useCallback } from 'react';
 import { useState } from 'react';
 import { Button } from '@/components/Elements';
 import { MonthDetail } from './MonthDetail';
@@ -10,52 +11,69 @@ import {
 } from '@heroicons/react/outline';
 import { WeekPlan } from './WeekPlan';
 import { Month, Week } from '@/types';
-import { DeleteConfirmation } from './DeleteConfirmation';
+import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
 
-export const MonthPlan = ({ monthIndex, month, addMonth, currentPage, months, updateMonths }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  
-  const realMonthIndex = (currentPage - 1) * 5 + monthIndex;
-  if(!months[realMonthIndex])
-    return null;
+interface Props {
+  monthIndex: number;
+  month: Month;
+  months: Month[];
+  currentPage: number;
+  addMonth: () => void;
+  updateMonths: (months: Month[]) => void;
+}
 
-  const addWeek = (monthIndex: number) => {
+export const MonthPlan = React.memo(({ monthIndex, month, months, currentPage, addMonth, updateMonths } : Props) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const realMonthIndex = (currentPage - 1) * 5 + monthIndex;
+
+  const addWeek = useCallback((monthIndex: number) => {
     const newWeek: Week = {
       title: '',
       description: '',
       vimeoId: '',
       thumbnail: '',
-      startDate: null,
-      endDate: null,
-
+      restdayId: '',
+      
       days: [],
     };
     const updatedMonths = [...months];
     updatedMonths[monthIndex].weeks.push(newWeek);
     updateMonths(updatedMonths);
-  };
+  },[months, updateMonths]);
 
-  const duplicateMonth = (monthIndex: number) => {
+  const duplicateMonth = useCallback((monthIndex: number) => {
     const originMonth = months[monthIndex];
     const newMonth = _.cloneDeep(originMonth);
-    newMonth._id = '';
+    delete newMonth._id;
+    newMonth.weeks.map(week => {
+      delete week._id;
+      week.days.map(day => {
+        delete day._id;
+        day.exercises.map(exercise => {
+          delete exercise._id;
+        })
+        day.warmups.map(warmup => {
+          delete warmup._id;
+        })
+      })
+    })
     const updatedMonths = [...months];
     updatedMonths.splice(monthIndex + 1, 0, newMonth);
     updateMonths(updatedMonths);
-  };
+  },[months, updateMonths]);
 
-  const deleteMonth = (monthIndex: number) => {
+  const deleteMonth = useCallback((monthIndex: number) => {
     const updatedMonths = [...months];
     updatedMonths.splice(monthIndex, 1);
     updateMonths(updatedMonths);
-  };
+  },[months, updateMonths]);
 
-  const updateMonth = (monthIndex: number, updatedMonth: Month) => {
+  const updateMonth = useCallback((monthIndex: number, updatedMonth: Month) => {
     const updatedMonths = [...months];
     updatedMonths[monthIndex] = updatedMonth;
     updateMonths(updatedMonths);
-  };
+  },[months, updateMonths]);
 
   const updateMonthTitle = (title) => {
     const updatedMonth = { ...month, title };
@@ -65,6 +83,11 @@ export const MonthPlan = ({ monthIndex, month, addMonth, currentPage, months, up
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  if(!months[realMonthIndex])
+    return null;
+
+  const isFourWeeksOrLess = month.weeks.length <= 3;
   return (
     <div
       key={monthIndex}
@@ -130,11 +153,10 @@ export const MonthPlan = ({ monthIndex, month, addMonth, currentPage, months, up
             addWeek={addWeek}
             months={months}
             updateMonths={updateMonths}
+            isFourWeeksOrLess={isFourWeeksOrLess} 
           />
         ))}
       </div>
     </div>
   );
-};
-
-export default MonthPlan;
+});

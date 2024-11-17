@@ -3,10 +3,14 @@ import ReactSelect, { Props as ReactSelectProps } from 'react-select';
 
 import reactSelectStylesConfig from '@/lib/react-select';
 
-export const Select = ({ name, ...rest }: ReactSelectProps) => {
+export interface CustomSelectProps extends ReactSelectProps {
+  label: string;
+}
+export const Select = ({ label, name, ...rest }: CustomSelectProps) => {
   return (
-    <div className="py-2">
+    <>
+      <label className="fieldLabel">{label}</label>
       <ReactSelect styles={reactSelectStylesConfig} {...rest} />
-    </div>
+    </>
   );
 };

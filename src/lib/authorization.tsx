@@ -1,24 +1,23 @@
 import * as React from 'react';
-
-import { useAuth } from './auth';
+import { useAuthStore } from '@/stores/auth';
 import { User } from '@/types';
 
 export enum ROLES {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
+  USER = 0,
+  ADMIN = 1,
 }
 
-type RoleTypes = keyof typeof ROLES;
+type RoleTypes = number;
 
 export const useAuthorization = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   if (!user) {
     throw Error('User does not exist!');
   }
 
   const checkAccess = React.useCallback(
-    ({ allowedRoles }: { allowedRoles: string[] }) => {
+    ({ allowedRoles }: { allowedRoles: number[] }) => {
       if (allowedRoles && allowedRoles.length > 0) {
         return allowedRoles?.includes(user.role);
       }
@@ -26,7 +25,6 @@ export const useAuthorization = () => {
     },
     [user.role]
   );
-
   return { checkAccess, role: user.role };
 };
 

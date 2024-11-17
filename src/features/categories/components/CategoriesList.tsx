@@ -1,14 +1,49 @@
+import { useEffect, useState } from 'react';
+import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
-
-import { Table, Spinner, Link } from '@/components/Elements';
-import { Category } from '@/types';
-
 import { fetchCategories } from '../api';
-
+import { Category, Filters } from '@/types';
+import { EyeIcon } from '@heroicons/react/outline';
 import { DeleteCategory } from './DeleteCategory';
+import { UpdateCategory } from './UpdateCategory';
+import { useFilteringStore } from '@/stores/filter';
+import Pagination from '@/components/Elements/Pagination';
 
 export const CategoriesList = () => {
-  const { data, isLoading } = useQuery('get-categories', fetchCategories);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { search, sortBy } = useFilteringStore();
+  const [filters, setFilters] = useState<Filters>({
+    perPage: 10,
+    page: 1,
+  });
+
+  const {
+    data: categoryData,
+    isLoading,
+    refetch,
+  } = useQuery(['get-categories'], () => fetchCategories(filters));
+
+  useEffect(() => {
+    refetch();
+  }, [filters]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      page: currentPage,
+    });
+  }, [currentPage]);
+
+  useEffect(() => {
+    setFilters((p) => ({ ...p, search: search }));
+  }, [search]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      sortBy: sortBy?.value,
+    });
+  }, [sortBy]);
 
   if (isLoading) {
     return (
@@ -18,51 +53,66 @@ export const CategoriesList = () => {
     );
   }
 
-  if (!data) return null;
+  if (!categoryData) return null;
 
   return (
-    <Table<Category>
-      data={data}
-      columns={[
-        {
-          title: 'Title',
-          field: 'title',
-        },
-        {
-          title: 'Thumbnail',
-          field: 'thumbnail',
-          Cell({ entry: { thumbnail } }) {
-            return <img className="w-24" src={thumbnail} alt="Thumbnail" />;
+    <>
+      <Table<Category>
+        data={categoryData.categories}
+        columns={[
+          {
+            title: 'Title',
+            field: 'title',
           },
-        },
-        {
-          title: 'Exercises Counts',
-          field: 'count',
-        },
-        /*
-        {
-          title: 'Created At',
-          field: 'createdAt',
-          Cell({ entry: { createdAt } }) {
-            return <span>{formatDate(createdAt)}</span>;
+          {
+            title: 'Thumbnail',
+            field: 'thumbnail',
+            Cell({ entry: { thumbnail } }) {
+              return (
+              <div className="justify-center items-center">
+                <img className="h-24 object-contain" src={thumbnail} />
+              </div>);
+            },
           },
-        },
-        */
-        {
-          title: '',
-          field: '_id',
-          Cell({ entry: { _id } }) {
-            return <Link to={`./${_id}`}>View</Link>;
+          {
+            title: 'Exercises Counts',
+            field: 'exerciseCount',
           },
-        },
-        {
-          title: '',
-          field: '_id',
-          Cell({ entry: { _id } }) {
-            return <DeleteCategory categoryId={_id} />;
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return (
+                <Link to={`./${_id}`}>
+                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
+                </Link>
+              );
+            },
           },
-        },
-      ]}
-    />
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <UpdateCategory categoryId={_id} categories={categoryData} />;
+            },
+          },
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <DeleteCategory categoryId={_id} />;
+            },
+          },
+        ]}
+      />
+      <div className="flex justify-center mt-6">
+        <Pagination
+          currentPage={currentPage}
+          lastPage={Math.ceil(categoryData.count / (filters?.perPage || 10))}
+          maxLength={7}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
+    </>
   );
 };

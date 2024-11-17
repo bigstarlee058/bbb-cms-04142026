@@ -52,7 +52,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {...props}
       >
-        {isLoading && <Spinner size="sm" className="text-current"/>}
+        {isLoading && <Spinner size="sm" className="text-current text-white mr-4"/>}
         {!isLoading && startIcon}
         <span className="">{props.children}</span> {!isLoading && endIcon}
       </button>

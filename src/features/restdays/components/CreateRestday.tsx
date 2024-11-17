@@ -8,6 +8,7 @@ import { Button } from '@/components/Elements';
 import { FormDrawer, Select } from '@/components/Form';
 import { Field } from '@/components/Form';
 import { createRestday } from "../api";
+import { Textarea } from '@/components/Form';
 
 interface FormikState {
   title: string;
@@ -63,11 +64,11 @@ export const CreateRestday = ({titles}) => {
         <form id="create-restday" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Field label="Description" formik={formik} name="description" />
+          <Textarea label="Notes" formik={formik} name="description" />
           <Select
             isMulti
             formik={formik}
-            label="Related Equipments"
+            label="Related Equipment"
             name="relatedEquipments"
             options={equipmentTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
             value={formik.values.equipments.map((id) => {

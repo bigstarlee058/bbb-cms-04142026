@@ -1,15 +1,51 @@
-import { Field, Textarea, Dropzone } from '@/components/Form';
-import { useFormik } from 'formik';
-import { useEffect, useState } from 'react';
+import { useNotificationStore } from '@/stores/notifications';
+import { Field, Dropzone, Textarea, Select } from './custom';
+import { useEffect } from 'react';
+import { SelectOption } from '@/types';
 
-interface FormikState {
-  description: string;
-  vimeoId: string;
-  thumbnail: any;
-  deleteImage: boolean;
-}
+const DAY_ORDERS: SelectOption[] = [
+  {
+    label: 'Day 1',
+    value: '1'
+  },
+  {
+    label: 'Day 2',
+    value: '2'
+  },
+  {
+    label: 'Day 3',
+    value: '3'
+  },
+  {
+    label: 'Day 4',
+    value: '4'
+  },
+  {
+    label: 'Day 5',
+    value: '5'
+  },
+  {
+    label: 'Day 6',
+    value: '6'
+  },
+  {
+    label: 'Day 7',
+    value: '7'
+  }
+]
 
-export const DayDetail = ({ monthIndex, weekIndex, dayIndex, day, states, updateStates, isDisabled, updateDay }) => {
+export const DayDetail = ({
+  monthIndex,
+  weekIndex,
+  dayIndex,
+  week,
+  day,
+  states,
+  updateStates,
+  updateDay,
+}) => {
+  const { addNotification } = useNotificationStore();
+
   useEffect(() => {
     if (day.formats) {
       const newCheckedStates = ['3', '4', '5'].map((format) => day.formats.includes(format));
@@ -18,6 +54,18 @@ export const DayDetail = ({ monthIndex, weekIndex, dayIndex, day, states, update
   }, [day.formats]);
 
   const handleCheckboxClick = (index: number) => {
+    let existingCnt = 0;
+    week.days.forEach((day) => {
+      if (day.formats.includes(['3', '4', '5'][index])) existingCnt++;
+    });
+
+    if (existingCnt >= parseInt(['3', '4', '5'][index]) && states[index] === false) {
+      addNotification({
+        type: 'warning',
+        title: `There're already days that have split${['3', '4', '5'][index]}`
+      });
+      return;
+    }
     const newCheckedStates = states.map((state, i) => (i === index ? !state : state));
     updateStates(newCheckedStates);
 
@@ -25,84 +73,62 @@ export const DayDetail = ({ monthIndex, weekIndex, dayIndex, day, states, update
       if (state) formats.push(['3', '4', '5'][i]);
       return formats;
     }, []);
-
-    const updatedDay = {
-      ...day,
-      formats: newFormats,
-    };
-    updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
+    updateDayDetail('formats', newFormats);
   };
 
-  const initialValues: FormikState = {
-    description: day.description,
-    vimeoId: day.vimeoId,
-    thumbnail: day.thumbnail,
-    deleteImage: false,
+  const updateDayDetail = (key, value) => {
+    const updatedDay = { ...day, [key]: value };
+    updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
+
   };
 
-  const formik = useFormik({
-    initialValues,
-    validationSchema: null,
-    onSubmit: (v) => console.log('submit'),
-  });
-
-  useEffect(() => {
-    const updatedDay = {
-      ...day,
-      description: formik.values.description,
-      vimeoId: formik.values.vimeoId,
-      thumbnail: formik.values.thumbnail,
-    };
-    updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
-  }, [formik.values]);
+  const handleChange = (key, value) => {
+    updateDayDetail(key, value);
+  };
 
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" formik={formik} name="description" placeholder='Description'/>
+        <Textarea label="Description" name="description" value={day.description} onChange={handleChange} />
       </div>
-      <div className="w-1/2 ml-4 mr-4">
+      <div className="w-1/2 ml-4 mr-4 mt-6">
         <Dropzone
-          label="Thumbnail"
-          name="image"
-          formik={formik}
-          defaultImg={formik.values.thumbnail}
-          onDrop={(img) => formik.setFieldValue('thumbnail', img)}
-          onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
+          defaultImg={day.thumbnail}
+          onDrop={(img) => {
+            handleChange('thumbnail', img);
+          }}
+          onDelete={() => {
+            handleChange('thumbnail', null);
+          }}
           file={day.thumbnail}
         />
-        <Field label="Vimeo Id" formik={formik} name="vimeoId" />
-        <div className="flex">
+        <Field label="Vimeo Id" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
+        <Select
+          label="Day Order"
+          options={DAY_ORDERS}
+          value={{ label: `Day ${day.typeId}`, value: day.typeId }}
+          className="w-[300px]"
+          onChange={({ value }: SelectOption) => {
+            if (parseInt(value) !== day.typeId) {
+              updateDayDetail('typeId', parseInt(value));
+            }
+          }}
+        />
+        <div className="flex mt-3">
           <div className="flex items-center">
             <label className="block mb-1 mr-4">Available in variations:</label>
           </div>
           <div className="flex gap-3">
-              {['3', '4', '5'].map((label, index) => (
-                <div
-                  key={index}
-                  onClick={() => !isDisabled(index) && handleCheckboxClick(index)}
-                  className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors 
-                  ${
-                    isDisabled(index)
-                      ? 'bg-gray-300 border-gray-400 cursor-not-allowed opacity-60'
-                      : ''
-                  }
-                  `}
-                  style={
-                    states[index]
-                      ? { backgroundColor: '#00A89E' }
-                      : { backgroundColor: '#FFFFFF' }
-                  }
-                >
-                  <span
-                    className={`text-md font-medium ${
-                      states[index] ? 'text-white' : 'text-gray-800'
-                    }`}
-                  >
-                    {label}
-                  </span>
-                </div>
-              ))}
+            {['3', '4', '5'].map((label, index) => (
+              <div
+                key={index}
+                onClick={() => handleCheckboxClick(index)}
+                className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors`}
+                style={states[index] ? { backgroundColor: '#00A89E' } : { backgroundColor: '#FFFFFF' }}
+              >
+                <span className={`text-md font-medium ${states[index] ? 'text-white' : 'text-gray-800'}`}>{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

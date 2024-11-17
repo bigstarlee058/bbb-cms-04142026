@@ -1,6 +1,5 @@
 import { ContentLayout } from '@/components/Layout';
-import { useAuth } from '@/lib/auth';
-
+import { useAuthStore } from '@/stores/auth';
 import { UpdateProfile } from './components/UpdateProfile';
 import { useUserStore } from '@/stores/user';
 import { useEffect } from 'react';
@@ -17,7 +16,7 @@ const Entry = ({ label, value }: EntryProps) => (
 );
 
 export const Profile = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   const { setCurrentPage } = useUserStore();
 

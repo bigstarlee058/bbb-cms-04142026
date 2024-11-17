@@ -1,7 +1,7 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
 import { FormDrawer, Field } from '@/components/Form';
-import { useAuth } from '@/lib/auth';
+import { useAuthStore } from '@/stores/auth';
 import { updateUser } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useMutation } from 'react-query';
@@ -9,12 +9,11 @@ import { useFormik } from 'formik';
 import { createUserSchema } from '@/utils/yup';
 
 interface FormikState {
-  firstname: string;
-  lastname: string;
+  name: string;
 }
 
 export const UpdateProfile = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { addNotification } = useNotificationStore();
 
   const { mutate, isSuccess, isLoading } = useMutation(updateUser, {
@@ -27,8 +26,7 @@ export const UpdateProfile = () => {
   });
 
   const initialValues: FormikState = {
-    firstname: user?.displayName || '',
-    lastname: user?.displayName || '',
+    name: user?.name || '',
   };
 
   const formik = useFormik({

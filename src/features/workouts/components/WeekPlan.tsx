@@ -10,11 +10,13 @@ import { CustomTitle } from './CustomTitle';
 import { WeekDetail } from './WeekDetail';
 import { DayPlan } from './DayPlan';
 import { Day, Week } from '@/types';
-import { DeleteConfirmation } from './DeleteConfirmation';
+import { DeleteConfirmation } from './custom/DeleteConfirmation';
+
 import _ from 'lodash';
 
-export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateMonths }) => {
+export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateMonths, isFourWeeksOrLess }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
 
   if(!months[monthIndex]?.weeks[weekIndex])
     return null;
@@ -39,6 +41,16 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
   const duplicateWeek = (monthIndex: number, weekIndex: number) => {
     const originWeek = months[monthIndex].weeks[weekIndex];
     const newWeek = _.cloneDeep(originWeek);
+    delete newWeek._id;
+    newWeek.days.map(day => {
+      delete day._id;
+      day.exercises.map(exercise => {
+        delete exercise._id;
+      })
+      day.warmups.map(warmup => {
+        delete warmup._id;
+      })
+    })
     const updatedMonths = [...months];
     updatedMonths[monthIndex].weeks.splice(weekIndex + 1, 0, newWeek);
     updateMonths(updatedMonths);
@@ -70,10 +82,16 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
     updateWeek(monthIndex, weekIndex, updatedWeek);
   };
 
+  const updateWeekRestday = (restdayId) => {
+    const updatedWeek = { ...week, restdayId };
+    updateWeek(monthIndex, weekIndex, updatedWeek);
+  }
+
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const isSevenDays = week.days.length <= 6;
   return (
     <div
       className={`my-4 border p-4 rounded shadow week-${weekIndex}`}
@@ -87,18 +105,18 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
           updateFunction={updateWeekTitle}
         />
         <div className="flex gap-3">
-          <Button
+          { isFourWeeksOrLess ? (<Button
             variant="danger"
             name="add week"
             startIcon={<PlusIcon className="h-4 w-4" />}
             onClick={() => addWeek(monthIndex)}
-          />
-          <Button
+          />) : null }
+          { isFourWeeksOrLess ? (<Button
             variant="danger"
             name="duplicate week"
             startIcon={<DuplicateIcon className="h-4 w-4" />}
             onClick={() => duplicateWeek(monthIndex, weekIndex)}
-          />
+          />): null }
           <DeleteConfirmation
             deleteFunction={() => deleteWeek(monthIndex, weekIndex)}
             name={'Week'}
@@ -145,13 +163,9 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
             reassignDayTypeIds={reassignDayTypeIds}
             months={months}
             updateMonths={updateMonths}
+            isSevenDays={isSevenDays}
           />
         ))}
-        <input
-          type="text"
-          placeholder="Rest Day Search Box"
-          className="border rounded px-2 py-1 mt-5 focus:outline-none"
-        />
       </div>
     </div>
   );

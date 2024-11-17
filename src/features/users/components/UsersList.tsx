@@ -1,15 +1,13 @@
-import { Table, Spinner } from '@/components/Elements';
+import { Table, Spinner, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { User, Filters } from '@/types';
 import { fetchUsers } from '../api';
 import { useQuery } from 'react-query';
 import { DeleteUser } from './DeleteUser';
-import { Link } from 'react-router-dom';
 import Pagination from '@/components/Elements/Pagination';
 import { useEffect, useState } from 'react';
-import useDebounce from '@/lib/useDebounce';
-import { SearchField } from '@/components/ui/SearchField';
 import { useFilteringStore } from '@/stores/filter';
+import { UserDetail } from '../UserDetail';
 
 export const UsersList = () => {
   const { data, isLoading, refetch } = useQuery('get-users', () => fetchUsers(filters));
@@ -38,6 +36,13 @@ export const UsersList = () => {
     setFilters((p) => ({ ...p, search: search }));
   }, [search]);
 
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      sortBy: sortBy?.value,
+    });
+  }, [sortBy]);
+
   if (isLoading) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -57,12 +62,8 @@ export const UsersList = () => {
         data={data.users}
         columns={[
           {
-            title: 'First Name',
-            field: 'firstname',
-          },
-          {
-            title: 'Last Name',
-            field: 'lastname',
+            title: 'Name',
+            field: 'name',
           },
           {
             title: 'Email',
@@ -72,11 +73,11 @@ export const UsersList = () => {
             title: 'Role',
             field: 'role',
             Cell({ entry: { role } }) {
-              return <span>{role === 2 ? 'Admin' : 'User'}</span>;
+              return <span>{role === 1 ? 'Admin' : 'User'}</span>;
             },
           },
           {
-            title: 'Created At',
+            title: 'Created On',
             field: 'createdAt',
             Cell({ entry: { createdAt } }) {
               return <span>{formatDate(createdAt)}</span>;
@@ -86,7 +87,7 @@ export const UsersList = () => {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <Link to={`./${_id}`}>View</Link>;
+              return <UserDetail id={_id} />;
             },
           },
           {

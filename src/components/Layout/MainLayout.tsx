@@ -1,106 +1,156 @@
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
-  QuestionMarkCircleIcon,
   UserIcon,
-  FolderIcon,
   HomeIcon,
-  TagIcon,
   MenuAlt1Icon,
   MenuAlt2Icon,
   MenuAlt3Icon,
   MenuAlt4Icon,
   UsersIcon,
   XIcon,
-  CollectionIcon,
-  CurrencyDollarIcon,
-  ClipboardListIcon,
 } from '@heroicons/react/outline';
 import clsx from 'clsx';
 import * as React from 'react';
-import { NavLink, Link } from 'react-router-dom';
-
-import { useAuth } from '@/lib/auth';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuthorization, ROLES } from '@/lib/authorization';
-import logo from '@/assets/bbb-logo.png';
 import { SearchField } from '../ui/SearchField';
 import { useEffect, useState } from 'react';
-import { Filters } from '@/types';
 import { useFilteringStore } from '@/stores/filter';
 import { useUserStore } from '@/stores/user';
 import ReactSelect from 'react-select';
 import reactSelectStylesConfig from '@/lib/react-select';
+import logo from '@/assets/bbb-logo.png';
+import { useAuthStore } from '@/stores/auth';
 
 type SideNavigationItem = {
-  name: string;
-  to: string;
+  title: string;
+  path: string;
   icon: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
+  submenu: [SideNavigationItem];
 };
 
 const SideNavigation = () => {
   const { checkAccess } = useAuthorization();
+  const [activeSubmenu, setActiveSubmenu] = useState('');
+
+
   const navigation = [
-    { name: 'Dashboard', to: '.', icon: HomeIcon },
-    // { name: 'Welcome Video', to: './intro', icon: HomeIcon },
+    { title: 'Dashboard', path: '.', icon: HomeIcon },
     checkAccess({ allowedRoles: [ROLES.ADMIN] }) && {
-      name: 'Users',
-      to: './users',
+      title: 'Users',
+      path: './users',
       icon: UsersIcon,
     },
-    // { name: 'Intake Quizzes', to: './quizzes', icon: QuestionMarkCircleIcon },
-    // { name: 'Tags', to: './tags', icon: TagIcon },
-    // { name: 'Categories', to: './categories', icon: ClipboardListIcon },
-    // { name: 'Collections', to: './collections', icon: CollectionIcon },
-    { name: 'Workouts', to: './workouts', icon: MenuAlt1Icon },
-    { name: 'Exercises', to: './exercises', icon: MenuAlt2Icon },
-    { name: 'Warm ups', to: './warmups', icon: MenuAlt3Icon },
-    { name: 'Equipment', to: './equipments', icon: MenuAlt4Icon },
-    { name: 'Rest Days', to: './restdays', icon: MenuAlt4Icon },
-    // { name: 'Shop Equipment', to: './equipment', icon: CurrencyDollarIcon },
+    { 
+      title: 'Modals', 
+      icon: MenuAlt1Icon, 
+      submenu: [
+        { title: 'Login Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
+        { title: 'Tutorial Video', path: './backgroundTutorials', icon: MenuAlt1Icon },
+      ],
+    },
+    
+    { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
+    { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
+    { title: 'Warm-up', path: './warmups', icon: MenuAlt3Icon },
+    { title: 'Equipment', path: './equipments', icon: MenuAlt4Icon },
+    { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
+    { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
   ].filter(Boolean) as SideNavigationItem[];
 
   return (
     <>
       {navigation.map((item, index) => (
-        <NavLink
-          end={index === 0}
-          key={item.name}
-          to={item.to}
-          className={({ isActive }) =>
-            clsx(
-              'text-gray-300 hover:bg-[#333] hover:text-white',
-              'group flex items-center px-2 py-2 text-base font-medium rounded-md',
-              { 'bg-[#333] text-white': isActive }
-            )
-          }
-        >
-          <item.icon
-            className={clsx(
-              'text-gray-400 group-hover:text-gray-300',
-              'mr-4 flex-shrink-0 h-6 w-6'
-            )}
-            aria-hidden="true"
-          />
-          {item.name}
-        </NavLink>
+        <div key={item.title}>
+          {!item.submenu ? (
+            <NavLink
+              end={index === 0}
+              key={item.title}
+              to={item.path}
+              className={({ isActive }) =>
+                clsx(
+                  'text-gray-300 hover:bg-[#333] hover:text-white',
+                  'group flex items-center px-2 py-2 text-base font-medium rounded-md',
+                  { 'bg-[#333] text-white': isActive }
+                )
+              }
+            >
+              <item.icon
+                className={clsx(
+                  'text-gray-400 group-hover:text-gray-300',
+                  'mr-4 flex-shrink-0 h-6 w-6'
+                )}
+                aria-hidden="true"
+              />
+              {item.title}
+            </NavLink>
+          ) : (
+            <>
+              <div
+                onClick={() =>
+                  setActiveSubmenu((prev) => (prev === item.title ? '' : item.title))
+                }
+                className={clsx(
+                  'text-gray-300 hover:bg-[#333] hover:text-white cursor-pointer',
+                  'group flex items-center px-2 py-2 text-base font-medium rounded-md'
+                )}
+              >
+                <item.icon
+                  className={clsx(
+                    'text-gray-400 group-hover:text-gray-300',
+                    'mr-4 flex-shrink-0 h-6 w-6'
+                  )}
+                  aria-hidden="true"
+                />
+                {item.title}
+                {/* <ChevronDownIcon className='relative right-0 h-4 w-4 '/> */}
+              </div>
+              {item?.submenu?.length && activeSubmenu === item.title ? (
+                <div className="relative flex flex-col pl-[32px]">
+                  {item.submenu.map((subItem) => (
+                    <NavLink
+                      key={subItem.path}
+                      to={subItem.path}
+                      className={({ isActive }) =>
+                        clsx('p-2 w-fit text-white', { 'font-semibold': isActive })
+                      }
+                    >
+                      {subItem.title}
+                    </NavLink>
+                  ))}
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
       ))}
     </>
   );
 };
 
+
 type UserNavigationItem = {
-  name: string;
-  to: string;
+  title: string;
+  path: string;
   onClick?: () => void;
 };
 
 const UserNavigation = () => {
-  const { signOut } = useAuth();
+  const { user, setIsLogged, setUser } = useAuthStore();
+  const signOut = () => {
+    //logout();
+    setIsLogged(false);
+    setUser(null);
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/';
+  };
 
   const userNavigation = [
-    { name: 'Your Profile', to: './profile' },
+    { title: 'Your Profile', path: './profile' },
     {
-      name: 'Sign out',
-      to: '/',
+      title: 'Sign out',
+      path: '/',
       onClick: () => {
         signOut();
       },
@@ -129,20 +179,20 @@ const UserNavigation = () => {
           >
             <Menu.Items
               static
-              className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+              className="origin-top-right z-30 absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
             >
               {userNavigation.map((item) => (
-                <Menu.Item key={item.name}>
+                <Menu.Item key={item.title}>
                   {({ active }) => (
                     <Link
                       onClick={item.onClick}
-                      to={item.to}
+                      to={item.path}
                       className={clsx(
                         active ? 'bg-gray-100' : '',
                         'block px-4 py-2 text-sm text-gray-700'
                       )}
                     >
-                      {item.name}
+                      {item.title}
                     </Link>
                   )}
                 </Menu.Item>
@@ -230,7 +280,7 @@ const Sidebar = () => {
   return (
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
-        <div className="flex flex-col h-0 flex-1">
+        <div className="flex flex-col h-0 flex-1 p-5 bg-[#0d0d0d]">
           <div className="flex items-center h-16 flex-shrink-0 px-4" style={{ backgroundColor: 'black' }} >
             <Logo />
           </div>
@@ -248,7 +298,7 @@ const Sidebar = () => {
 const Logo = () => {
   return (
     <Link className="flex items-center text-white m-5 w-24" to=".">
-      <img src={logo} alt="CSP logo" />
+      <img src={logo} alt="BBB logo" />
     </Link>
   );
 };
@@ -275,21 +325,14 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   };
 
   useEffect(() => {
-    console.log(currentPage);
-    console.log(`flex-1 px-4 flex items-center ${(
-      currentPage == "users" || 
-      currentPage == "workouts" || 
-      currentPage == "exercises" || 
-      currentPage == "warmups" || 
-      currentPage == "equipments" || 
-      currentPage == "restdays") ? "justify-between" : "justify-end"}`);
+
   }, [currentPage]);
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-100">
+    <div className="h-screen flex bg-gray-100">
       <MobileSidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <Sidebar />
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden">
         <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
           <button
             className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden"
@@ -303,14 +346,16 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                 currentPage == "exercises" || 
                 currentPage == "warmups" || 
                 currentPage == "equipments" || 
-                currentPage == "restdays") ? "justify-between" : "justify-end"}`}>
+                currentPage == "restdays" ||
+                currentPage == "categories") ? "justify-between" : "justify-end"}`}>
             {
               (
                 currentPage == "users" || 
                 currentPage == "exercises" || 
                 currentPage == "warmups" || 
                 currentPage == "equipments" || 
-                currentPage == "restdays"
+                currentPage == "restdays" ||
+                currentPage == "categories"
               ) &&
               <div className='flex-1 px-4 flex justify-start items-center'>
                 <div className='p-1'>

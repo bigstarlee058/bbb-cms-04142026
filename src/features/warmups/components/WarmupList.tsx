@@ -73,7 +73,7 @@ export const WarmupList = () => {
             field: 'description',
           },
           {
-            title: 'Equipments',
+            title: 'Equipment',
             field: 'equipments',
             Cell({ entry: { equipments } }) {
               if (!titles) return null; // Check if titles is defined
@@ -89,7 +89,7 @@ export const WarmupList = () => {
             field: 'vimeoId',
           },
           {
-            title: 'Created At',
+            title: 'Created On',
             field: 'createdAt',
             Cell({ entry: { createdAt } }) {
               return <span>{formatDate(createdAt)}</span>;

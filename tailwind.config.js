@@ -1,9 +1,6 @@
-const defaultTheme = require('tailwindcss/defaultTheme');
-
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  mode: 'jit',
-  purge: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  darkMode: false, // or 'media' or 'class'
+  content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
       textColor: {
@@ -56,12 +53,17 @@ module.exports = {
         sm: '21px',
       },
       fontFamily: {
-        sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+        roboto: ['Roboto', 'sans-serif'],
+        circular: ['Circular Std Black', 'sans-serif']
       },
+      margin: {
+        '25px': '25px',
+      },
+      height: {
+        '200px' : '200px',
+        '80px' : '80px',
+      }
     },
   },
-  variants: {
-    extend: {},
-  },
-  plugins: [require('@tailwindcss/typography')],
+  plugins: []
 };

@@ -1,14 +1,13 @@
 import { useNavigate } from 'react-router';
-
+import { useAuthStore } from '@/stores/auth';
 import cressey from '@/assets/bbb.jpg';
 import logo from '@/assets/bbb-logo.png';
 import { Button } from '@/components/Elements';
 import { Head } from '@/components/Head';
-import { useAuth } from '@/lib/auth';
 
 export const Landing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthStore();
 
   return (
     <>

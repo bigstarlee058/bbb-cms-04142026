@@ -2,8 +2,8 @@ import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
 import { Field, FormDrawer, Dropzone } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation, useQuery } from 'react-query';
-import { fetchEquipment, updateEquipment } from '../api';
+import { useMutation } from 'react-query';
+import {  updateEquipment } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createEquipmentSchema } from '@/utils/yup';
@@ -12,7 +12,7 @@ interface FormikState {
   title: string;
   description: string;
   link: string;
-  image: string;
+  image?: any;
   deleteImage: boolean;
 }
 
@@ -41,8 +41,9 @@ export const UpdateEquipment = ({ equipmentId, equipments }) => {
     validationSchema: createEquipmentSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (state: any) => {
-    mutate({ equipmentId, payload: state });
+  const onSubmit = (state: FormikState) => {
+    const { title, image, deleteImage, description, link } = state;
+    mutate({ equipmentId, title, description, link, image, deleteImage });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>

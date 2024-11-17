@@ -41,7 +41,6 @@ export const Dropzone = ({ defaultImg, label, formik, name, onDrop, onDelete, fi
     setPreview(URL.createObjectURL(file));
     onDrop(file);
   }, [file]);
-
   return (
     <div className="px-2 py-3">
       {/* <label className="fieldLabel">{label}</label> */}

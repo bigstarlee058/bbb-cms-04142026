@@ -17,7 +17,7 @@ export const Equipments = () => {
       <div className="flex justify-end">
         <CreateEquipment />
       </div>
-      <div className="mt-4">
+      <div className="mt-4 max-w-8xl">
         <EquipmentList />
       </div>
     </ContentLayout>

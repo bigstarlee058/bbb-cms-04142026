@@ -85,3 +85,9 @@ export const createQuizSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   level: Yup.string().max(255).required(),
 });
+
+export const updateScreensSchema = Yup.object().shape({
+  vimeo: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Image is required'),
+  description: Yup.string().max(255).required(),
+});

@@ -1,26 +1,21 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone } from '@/components/Form';
+import { Field, FormDrawer, Dropzone } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation, useQuery } from 'react-query';
-import { fetchCategory, updateCategory } from '../api';
+import { useMutation } from 'react-query';
+import { updateCategory } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createCategorySchema } from '@/utils/yup';
 
-type UpdateCategoryProps = {
-  categoryId: string;
-};
-
 interface FormikState {
   title: string;
+  image?: any;
   deleteImage: boolean;
-  image: any;
 }
 
-export const UpdateCategory = ({ categoryId }: UpdateCategoryProps) => {
+export const UpdateCategory = ({ categoryId, categories }) => {
   const { addNotification } = useNotificationStore();
-  const { data, refetch } = useQuery(['get-category', categoryId], () => fetchCategory(categoryId));
   const { mutate, isLoading, isSuccess } = useMutation(updateCategory, {
     onSuccess: (message: string) => {
       addNotification({
@@ -30,9 +25,11 @@ export const UpdateCategory = ({ categoryId }: UpdateCategoryProps) => {
     },
   });
 
+  const categoryData = categories.categories.find(ex => ex._id === categoryId);
+
   const initialValues: FormikState = {
-    title: data?.title || '',
-    image: data?.thumbnail,
+    title: categoryData?.title || '',
+    image: categoryData?.thumbnail || '',
     deleteImage: false,
   };
   const formik = useFormik({
@@ -40,22 +37,18 @@ export const UpdateCategory = ({ categoryId }: UpdateCategoryProps) => {
     validationSchema: createCategorySchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (state: any) => {
-    mutate({ categoryId, payload: state });
+  const onSubmit = (state: FormikState) => {
+    const { title, image, deleteImage } = state;
+    mutate({ categoryId, title, image, deleteImage });
   };
-
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
         isDone={isSuccess}
-        triggerButton={
-          <Button startIcon={<PencilIcon className="h-4 w-4" />} size="sm">
-            Update Category
-          </Button>
-        }
+        triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
         title="Update Category"
         submitButton={
-          <Button form="update-category" type="submit" size="sm" isLoading={isLoading}>
+          <Button form="update-category" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }
@@ -64,7 +57,7 @@ export const UpdateCategory = ({ categoryId }: UpdateCategoryProps) => {
           <Field label="Title" formik={formik} name="title" />
           <Dropzone
             label="Thumbnail"
-            name="image"
+            name="thumbnail"
             formik={formik}
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}

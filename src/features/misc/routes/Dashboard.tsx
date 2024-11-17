@@ -1,11 +1,10 @@
 import { ContentLayout } from '@/components/Layout';
-import { useAuth } from '@/lib/auth';
-import { ROLES } from '@/lib/authorization';
+import { useAuthStore }  from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import { useEffect } from 'react';
 
 export const Dashboard = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const { setCurrentPage } = useUserStore();
 
   useEffect(() => {
@@ -16,15 +15,15 @@ export const Dashboard = () => {
     <ContentLayout title="Dashboard">
       <h1 className="text-xl mt-2">Welcome {user?.email}</h1>
       <h4 className="my-3">
-        Your role is : <b>{user?.role}</b>
+        Your role is : <b>{user?.role == 1 ? "ADMIN":"USER"}</b>
       </h4>
       <p className="font-medium">Your current permissions:</p>
-      {user?.role === ROLES.USER && (
+      {user?.role === 0 && (
         <ul className="my-4 list-inside list-disc">
           <li>Tag management</li>
         </ul>
       )}
-      {user?.role === ROLES.ADMIN && (
+      {user?.role === 1 && (
         <ul className="my-4 list-inside list-disc">
           {/* <li>Intro Video management</li> */}
           <li>User management</li>

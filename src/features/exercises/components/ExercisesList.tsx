@@ -6,7 +6,7 @@ import { DeleteExercise } from './DeleteExercise';
 import { useEffect, useState } from 'react';
 import { EyeIcon } from '@heroicons/react/solid';
 import { UpdateExercise } from './UpdateExercise';
-import { fetchExerciseTitles } from '@/features/workouts/api';
+import { fetchCategoryTitles, fetchEquipmentTitles, fetchExerciseTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
@@ -22,10 +22,15 @@ export const ExercisesList = () => {
     isLoading,
     refetch,
   } = useQuery(['get-exercises'], () => fetchExercises(filters));
-  const { data: titles } = useQuery('get-exercise-titles', () =>
+  const { data: exerciseTitles } = useQuery('get-exercise-titles', () =>
     fetchExerciseTitles({ filterString: '' })
   );
-
+  const { data: equipmentTitles } = useQuery('get-equipment-titles', () =>
+    fetchEquipmentTitles({ filterString: '' })
+  );
+  const { data: categoryTitles } = useQuery('get-category-titles', () =>
+    fetchCategoryTitles({ filterString: '' })
+  );
   useEffect(() => {
     refetch();
   }, [filters]);
@@ -68,6 +73,16 @@ export const ExercisesList = () => {
             field: 'title',
           },
           {
+            title: 'Thumbnail',
+            field: 'thumbnail',
+            Cell({ entry: { thumbnail } }) {
+              return (
+              <div className="justify-center items-center">
+                <img className="h-24 object-contain" src={thumbnail} />
+              </div>);
+            },
+          },
+          {
             title: 'Description',
             field: 'description',
             Cell({ entry: { description } }) {
@@ -80,23 +95,26 @@ export const ExercisesList = () => {
             title: 'Categories',
             field: 'categories',
             Cell({ entry: { categories } }) {
-              return (
-                <p>
-                  {categories.map((category) => {
-                    return category + ' ';
-                  })}
-                </p>
-              );
+              if (!categoryTitles) return null; // Check if titles is defined
+              const filteredTitles = categoryTitles
+                .filter((title) => categories.includes(title.id))
+                .map((title) => title.title)
+                .join(', ');
+              return <span>{filteredTitles}</span>;
             },
           },
           {
-            title: 'Thumbnail',
-            field: 'thumbnail',
-            Cell({ entry: { thumbnail } }) {
-              return <img className="w-24" src={thumbnail} />;
+            title: 'Equipment',
+            field: 'usedEquipments',
+            Cell({ entry: { usedEquipments } }) {
+              if (!equipmentTitles) return null; // Check if titles is defined
+              const filteredTitles = equipmentTitles
+                .filter((title) => usedEquipments.includes(title.id))
+                .map((title) => title.title)
+                .join(', ');
+              return <span>{filteredTitles}</span>;
             },
           },
-
           {
             title: 'Vimeo',
             field: 'vimeoId',
@@ -105,7 +123,7 @@ export const ExercisesList = () => {
             },
           },
           {
-            title: '',
+            title: 'View',
             field: '_id',
             Cell({ entry: { _id } }) {
               return (
@@ -116,14 +134,14 @@ export const ExercisesList = () => {
             },
           },
           {
-            title: '',
+            title: 'Edit',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <UpdateExercise exerciseId={_id} exercises={exercises} titles={titles} />;
+              return <UpdateExercise exerciseId={_id} exercises={exercises} exTitles={exerciseTitles} eqTitles={equipmentTitles} caTitles={categoryTitles}/>;
             },
           },
           {
-            title: '',
+            title: 'Delete',
             field: '_id',
             Cell({ entry: { _id } }) {
               return <DeleteExercise exerciseId={_id} />;

@@ -1,6 +1,4 @@
 import { Equipment, EquipmentsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
-import { storage } from '@/utils/firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
@@ -39,18 +37,14 @@ export const createEquipment = async (payload: {
   image: File;
 }) => {
   try {
-    const storageRef = ref(
-      storage,
-      'equipment_thumbnails/' + Date.now() + '_' + payload.image.name
-    );
-    await uploadBytes(storageRef, payload.image);
-    const downloadURL = await getDownloadURL(storageRef);
-    const newEquipment = {
-      ...payload,
-      thumbnail: downloadURL,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.post('/equipments/admin', newEquipment)) as ResponseMessage;
+    const formData = new FormData();
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    formData.append('description', payload.description);
+    formData.append('link', payload.link);
+    // Post the new category data (including the image) to your backend
+    const result = (await axios.post('/equipments/admin', formData)) as ResponseMessage;
+    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       queryClient.invalidateQueries('get-equipments');
       return 'Equipment successfully created.';
@@ -61,38 +55,31 @@ export const createEquipment = async (payload: {
       status: true,
       message: err as string,
     };
+    console.log(error);
     return Promise.reject(error);
   }
 };
 
-export const updateEquipment = async ({
-  equipmentId,
-  payload,
-}: {
-  equipmentId: string;
-  payload: { title: string; description: string; link: string; image: File };
+export const updateEquipment = async (payload: {
+  equipmentId: string 
+  title: string;
+  description: string;
+  link: string;
+  image: File;  // Assuming the image comes as a File object from the client
+  deleteImage: Boolean
 }) => {
   try {
-    let downloadURL = undefined;
-    if (payload.image.name) {
-      const storageRef = ref(
-        storage,
-        'equipment_thumbnails/' + Date.now() + '_' + payload.image.name
-      );
-      await uploadBytes(storageRef, payload.image);
-      downloadURL = await getDownloadURL(storageRef);
-    }
-
-    const updatedEquipment = {
-      ...payload,
-      _id: equipmentId,
-      thumbnail: downloadURL,
-      updatedAt: Date.now(),
-    };
-    const result = (await axios.put('/equipments/admin', updatedEquipment)) as ResponseMessage;
+    const formData = new FormData();
+    formData.append('_id', payload.equipmentId);
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    formData.append('deleteImage', String(payload.deleteImage));
+    formData.append('description', payload.description);
+    formData.append('link', payload.link);
+    const result = (await axios.put('/equipments/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-equipments');
-      queryClient.invalidateQueries(['get-equipment', equipmentId]);
+      queryClient.invalidateQueries(['get-equipment', payload.equipmentId]);
       return 'Equipment successfully updated.';
     }
     return result.message;

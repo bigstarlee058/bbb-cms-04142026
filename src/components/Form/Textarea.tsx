@@ -17,10 +17,10 @@ export const Textarea = ({ label, formik, name, placeholder }: InputT) => {
 
   return (
     <div className={`form-group py-2 ${isInvalid ? 'invalid' : 'valid'}`}>
-      {/* {label && <label className="fieldLabel">{label}</label>} */}
+      {label && <label className="fieldLabel">{label}</label>}
       <textarea
         placeholder={placeholder}
-        className='rounded-lg h-[200px]'
+        className='rounded-lg h-[210px]'
         value={formik.values[name]}
         onChange={(e) => formik.setFieldValue(name, e.target.value)}
       />

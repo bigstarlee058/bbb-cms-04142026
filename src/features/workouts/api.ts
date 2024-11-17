@@ -1,12 +1,28 @@
-import { ErrorMessage, TitleFilters, ExerciseTitleResponse, EquipmentTitleResponse, WorkoutsResponse, Filters, WarmupTitleResponse } from '@/types';
+import { ErrorMessage, TitleFilters, TitleResponse, WorkoutsResponse, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { Month } from '@/types';
-import { storage } from '@/utils/firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
+
+interface UploadResponse {
+  success: boolean;
+  url: string[];
+}
 export const fetchExerciseTitles = async (filters: TitleFilters) => {
   try {
-    const result = await axios.get(`/exercises/admin/titlefilter`, { params: filters }) as ExerciseTitleResponse[];
+    const result = await axios.get(`/exercises/admin/titlefilter`, { params: filters }) as TitleResponse[];
+    return result;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string,
+    };
+    return Promise.reject(error);
+  }
+};
+
+export const fetchCategoryTitles = async (filters: TitleFilters) => {
+  try {
+    const result = await axios.get(`/categories/admin/titlefilter`, { params: filters }) as TitleResponse[];
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -19,7 +35,7 @@ export const fetchExerciseTitles = async (filters: TitleFilters) => {
 
 export const fetchEquipmentTitles = async (filters: TitleFilters) => {
   try {
-    const result = await axios.get(`/equipments/admin/titlefilter`, { params: filters }) as EquipmentTitleResponse[];
+    const result = await axios.get(`/equipments/admin/titlefilter`, { params: filters }) as TitleResponse[];
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -32,7 +48,20 @@ export const fetchEquipmentTitles = async (filters: TitleFilters) => {
 
 export const fetchWarmupTitles = async (filters: TitleFilters) => {
   try {
-    const result = await axios.get(`/warmups/admin/titlefilter`, { params: filters }) as WarmupTitleResponse[];
+    const result = await axios.get(`/warmups/admin/titlefilter`, { params: filters }) as TitleResponse[];
+    return result;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string,
+    };
+    return Promise.reject(error);
+  }
+};
+
+export const fetchRestdayTitles = async (filters: TitleFilters) => {
+  try {
+    const result = await axios.get(`/restdays/admin/titlefilter`, { params: filters }) as TitleResponse[];
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -69,63 +98,138 @@ export const fetchMonthById = async (id: string) => {
   }
 };
 
-const uploadImageAndGetURL = async (image: File): Promise<string> => {
+const uploadImagesAndGetURLs = async (images: (File | string | null)[]): Promise<string[]> => {
   try {
-    const storageRef = ref(storage, 'workout_thumbnails/' + image.name);
-    await uploadBytes(storageRef, image);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
+
+    // Check if there are any File objects in the images array
+    const hasFiles = images.some(image => image instanceof File);
+
+    // If no File objects, return the string URLs directly (ignoring null values)
+    if (!hasFiles) {
+      const downloadURLs = images.map(image => (typeof image === 'string' ? image : null)); // Keep existing strings, replace nulls with empty strings
+      console.log('No files to upload. Using existing URLs:', downloadURLs);
+      return downloadURLs;
+    }
+
+    // Otherwise, proceed to upload the files
+    const formData = new FormData();
+
+    // Append only valid File objects to the form data
+    images.forEach((image, index) => {
+      if (image instanceof File) {
+        formData.append(`file_${index}`, image);
+      }
+    });
+
+    // Upload files to the backend
+    const response = await axios.post<UploadResponse>('/workouts/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    // Log the full response to inspect its structure
+    console.log('Full Axios Response:', response);
+
+    // Safely access response.data.url, and ensure the response has the correct structure
+    const uploadedURLs: string[] = response.data.url // Safely handle undefined response.data
+    console.log('Uploaded URLs:', uploadedURLs);
+
+    if (!uploadedURLs.length) {
+      throw new Error('No URLs returned from the server');
+    }
+
+    // Reconstruct the original array by replacing files with their URLs and keeping strings/URLs as is
+    const downloadURLs = images.map((image, index) => {
+      if (image instanceof File) {
+        return uploadedURLs.shift() || ''; // Replace file with corresponding uploaded URL, default to empty string if undefined
+      } else if (typeof image === 'string') {
+        return image; // Keep existing URLs
+      } else {
+        return null; // Handle null cases or provide a placeholder
+      }
+    });
+
+    console.log('Final Download URLs:', downloadURLs);
+    return downloadURLs;
   } catch (err: any) {
-    throw new Error('Failed to upload image: ' + err.message);
+    console.error('Error uploading images:', err);
+    throw new Error('Failed to upload images: ' + err.message);
   }
 };
+
 
 export const updateWorkouts = async (months: Month[]) => {
   try {
     // Function to recursively collect all thumbnails
-    const collectThumbnails = (month: Month): Promise<string[]> => {
-      const thumbnails: File[] = [];
-      if (month.thumbnail instanceof File) {
+    const collectThumbnails = (month: Month): (File | string | null)[] => {
+      const thumbnails: (File | string | null)[] = [];
+    
+      // Check if month thumbnail is a File or a URL (string)
+      if (month.thumbnail instanceof File || typeof month.thumbnail === 'string') {
         thumbnails.push(month.thumbnail);
+      } else {
+        thumbnails.push(null); // Add null for invalid values
       }
+    
       month.weeks.forEach(week => {
-        if (week.thumbnail instanceof File) {
+        // Check if week thumbnail is a File or a URL (string)
+        if (week.thumbnail instanceof File || typeof week.thumbnail === 'string') {
           thumbnails.push(week.thumbnail);
+        } else {
+          thumbnails.push(null);
         }
+    
         week.days.forEach(day => {
-          if (day.thumbnail instanceof File) {
+          // Check if day thumbnail is a File or a URL (string)
+          if (day.thumbnail instanceof File || typeof day.thumbnail === 'string') {
             thumbnails.push(day.thumbnail);
+          } else {
+            thumbnails.push(null);
           }
         });
       });
-      return Promise.all(thumbnails.map(file => uploadImageAndGetURL(file)));
+    
+      return thumbnails;
+    };
+    
+    
+    
+
+    // Collect all the thumbnails from all months
+    let allThumbnails: (File | string | null)[] = [];
+
+    months.forEach(month => {
+      // Filter out any non-File (i.e., string or null) and concatenate valid File objects
+      allThumbnails = allThumbnails.concat(
+        collectThumbnails(month)
+      );
+    });
+        
+    // Upload all thumbnails in one request
+    const thumbnailURLs = await uploadImagesAndGetURLs(allThumbnails);
+    
+    // Process each month to update thumbnails with the received URLs
+    let urlIndex = 0;
+    const updateThumbnails = (item: any) => {
+      if (urlIndex < thumbnailURLs.length) {
+        item.thumbnail = thumbnailURLs[urlIndex];
+        urlIndex++;
+      }
+      if (item.weeks) {
+        item.weeks.forEach(week => updateThumbnails(week));
+      }
+      if (item.days) {
+        item.days.forEach(day => updateThumbnails(day));
+      }
     };
 
-    // Process each month to update thumbnails
-    const updatedMonths = await Promise.all(months.map(async (month) => {
-      const thumbnailURLs = await collectThumbnails(month);
-      
-      // Helper function to update thumbnails recursively
-      const updateThumbnails = (item: any, urls: string[]) => {
-        if (item.thumbnail instanceof File) {
-          item.thumbnail = urls.shift()!;
-        }
-        if (item.weeks) {
-          item.weeks.forEach(week => updateThumbnails(week, urls));
-        }
-        if (item.days) {
-          item.days.forEach(day => updateThumbnails(day, urls));
-        }
-      };
-
-      updateThumbnails(month, thumbnailURLs);
-
-      return month;
-    }));
+    months.forEach(month => updateThumbnails(month));
 
     // Submit the updated months with new thumbnail URLs
-    const response = await axios.put('/workouts/update', { months: updatedMonths });
-    return response;
+    console.log('Updated Months:', months);
+    const response = await axios.put('/workouts/update', { months }) as ResponseMessage;
+    return response.message;
   } catch (err: any) {
     const error: ErrorMessage = {
       status: true,
