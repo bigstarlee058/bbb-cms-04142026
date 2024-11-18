@@ -23,6 +23,7 @@ import logo from '@/assets/bbb-logo.png';
 import { useAuthStore } from '@/stores/auth';
 import { SaveConfirmation } from '@/features/workouts/components/custom/SaveConfirmation';
 import { useWorkoutContext } from '@/features/workouts/WorkoutContext';
+import MonthCoverButton from '@/features/workouts/components/custom/MonthCoverButton';
 
 type SideNavigationItem = {
   title: string;
@@ -360,7 +361,12 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               </div>
             )}
             <div className="ml-4 flex items-center md:ml-6">
-              {pathname.includes('workouts') && <SaveConfirmation allMonths={months} />}
+              {pathname.includes('workouts') && (
+                <>
+                  <MonthCoverButton />
+                  <SaveConfirmation allMonths={months} />
+                </>
+              )}
               <UserNavigation />
             </div>
           </div>

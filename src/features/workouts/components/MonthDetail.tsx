@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Month } from '@/types';
 import { DateRangePicker } from './custom';
 import Modal from 'react-modal';
+import { useMonthCoverContext } from '../MonthCoverContext';
+import { MONTH_DEFAULT_COVER } from '@/lib/global.constant';
 Modal.setAppElement('#root'); // Set root element for accessibility
 
 interface Props {
@@ -12,10 +14,18 @@ interface Props {
   updateMonth: (monthIndex: Number, updatedMonth: Month) => void;
 }
 
-export const MonthDetail = React.memo(({ monthIndex, month, updateMonth } : Props) => {
+export const MonthDetail = React.memo(({ monthIndex, month, updateMonth }: Props) => {
   const [showDatePickerModal, setShowDatePickerModal] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(month.startDate);
   const [endDate, setEndDate] = useState<Date | undefined>(month.endDate);
+
+  const { count } = useMonthCoverContext();
+
+  useEffect(() => {
+    if (count > 0) {
+      updateMonthDetail('thumbnail', MONTH_DEFAULT_COVER);
+    }
+  }, [count]);
 
   const updateMonthDates = (range) => {
     setStartDate(range.from);
@@ -27,7 +37,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth } : Prop
   const updateMonthDetail = (key, value) => {
     const updatedMonth = { ...month, [key]: value };
     updateMonth(monthIndex, updatedMonth);
-  }
+  };
   const handleChange = (key, value) => {
     updateMonthDetail(key, value);
   };
@@ -50,18 +60,37 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth } : Prop
         {/* <Textarea label="Description" name="description" value={month.description} onChange={handleChange}/> */}
         <Dropzone
           defaultImg={month.thumbnail}
-          onDrop={(img) => {handleChange('thumbnail', img)}}
-          onDelete={() => {handleChange('thumbnail', null)}}
+          onDrop={(img) => {
+            handleChange('thumbnail', img);
+          }}
+          onDelete={() => {
+            handleChange('thumbnail', null);
+          }}
           file={month.thumbnail}
         />
       </div>
       <div className="w-1/2 ml-4 mr-4">
-        <Field label="Vimeo Id" name="vimeoId" value={month.vimeoId} onChange={handleChange}/>
+        <Field label="Vimeo Id" name="vimeoId" value={month.vimeoId} onChange={handleChange} />
         <div className="flex flex-col mb-4">
-         <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-4">
-              <Field label="Start Date" name="startDate" value={startDate ? new Date(startDate).toLocaleDateString() : ''} onChange={handleChange} onClick={openDatePickerModal} readOnly/>
-              <Field label="End Date" name="endDate" disabled value={endDate ? new Date(endDate).toLocaleDateString() : ''} onChange={handleChange} onClick={openDatePickerModal} readOnly/>
+              <Field
+                label="Start Date"
+                name="startDate"
+                value={startDate ? new Date(startDate).toLocaleDateString() : ''}
+                onChange={handleChange}
+                onClick={openDatePickerModal}
+                readOnly
+              />
+              <Field
+                label="End Date"
+                name="endDate"
+                disabled
+                value={endDate ? new Date(endDate).toLocaleDateString() : ''}
+                onChange={handleChange}
+                onClick={openDatePickerModal}
+                readOnly
+              />
             </div>
           </div>
           <Modal
@@ -71,10 +100,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth } : Prop
             className="modal-content custom-modal-content"
             overlayClassName="modal-overlay"
           >
-            <DateRangePicker
-              onSelectRange={updateMonthDates}
-              hideDatePicker={closeDatePickerModal}
-            />
+            <DateRangePicker onSelectRange={updateMonthDates} hideDatePicker={closeDatePickerModal} />
           </Modal>
         </div>
       </div>
