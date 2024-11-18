@@ -31,7 +31,7 @@ export const SaveConfirmation = ({allMonths}) => {
       <ConfirmationDialog
         icon="danger"
         title={`Save Workouts`}
-        body={`Are you sure you want to save this workouts?`}
+        body={`Are you sure you want to save these workouts?`}
         isDone={isSuccess}
         triggerButton={
           <Button variant="danger" startIcon={<SaveIcon className="h-6 w-4" />}></Button>

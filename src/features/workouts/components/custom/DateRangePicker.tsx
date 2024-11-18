@@ -8,18 +8,22 @@ interface DateRangePickerProps {
   hideDatePicker: () => void;
 }
 
+const getToDate = (from: Date, toDays: number) => {
+  const to = new Date(from);
+  to.setDate(to.getDate() + toDays);
+  return to;
+}
+
 export const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSelectRange, hideDatePicker }) => {
-  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>(undefined);
+  const [selectedFrom, setSelectedFrom] = useState<Date | undefined>(undefined);
 
   const handleDayClick = (day: Date) => {
-    setSelectedRange((prev: DateRange | undefined) => {
-      const newRange = {
-        from: prev?.from ?? day,
-        to: day,
-      };
-      onSelectRange(newRange);
-      return newRange;
-    });
+    const newRange = {
+      from: day,
+      to: getToDate(day, 28),
+    };
+    onSelectRange(newRange);
+    setSelectedFrom(day)
   };
 
   const handleDoneClick = () => {
@@ -27,22 +31,20 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSelectRange,
   };
 
   const handleResetClick = () => {
-    setSelectedRange(undefined);
+    setSelectedFrom(undefined);
     onSelectRange({ from: undefined, to: undefined });
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'from' | 'to') => {
-    const date = new Date(e.target.value);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputDate = e.target.value as string;
+    const date = new Date(inputDate + 'T00:00:00');
     if (isNaN(date.getTime())) return;
-
-    setSelectedRange((prev) => {
-      const newRange = {
-        ...prev,
-        [field]: date,
-      };
-      onSelectRange(newRange as DateRange);
-      return newRange as DateRange;
-    });
+    setSelectedFrom(date)
+    const newRange = {
+      from: date,
+      to: getToDate(date, 28),
+    };
+    onSelectRange(newRange as DateRange);
   };
 
   return (
@@ -59,23 +61,17 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSelectRange,
             <input 
               type="date" 
               className="border border-gray-300 px-2 py-1 rounded-md" 
-              value={selectedRange?.from ? selectedRange.from.toISOString().split('T')[0] : ''} 
-              onChange={(e) => handleInputChange(e, 'from')} 
-            />
-            <input 
-              type="date" 
-              className="border border-gray-300 px-2 py-1 rounded-md" 
-              value={selectedRange?.to ? selectedRange.to.toISOString().split('T')[0] : ''} 
-              onChange={(e) => handleInputChange(e, 'to')} 
+              value={selectedFrom ? selectedFrom.toISOString().split('T')[0] : ''} 
+              onChange={handleInputChange} 
             />
           </div>
         </div>
       </div>
       <DayPicker
-        selected={selectedRange}
-        onDayClick={handleDayClick}
-        numberOfMonths={2}
-        mode="range"
+        selected={selectedFrom}
+        onSelect={handleDayClick}
+        numberOfMonths={1}
+        mode="single"
       />
       <div className="flex justify-end mt-2">
         <Button

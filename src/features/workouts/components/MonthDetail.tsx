@@ -61,7 +61,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth } : Prop
          <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-4">
               <Field label="Start Date" name="startDate" value={startDate ? new Date(startDate).toLocaleDateString() : ''} onChange={handleChange} onClick={openDatePickerModal} readOnly/>
-              <Field label="End Date" name="endDate" value={endDate ? new Date(endDate).toLocaleDateString() : ''} onChange={handleChange} onClick={openDatePickerModal} readOnly/>
+              <Field label="End Date" name="endDate" disabled value={endDate ? new Date(endDate).toLocaleDateString() : ''} onChange={handleChange} onClick={openDatePickerModal} readOnly/>
             </div>
           </div>
           <Modal
