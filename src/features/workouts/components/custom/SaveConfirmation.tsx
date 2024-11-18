@@ -1,9 +1,9 @@
 import { Button, ConfirmationDialog } from "@/components/Elements";
 import { Authorization, ROLES } from "@/lib/authorization";
-import { SaveIcon } from "@heroicons/react/outline";
 import { updateWorkouts } from '@/features/workouts/api';
 import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
+import SaveIcon from "@/lib/icons/SaveIcon";
 
 export const SaveConfirmation = ({allMonths}) => {
   // Access the client
@@ -34,7 +34,7 @@ export const SaveConfirmation = ({allMonths}) => {
         body={`Are you sure you want to save these workouts?`}
         isDone={isSuccess}
         triggerButton={
-          <Button variant="danger" startIcon={<SaveIcon className="h-6 w-4" />}></Button>
+          <Button variant="danger" startIcon={<SaveIcon className="mr-2" width="20" height="20" />}>Save</Button>
         }
         confirmButton={
           <Button

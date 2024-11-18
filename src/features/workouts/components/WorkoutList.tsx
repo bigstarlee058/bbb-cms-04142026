@@ -9,6 +9,7 @@ import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 import { Month } from '@/types';
 import { SaveConfirmation } from './custom/SaveConfirmation';
+import { useWorkoutContext } from '../WorkoutContext';
 
 export const WorkoutList = () => {
   const [months, setMonths] = useState([]);
@@ -20,25 +21,28 @@ export const WorkoutList = () => {
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState({
     perPage: 5,
-    page: 1,
+    page: 1
   });
 
+  const { onSetMonths } = useWorkoutContext();
+
   // Fetch workouts data from the server
-  const { data: workouts, isLoading, isError } = useQuery(
-    ['get-workouts', filters],
-    () => fetchWorkouts(filters),
-    {
-      onSuccess: (data) => {
-        const months = data.months?.sort((a, b) => a.index - b.index);
-        setAllMonths(months);
-        setLoadingMonths(false); // Data fetched, no longer loading
-      },
-      onError: (err) => {
-        console.error('Error fetching workouts:', err);
-        setLoadingMonths(false); // Ensure loading state is set to false even on error
-      },
+  const {
+    data: workouts,
+    isLoading,
+    isError
+  } = useQuery(['get-workouts', filters], () => fetchWorkouts(filters), {
+    onSuccess: (data) => {
+      const months = data.months?.sort((a, b) => a.index - b.index);
+      setAllMonths(months);
+      onSetMonths(months);
+      setLoadingMonths(false); // Data fetched, no longer loading
+    },
+    onError: (err) => {
+      console.error('Error fetching workouts:', err);
+      setLoadingMonths(false); // Ensure loading state is set to false even on error
     }
-  );
+  });
 
   useEffect(() => {
     if (allMonths.length) {
@@ -47,24 +51,27 @@ export const WorkoutList = () => {
       setMonths(paginatedMonths);
       const totalPages = Math.ceil((allMonths.length || 0) / (filters.perPage || 10));
       if (currentPage === totalPages + 1 && totalPages !== 0 && paginatedMonths.length === 0) {
-        setCurrentPage(prev => prev - 1);
+        setCurrentPage((prev) => prev - 1);
       }
     }
   }, [currentPage, allMonths]);
 
   // Handle adding a new month
   const handleAddMonth = () => {
-    const newMonth : Month = {
+    const newMonth: Month = {
       title: '',
       description: '',
       vimeoId: '',
       thumbnail: null,
       startDate: null,
       endDate: null,
-      
-      weeks: [],
+
+      weeks: []
     };
-    setAllMonths((prev) => [...prev, newMonth]);
+    setAllMonths((prev) => {
+      onSetMonths([...prev, newMonth]);
+      return [...prev, newMonth];
+    });
   };
 
   const scrollToMonth = useCallback((monthIndex) => {
@@ -72,16 +79,14 @@ export const WorkoutList = () => {
       const monthElement = workoutListRef.current.querySelector(`.month-${monthIndex}`);
       monthElement?.scrollIntoView({ behavior: 'smooth' });
     }
-  },[]);
+  }, []);
 
   const scrollToWeek = useCallback((monthIndex, weekIndex) => {
     if (workoutListRef.current) {
-      const weekElement = workoutListRef.current.querySelector(
-        `.month-${monthIndex} .week-${weekIndex}`
-      );
+      const weekElement = workoutListRef.current.querySelector(`.month-${monthIndex} .week-${weekIndex}`);
       weekElement?.scrollIntoView({ behavior: 'smooth' });
     }
-  },[]);
+  }, []);
 
   const scrollToDay = useCallback((monthIndex, weekIndex, dayIndex) => {
     if (workoutListRef.current) {
@@ -90,7 +95,7 @@ export const WorkoutList = () => {
       );
       dayElement?.scrollIntoView({ behavior: 'smooth' });
     }
-  },[]);
+  }, []);
 
   // const scrollToTop = () => {
   //   if (workoutListRef.current) {
@@ -126,17 +131,13 @@ export const WorkoutList = () => {
     <>
       <div className="flex justify-between sticky top-10">
         {allMonths.length < 1 ? (
-          <Button
-            variant="danger"
-            onClick={handleAddMonth}
-            startIcon={<PlusIcon className="h-4 w-4" />}
-          >
+          <Button variant="danger" onClick={handleAddMonth} startIcon={<PlusIcon className="h-4 w-4" />}>
             Add Month
           </Button>
         ) : (
           <span></span>
         )}
-        <SaveConfirmation allMonths={allMonths}/>
+        {/* <SaveConfirmation allMonths={allMonths}/> */}
       </div>
       {/* <div className="fixed bottom-4 right-4 flex flex-col gap-2">
         <Button
@@ -157,12 +158,15 @@ export const WorkoutList = () => {
               currentPage={currentPage}
               months={months}
               allMonths={allMonths}
-              setAllMonths={setAllMonths}
+              setAllMonths={(months) => {
+                setAllMonths(months);
+                onSetMonths(months);
+              }}
               onScrollToMonth={scrollToMonth}
               onScrollToWeek={scrollToWeek}
               onScrollToDay={scrollToDay}
             />
-          ): null}
+          ) : null}
         </div>
         <div className="w-4/5 ml-[25%] mr-[3%]" ref={workoutListRef}>
           {months.map((month, monthIndex) => (
@@ -173,7 +177,10 @@ export const WorkoutList = () => {
               months={allMonths}
               currentPage={currentPage}
               addMonth={handleAddMonth}
-              updateMonths={setAllMonths}
+              updateMonths={(months) => {
+                setAllMonths(months);
+                onSetMonths(months);
+              }}
             />
           ))}
         </div>

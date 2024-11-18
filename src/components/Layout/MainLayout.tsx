@@ -7,7 +7,7 @@ import {
   MenuAlt3Icon,
   MenuAlt4Icon,
   UsersIcon,
-  XIcon,
+  XIcon
 } from '@heroicons/react/outline';
 import clsx from 'clsx';
 import * as React from 'react';
@@ -21,6 +21,8 @@ import ReactSelect from 'react-select';
 import reactSelectStylesConfig from '@/lib/react-select';
 import logo from '@/assets/bbb-logo.png';
 import { useAuthStore } from '@/stores/auth';
+import { SaveConfirmation } from '@/features/workouts/components/custom/SaveConfirmation';
+import { useWorkoutContext } from '@/features/workouts/WorkoutContext';
 
 type SideNavigationItem = {
   title: string;
@@ -33,30 +35,29 @@ const SideNavigation = () => {
   const { checkAccess } = useAuthorization();
   const [activeSubmenu, setActiveSubmenu] = useState('');
 
-
   const navigation = [
     { title: 'Dashboard', path: '.', icon: HomeIcon },
     checkAccess({ allowedRoles: [ROLES.ADMIN] }) && {
       title: 'Users',
       path: './users',
-      icon: UsersIcon,
+      icon: UsersIcon
     },
-    { 
-      title: 'Modals', 
-      icon: MenuAlt1Icon, 
+    {
+      title: 'Modals',
+      icon: MenuAlt1Icon,
       submenu: [
         { title: 'Login Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
-        { title: 'Tutorial Video', path: './backgroundTutorials', icon: MenuAlt1Icon },
-      ],
+        { title: 'Tutorial Video', path: './backgroundTutorials', icon: MenuAlt1Icon }
+      ]
     },
-    
+
     { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
     { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
     { title: 'Warm-up', path: './warmups', icon: MenuAlt3Icon },
     { title: 'Equipment', path: './equipments', icon: MenuAlt4Icon },
     { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
-    { title: 'Team', path: './staffs', icon: MenuAlt4Icon },
+    { title: 'Team', path: './staffs', icon: MenuAlt4Icon }
   ].filter(Boolean) as SideNavigationItem[];
 
   return (
@@ -77,10 +78,7 @@ const SideNavigation = () => {
               }
             >
               <item.icon
-                className={clsx(
-                  'text-gray-400 group-hover:text-gray-300',
-                  'mr-4 flex-shrink-0 h-6 w-6'
-                )}
+                className={clsx('text-gray-400 group-hover:text-gray-300', 'mr-4 flex-shrink-0 h-6 w-6')}
                 aria-hidden="true"
               />
               {item.title}
@@ -88,19 +86,14 @@ const SideNavigation = () => {
           ) : (
             <>
               <div
-                onClick={() =>
-                  setActiveSubmenu((prev) => (prev === item.title ? '' : item.title))
-                }
+                onClick={() => setActiveSubmenu((prev) => (prev === item.title ? '' : item.title))}
                 className={clsx(
                   'text-gray-300 hover:bg-[#333] hover:text-white cursor-pointer',
                   'group flex items-center px-2 py-2 text-base font-medium rounded-md'
                 )}
               >
                 <item.icon
-                  className={clsx(
-                    'text-gray-400 group-hover:text-gray-300',
-                    'mr-4 flex-shrink-0 h-6 w-6'
-                  )}
+                  className={clsx('text-gray-400 group-hover:text-gray-300', 'mr-4 flex-shrink-0 h-6 w-6')}
                   aria-hidden="true"
                 />
                 {item.title}
@@ -112,9 +105,7 @@ const SideNavigation = () => {
                     <NavLink
                       key={subItem.path}
                       to={subItem.path}
-                      className={({ isActive }) =>
-                        clsx('p-2 w-fit text-white', { 'font-semibold': isActive })
-                      }
+                      className={({ isActive }) => clsx('p-2 w-fit text-white', { 'font-semibold': isActive })}
                     >
                       {subItem.title}
                     </NavLink>
@@ -128,7 +119,6 @@ const SideNavigation = () => {
     </>
   );
 };
-
 
 type UserNavigationItem = {
   title: string;
@@ -154,8 +144,8 @@ const UserNavigation = () => {
       path: '/',
       onClick: () => {
         signOut();
-      },
-    },
+      }
+    }
   ].filter(Boolean) as UserNavigationItem[];
 
   return (
@@ -188,10 +178,7 @@ const UserNavigation = () => {
                     <Link
                       onClick={item.onClick}
                       to={item.path}
-                      className={clsx(
-                        active ? 'bg-gray-100' : '',
-                        'block px-4 py-2 text-sm text-gray-700'
-                      )}
+                      className={clsx(active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm text-gray-700')}
                     >
                       {item.title}
                     </Link>
@@ -214,13 +201,7 @@ type MobileSidebarProps = {
 const MobileSidebar = ({ sidebarOpen, setSidebarOpen }: MobileSidebarProps) => {
   return (
     <Transition.Root show={sidebarOpen} as={React.Fragment}>
-      <Dialog
-        as="div"
-        static
-        className="fixed inset-0 flex z-40 md:hidden"
-        open={sidebarOpen}
-        onClose={setSidebarOpen}
-      >
+      <Dialog as="div" static className="fixed inset-0 flex z-40 md:hidden" open={sidebarOpen} onClose={setSidebarOpen}>
         <Transition.Child
           as={React.Fragment}
           enter="transition-opacity ease-linear duration-300"
@@ -282,7 +263,7 @@ const Sidebar = () => {
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
         <div className="flex flex-col h-0 flex-1 p-5 bg-[#0d0d0d]">
-          <div className="flex items-center h-16 flex-shrink-0 px-4" style={{ backgroundColor: 'black' }} >
+          <div className="flex items-center h-16 flex-shrink-0 px-4" style={{ backgroundColor: 'black' }}>
             <Logo />
           </div>
           <div className="flex-1 flex flex-col overflow-y-auto">
@@ -313,21 +294,22 @@ const SortOption = [
   { label: 'Name: A to Z', value: 'NameAtoZ' },
   { label: 'Name: Z to A', value: 'NameZtoA' },
   { label: 'Newest Added', value: 'NewestAdded' },
-  { label: 'Oldest Added', value: 'OldestAdded' },
+  { label: 'Oldest Added', value: 'OldestAdded' }
 ];
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  
+
   const { currentPage } = useUserStore();
   const { setSearchBoxValue, setSortByValue, sortBy } = useFilteringStore();
+  const { months } = useWorkoutContext();
+  const { pathname } = useLocation();
+
   const handleSortOptionChange = (val: any) => {
     setSortByValue(val.label, val.value);
   };
 
-  useEffect(() => {
-
-  }, [currentPage]);
+  useEffect(() => {}, [currentPage]);
 
   return (
     <div className="h-screen flex bg-gray-100">
@@ -342,27 +324,29 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <span className="sr-only">Open sidebar</span>
             <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
           </button>
-          <div className={`flex-1 px-4 flex items-center ${(
-                currentPage == "users" || 
-                currentPage == "exercises" || 
-                currentPage == "warmups" || 
-                currentPage == "equipments" || 
-                currentPage == "restdays" ||
-                currentPage == "categories") ? "justify-between" : "justify-end"}`}>
-            {
-              (
-                currentPage == "users" || 
-                currentPage == "exercises" || 
-                currentPage == "warmups" || 
-                currentPage == "equipments" || 
-                currentPage == "restdays" ||
-                currentPage == "categories"
-              ) &&
-              <div className='flex-1 px-4 flex justify-start items-center'>
-                <div className='p-1'>
+          <div
+            className={`flex-1 px-4 flex items-center ${
+              currentPage == 'users' ||
+              currentPage == 'exercises' ||
+              currentPage == 'warmups' ||
+              currentPage == 'equipments' ||
+              currentPage == 'restdays' ||
+              currentPage == 'categories'
+                ? 'justify-between'
+                : 'justify-end'
+            }`}
+          >
+            {(currentPage == 'users' ||
+              currentPage == 'exercises' ||
+              currentPage == 'warmups' ||
+              currentPage == 'equipments' ||
+              currentPage == 'restdays' ||
+              currentPage == 'categories') && (
+              <div className="flex-1 px-4 flex justify-start items-center">
+                <div className="p-1">
                   <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
                 </div>
-                <div className='p-4'>
+                <div className="p-4">
                   <ReactSelect
                     styles={reactSelectStylesConfig}
                     className="w-56 shrink hover:shrink-0 whitespace-nowrap"
@@ -374,8 +358,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                   />
                 </div>
               </div>
-            }
+            )}
             <div className="ml-4 flex items-center md:ml-6">
+              {pathname.includes('workouts') && <SaveConfirmation allMonths={months} />}
               <UserNavigation />
             </div>
           </div>

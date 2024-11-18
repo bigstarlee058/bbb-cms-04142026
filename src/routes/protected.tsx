@@ -5,6 +5,7 @@ import { lazyImport } from '@/utils/lazyImport';
 import { Navigate, Outlet } from 'react-router-dom';
 import { BackgroundScreens } from '@/features/screens/BackgroundScreens';
 import { BackgroundTutorials } from '@/features/tutorial/BackgroundTutorials';
+import { WorkoutContextProvider } from '@/features/workouts/WorkoutContext';
 
 const { Dashboard } = lazyImport(() => import('@/features/misc'), 'Dashboard');
 const { Profile } = lazyImport(() => import('@/features/users'), 'Profile');
@@ -21,17 +22,19 @@ const { StaffsRoutes } = lazyImport(() => import('@/features/staffs'), 'StaffsRo
 
 const ProtectedApp = () => {
   return (
-    <MainLayout>
-      <Suspense
-        fallback={
-          <div className="h-full w-full flex items-center justify-center">
-            <Spinner size="xl" />
-          </div>
-        }
-      >
-        <Outlet />
-      </Suspense>
-    </MainLayout>
+    <WorkoutContextProvider>
+      <MainLayout>
+        <Suspense
+          fallback={
+            <div className="h-full w-full flex items-center justify-center">
+              <Spinner size="xl" />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
+      </MainLayout>
+    </WorkoutContextProvider>
   );
 };
 
@@ -42,17 +45,13 @@ export const protectedRoutes = [
     children: [
       { path: '', element: <Dashboard /> },
       { path: 'profile', element: <Profile /> },
-      { 
-        element: <ScreensRoutes/>,
-        children: [
-          { path: 'backgroundScreens', element: <BackgroundScreens/>}
-        ]
+      {
+        element: <ScreensRoutes />,
+        children: [{ path: 'backgroundScreens', element: <BackgroundScreens /> }]
       },
-      { 
-        element: <TutorialsRoutes/>,
-        children: [
-          { path: 'backgroundTutorials', element: <BackgroundTutorials/>}
-        ]
+      {
+        element: <TutorialsRoutes />,
+        children: [{ path: 'backgroundTutorials', element: <BackgroundTutorials /> }]
       },
       { path: 'users/*', element: <UsersRoutes /> },
       { path: 'workouts/*', element: <WorkoutsRoutes /> },
@@ -62,7 +61,7 @@ export const protectedRoutes = [
       { path: 'restdays/*', element: <RestdayRoutes /> },
       { path: 'categories/*', element: <CategoriesRoutes /> },
       { path: 'staffs/*', element: <StaffsRoutes /> },
-      { path: '*', element: <Navigate to="/app" /> },
-    ],
-  },
+      { path: '*', element: <Navigate to="/app" /> }
+    ]
+  }
 ];

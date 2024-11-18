@@ -3,8 +3,8 @@ import { Month } from "@/types";
 
 // Define the context type
 interface WorkoutContextType {
-  originMonths: Month[];
-  setOriginMonths: React.Dispatch<React.SetStateAction<Month[]>>;
+  months: Month[];
+  onSetMonths: (months: Month[]) => void;
 }
 
 // Create the context with a default value
@@ -15,23 +15,25 @@ interface WorkoutProviderProps {
 }
 
 // Create the provider component
-const WorkoutProvider: React.FC<WorkoutProviderProps> = ({ children }) => {
-  const [originMonths, setOriginMonths] = useState<Month[]>([]);
+export const WorkoutContextProvider: React.FC<WorkoutProviderProps> = ({ children }) => {
+  const [months, setMonths] = useState<Month[]>([]);
+
+  const onSetMonths = (months: Month[]) => {
+    setMonths(months)
+  }
 
   return (
-    <WorkoutContext.Provider value={{ originMonths, setOriginMonths }}>
+    <WorkoutContext.Provider value={{ months, onSetMonths }}>
       {children}
     </WorkoutContext.Provider>
   );
 };
 
 // Custom hook to use the WorkoutContext
-const useWorkoutContext = (): WorkoutContextType => {
+export const useWorkoutContext = (): WorkoutContextType => {
   const context = React.useContext(WorkoutContext);
   if (!context) {
     throw new Error("useWorkoutContext must be used within a WorkoutProvider");
   }
   return context;
 };
-
-export { WorkoutContext, WorkoutProvider, useWorkoutContext };
