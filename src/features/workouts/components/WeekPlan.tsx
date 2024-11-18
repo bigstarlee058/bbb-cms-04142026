@@ -164,6 +164,7 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
             months={months}
             updateMonths={updateMonths}
             isSevenDays={isSevenDays}
+            isWeekCollapsed={isCollapsed}
           />
         ))}
       </div>

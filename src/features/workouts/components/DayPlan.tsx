@@ -4,7 +4,7 @@ import { CustomTitle } from './CustomTitle';
 import { DayDetail } from './DayDetail';
 import { Day, DayExercise, DayWarmup } from '@/types';
 import { ExercisePlan } from './ExercisePlan';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WarmupPlan } from './WarmupPlan';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
@@ -18,12 +18,17 @@ export const DayPlan = ({
   reassignDayTypeIds,
   months,
   updateMonths,
-  isSevenDays
+  isSevenDays,
+  isWeekCollapsed
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
 
   if (!months[monthIndex]?.weeks[weekIndex]?.days[dayIndex]) return null;
+
+  useEffect(() => {
+    if (isWeekCollapsed) setIsCollapsed(true)
+  }, [isWeekCollapsed])
 
   const addExercise = (
     monthIndex: number,
