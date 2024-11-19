@@ -270,16 +270,16 @@ export const ExercisePlan = ({
             {exercise.extra.map((extra: ExtraExercise, index: number) => (
               <div className="p-4 bg-teal-100 rounded shadow-md mt-4">
                 <div className="flex mb-2 justify-between items-center">
-                  <h2 className="text-md font-bold">EXTRA EXERCISE</h2>
+                  <h2 className="text-md font-bold">EXTRA SET</h2>
                   <div className="flex gap-3">
                     <DeleteConfirmation
                       deleteFunction={() => deleteExtraExercise(monthIndex, weekIndex, dayIndex, exerciseIndex, index)}
-                      name={'Extra Exercise'}
+                      name={'Extra Set'}
                     />
                   </div>
                 </div>
                 <Select
-                  label="Extra Exercise Type"
+                  label="Extra Set Type"
                   options={EXTRA_EXERCISE_OPTIONS}
                   value={{ label: `${extra.type === 1 ? 'Warm Up' : 'Back Set'}`, value: extra.type }}
                   className="w-[50%]"
