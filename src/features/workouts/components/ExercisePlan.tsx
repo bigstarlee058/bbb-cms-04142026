@@ -1,5 +1,5 @@
 import { Button } from '@/components/Elements';
-import { DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
+import { ChevronDownIcon, ChevronUpIcon, DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
 import { Select, Field, DeleteConfirmation } from './custom';
 import { useQuery } from 'react-query';
@@ -30,6 +30,7 @@ export const ExercisePlan = ({
   updateMonths
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const { data: titles, isLoading } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
 
@@ -218,116 +219,127 @@ export const ExercisePlan = ({
               deleteFunction={() => deleteExercise(monthIndex, weekIndex, dayIndex, exerciseIndex)}
               name={'Exercise'}
             />
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex">
-            <div className="flex items-center">
-              <label className="block mb-1 mr-4">Available in formats:</label>
-            </div>
-            <div className="flex gap-3 items-center">
-              {['A', 'B', 'C'].map((label, index) => (
-                <div
-                  key={index}
-                  onClick={() => !isDisabled(index) && handleCheckboxClick(index)}
-                  className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors 
-                  ${isDisabled(index) ? 'bg-gray-300 border-gray-400 cursor-not-allowed opacity-60' : ''}
-                  `}
-                  style={checkedStates[index] ? { backgroundColor: '#FFA89E' } : { backgroundColor: '#FFFFFF' }}
-                >
-                  <span className={`text-md font-medium ${checkedStates[index] ? 'text-white' : 'text-gray-800'}`}>
-                    {label}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <Select
-              label=""
-              options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
-              value={titles?.map((title) => {
-                if (title.id === exercise.exerciseId) return { label: title?.title || '', value: title.id };
-              })}
-              isLoading={isLoading}
-              onChange={(newValue: TitleResponse) => {
-                handleChange('exerciseId', newValue.id);
-              }}
+            <Button
+              variant="danger"
+              name="collapse"
+              startIcon={isCollapsed ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronUpIcon className="h-4 w-4" />}
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="ml-4"
             />
           </div>
         </div>
-        <div>
-          <Field label="Guideline" name="guide" value={exercise.guide} onChange={handleChange} />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <Field label="Sets" type="number" name="sets" value={exercise.sets} onChange={handleChange} />
-          <Field label="Reps" type="number" name="reps" value={exercise.reps} onChange={handleChange} />
-          <Field label="Weight" type="number" name="weight" value={exercise.weight} onChange={handleChange} />
-          <Field label="Rest" type="number" name="rest" value={exercise.rest} onChange={handleChange} />
-        </div>
-        {exercise?.extra?.length && exercise.extra.length > 0 ? (
-          <>
-            {exercise.extra.map((extra: ExtraExercise, index: number) => (
-              <div className="p-4 bg-teal-100 rounded shadow-md mt-4">
-                <div className="flex mb-2 justify-between items-center">
-                  <h2 className="text-md font-bold">EXTRA SET</h2>
-                  <div className="flex gap-3">
-                    <DeleteConfirmation
-                      deleteFunction={() => deleteExtraExercise(monthIndex, weekIndex, dayIndex, exerciseIndex, index)}
-                      name={'Extra Set'}
+        <div className={`collapse-content ${isCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex">
+              <div className="flex items-center">
+                <label className="block mb-1 mr-4">Available in formats:</label>
+              </div>
+              <div className="flex gap-3 items-center">
+                {['A', 'B', 'C'].map((label, index) => (
+                  <div
+                    key={index}
+                    onClick={() => !isDisabled(index) && handleCheckboxClick(index)}
+                    className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors 
+                  ${isDisabled(index) ? 'bg-gray-300 border-gray-400 cursor-not-allowed opacity-60' : ''}
+                  `}
+                    style={checkedStates[index] ? { backgroundColor: '#FFA89E' } : { backgroundColor: '#FFFFFF' }}
+                  >
+                    <span className={`text-md font-medium ${checkedStates[index] ? 'text-white' : 'text-gray-800'}`}>
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Select
+                label=""
+                options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
+                value={titles?.map((title) => {
+                  if (title.id === exercise.exerciseId) return { label: title?.title || '', value: title.id };
+                })}
+                isLoading={isLoading}
+                onChange={(newValue: TitleResponse) => {
+                  handleChange('exerciseId', newValue.id);
+                }}
+              />
+            </div>
+          </div>
+          <div>
+            <Field label="Guideline" name="guide" value={exercise.guide} onChange={handleChange} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Field label="Sets" type="number" name="sets" value={exercise.sets} onChange={handleChange} />
+            <Field label="Reps" type="number" name="reps" value={exercise.reps} onChange={handleChange} />
+            <Field label="Weight" type="number" name="weight" value={exercise.weight} onChange={handleChange} />
+            <Field label="Rest" type="number" name="rest" value={exercise.rest} onChange={handleChange} />
+          </div>
+          {exercise?.extra?.length && exercise.extra.length > 0 ? (
+            <>
+              {exercise.extra.map((extra: ExtraExercise, index: number) => (
+                <div className="p-4 bg-teal-100 rounded shadow-md mt-4">
+                  <div className="flex mb-2 justify-between items-center">
+                    <h2 className="text-md font-bold">EXTRA SET</h2>
+                    <div className="flex gap-3">
+                      <DeleteConfirmation
+                        deleteFunction={() =>
+                          deleteExtraExercise(monthIndex, weekIndex, dayIndex, exerciseIndex, index)
+                        }
+                        name={'Extra Set'}
+                      />
+                    </div>
+                  </div>
+                  <Select
+                    label="Extra Set Type"
+                    options={EXTRA_EXERCISE_OPTIONS}
+                    value={{ label: `${extra.type === 1 ? 'Warm Up' : 'Back Set'}`, value: extra.type }}
+                    className="w-[50%]"
+                    onChange={({ value }: SelectOption) => {
+                      updateExtraExerciseDetail(index, 'type', value);
+                    }}
+                  />
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Field
+                      label="Sets"
+                      type="number"
+                      name="sets"
+                      value={extra.sets}
+                      onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                    />
+                    <Field
+                      label="Reps"
+                      type="number"
+                      name="reps"
+                      value={extra.reps}
+                      onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                    />
+                    <Field
+                      label="Weight"
+                      type="number"
+                      name="weight"
+                      value={extra.weight}
+                      onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                    />
+                    <Field
+                      label="Rest"
+                      type="number"
+                      name="rest"
+                      value={extra.rest}
+                      onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
+                    />
+                    <Field
+                      label="Load"
+                      type="number"
+                      name="load"
+                      value={extra.load}
+                      onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
                     />
                   </div>
                 </div>
-                <Select
-                  label="Extra Set Type"
-                  options={EXTRA_EXERCISE_OPTIONS}
-                  value={{ label: `${extra.type === 1 ? 'Warm Up' : 'Back Set'}`, value: extra.type }}
-                  className="w-[50%]"
-                  onChange={({ value }: SelectOption) => {
-                    updateExtraExerciseDetail(index, 'type', value);
-                  }}
-                />
-                <div key={index} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <Field
-                    label="Sets"
-                    type="number"
-                    name="sets"
-                    value={extra.sets}
-                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
-                  />
-                  <Field
-                    label="Reps"
-                    type="number"
-                    name="reps"
-                    value={extra.reps}
-                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
-                  />
-                  <Field
-                    label="Weight"
-                    type="number"
-                    name="weight"
-                    value={extra.weight}
-                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
-                  />
-                  <Field
-                    label="Rest"
-                    type="number"
-                    name="rest"
-                    value={extra.rest}
-                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
-                  />
-                  <Field
-                    label="Load"
-                    type="number"
-                    name="load"
-                    value={extra.load}
-                    onChange={(key, value) => updateExtraExerciseDetail(index, key, value)}
-                  />
-                </div>
-              </div>
-            ))}
-          </>
-        ) : null}
+              ))}
+            </>
+          ) : null}
+        </div>
         <Button
           variant="danger"
           onClick={handleAddExtraExerciseClick}
