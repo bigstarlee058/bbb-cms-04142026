@@ -45,6 +45,7 @@ export const UserDetail = ({ id }: UserDetailProps) => {
       icon="info"
       name={data.name}
       email={data.email}
+      workoutsHistory={data.workoutsHistory}
       triggerButton={
         <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />}></Button>
       }
