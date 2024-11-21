@@ -88,6 +88,12 @@ export const createStaffSchema = Yup.object().shape({
   image: Yup.mixed().required('Photo is required'),
 });
 
+export const createChallengeSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  description: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Photo is required'),
+});
+
 export const createQuizSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   level: Yup.string().max(255).required(),

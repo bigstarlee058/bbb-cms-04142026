@@ -219,6 +219,17 @@ export interface StaffsResponse {
   staffs: Staff[];
 }
 
+export interface Challenge extends BaseEntity {
+  title: string;
+  photo: string;
+  description: string;
+  joinedUsers: User[];
+}
+export interface ChallengesResponse {
+  count: number;
+  challenges: Challenge[];
+}
+
 export type SelectOption = {
   label: string;
   value: string;
