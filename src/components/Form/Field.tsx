@@ -17,6 +17,7 @@ export const Field = ({ label, formik, name, ...rest }: InputT) => {
   const error = getFormikError({ formik, name });
   const isInvalid = hasError({ formik, name });
   const inputValue = getFormikValue({ formik, name });
+  const isChecked = getFormikValue({ formik, name });
 
   return (
     <div className={`form-group py-2 w-100 ${isInvalid ? 'invalid' : 'valid'} relative`}>
@@ -28,6 +29,7 @@ export const Field = ({ label, formik, name, ...rest }: InputT) => {
           name={name}
           onChange={formik.handleChange}
           value={inputValue}
+          checked={isChecked}
           {...rest}
           type={type}
         />

@@ -79,6 +79,16 @@ export const ChallengesList = () => {
             field: 'description',
           },
           {
+            title: 'Featured',
+            field: 'isFeatured',
+            Cell({ entry: { isFeatured } }) {
+              return (
+              <div className="justify-center items-center">
+                {isFeatured ? "Featured" : ""}
+              </div>);
+            },
+          },
+          {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {

@@ -223,6 +223,7 @@ export interface Challenge extends BaseEntity {
   title: string;
   photo: string;
   description: string;
+  isFeatured: boolean;
   joinedUsers: User[];
 }
 export interface ChallengesResponse {
