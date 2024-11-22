@@ -9,11 +9,15 @@ import _ from 'lodash';
 
 const EXTRA_EXERCISE_OPTIONS: SelectOption[] = [
   {
-    label: 'Warn Up',
+    label: 'Warm-up Set',
     value: '1'
   },
   {
-    label: 'Back Set',
+    label: 'Normal Set',
+    value: '3'
+  },
+  {
+    label: 'Back-off Set',
     value: '2'
   }
 ];
@@ -268,12 +272,12 @@ export const ExercisePlan = ({
           <div>
             <Field label="Guideline" name="guide" value={exercise.guide} onChange={handleChange} />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Field label="Sets" type="number" name="sets" value={exercise.sets} onChange={handleChange} />
             <Field label="Reps" type="number" name="reps" value={exercise.reps} onChange={handleChange} />
             <Field label="Weight" type="number" name="weight" value={exercise.weight} onChange={handleChange} />
             <Field label="Rest" type="number" name="rest" value={exercise.rest} onChange={handleChange} />
-          </div>
+          </div> */}
           {exercise?.extra?.length && exercise.extra.length > 0 ? (
             <>
               {exercise.extra.map((extra: ExtraExercise, index: number) => (
@@ -285,14 +289,17 @@ export const ExercisePlan = ({
                         deleteFunction={() =>
                           deleteExtraExercise(monthIndex, weekIndex, dayIndex, exerciseIndex, index)
                         }
-                        name={'Extra Set'}
+                        name={'Set'}
                       />
                     </div>
                   </div>
                   <Select
-                    label="Extra Set Type"
+                    label="Set Type"
                     options={EXTRA_EXERCISE_OPTIONS}
-                    value={{ label: `${extra.type === 1 ? 'Warm Up' : 'Back Set'}`, value: extra.type }}
+                    value={{
+                      label: `${extra.type == 1 ? 'Warm-up Set' : extra.type == 3 ? 'Normal Set' : 'Back-off Set'}`,
+                      value: extra.type
+                    }}
                     className="w-[50%]"
                     onChange={({ value }: SelectOption) => {
                       updateExtraExerciseDetail(index, 'type', value);
@@ -346,7 +353,7 @@ export const ExercisePlan = ({
           startIcon={<PlusIcon className="h-4 w-4" />}
           className="mt-4"
         >
-          Add Extra
+          Add Set
         </Button>
       </div>
       {exerciseIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].exercises.length - 1 ? (

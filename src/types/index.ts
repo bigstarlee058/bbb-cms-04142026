@@ -185,7 +185,7 @@ export interface ExtraExercise {
   weight: number;
   rest: number;
   load: number;
-  type: 1 | 2; // 1: Warm up, 2: Back set
+  type: 1 | 2 | 3; // 1: Warm-up set, 2: Back-off set, 3: Normal set
 }
 export interface DayExercise extends WorkoutsBaseEntity {
   typeId: number;
