@@ -49,7 +49,6 @@ export const createCollection = async (payload: {
   image: File;
 }) => {
   try {
-    console.log('title', payload.title);
     const formData = new FormData();
     formData.append('title', payload.title);
     formData.append('image', payload.image);

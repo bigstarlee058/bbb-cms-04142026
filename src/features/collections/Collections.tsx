@@ -9,7 +9,7 @@ export const Collections = () => {
   const { setCurrentPage } = useUserStore();
 
   useEffect(() => {
-    setCurrentPage("equipments");
+    setCurrentPage("collections");
   }, []);
 
   return (

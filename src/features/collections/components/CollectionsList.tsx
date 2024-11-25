@@ -85,7 +85,18 @@ export const CollectionsList = () => {
             Cell({ entry: { createdAt } }) {
               return <span>{formatDate(createdAt)}</span>;
             },
-          },          
+          },
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return (
+                <Link to={`./${_id}`}>
+                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
+                </Link>
+              );
+            },
+          },
           {
             title: '',
             field: '_id',

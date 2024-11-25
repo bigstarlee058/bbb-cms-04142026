@@ -9,19 +9,19 @@ import { formatDate } from '@/utils/format';
 import { fetchCollection } from './api';
 
 export const CollectionDetail = () => {
-  const { equipmentId } = useParams();
+  const { collectionId } = useParams();
   const { addNotification } = useNotificationStore();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery(
-    ['get-equipment', equipmentId],
-    () => fetchCollection(equipmentId),
+    ['get-collection', collectionId],
+    () => fetchCollection(collectionId),
     {
       onError: (err: ErrorMessage) => {
         addNotification({
           type: 'success',
           title: err.message,
         });
-        navigate('/app/equipments');
+        navigate('/app/collections');
       },
     }
   );
@@ -45,9 +45,9 @@ export const CollectionDetail = () => {
                 <div className="flex gap-3">
                   <div>
                     <img src={data.thumbnail} />
-                    <a target="_blank" rel="noreferrer">
+                    {/* <a target="_blank" rel="noreferrer">
                       Visit Product
-                    </a>
+                    </a> */}
                   </div>
                 </div>
                 <p className="font-bold">Description</p>
