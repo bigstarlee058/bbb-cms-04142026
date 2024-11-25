@@ -8,6 +8,7 @@ import { DeleteEquipment } from './DeleteEquipment';
 import { EyeIcon } from '@heroicons/react/outline';
 import { UpdateEquipment } from './UpdateEquipment';
 import { useFilteringStore } from '@/stores/filter';
+import { fetchCollectionTitles } from '@/features/workouts/api';
 import Pagination from '@/components/Elements/Pagination';
 
 export const EquipmentList = () => {
@@ -24,6 +25,9 @@ export const EquipmentList = () => {
     refetch,
   } = useQuery(['get-equipments'], () => fetchEquipments(filters));
 
+  const { data: titles } = useQuery('get-collection-titles', () =>
+    fetchCollectionTitles({ filterString: '' })
+  );
   useEffect(() => {
     refetch();
   }, [filters]);
@@ -111,7 +115,7 @@ export const EquipmentList = () => {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <UpdateEquipment equipmentId={_id} equipments={equipmentData} />;
+              return <UpdateEquipment equipmentId={_id} equipments={equipmentData} titles={titles} />;
             },
           },
           {

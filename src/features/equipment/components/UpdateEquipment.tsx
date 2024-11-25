@@ -1,6 +1,6 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, FormDrawer, Dropzone } from '@/components/Form';
+import { Field, FormDrawer, Dropzone, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation } from 'react-query';
 import {  updateEquipment } from '../api';
@@ -14,9 +14,10 @@ interface FormikState {
   link: string;
   image?: any;
   deleteImage: boolean;
+  collections: string[],
 }
 
-export const UpdateEquipment = ({ equipmentId, equipments }) => {
+export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(updateEquipment, {
     onSuccess: (message: string) => {
@@ -28,6 +29,7 @@ export const UpdateEquipment = ({ equipmentId, equipments }) => {
   });
 
   const equipmentData = equipments.equipments.find(ex => ex._id === equipmentId);
+  const collectionTitles = titles || [];
 
   const initialValues: FormikState = {
     title: equipmentData?.title || '',
@@ -35,6 +37,7 @@ export const UpdateEquipment = ({ equipmentId, equipments }) => {
     link: equipmentData?.link || '',
     image: equipmentData?.thumbnail || '',
     deleteImage: false,
+    collections: equipmentData?.collections || [],
   };
   const formik = useFormik({
     initialValues,
@@ -42,8 +45,8 @@ export const UpdateEquipment = ({ equipmentId, equipments }) => {
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, deleteImage, description, link } = state;
-    mutate({ equipmentId, title, description, link, image, deleteImage });
+    const { title, image, deleteImage, description, link, collections } = state;
+    mutate({ equipmentId, title, description, link, image, deleteImage, collections });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -68,6 +71,23 @@ export const UpdateEquipment = ({ equipmentId, equipments }) => {
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Select
+            isMulti
+            formik={formik}
+            label="Related Collection"
+            name="relatedCollections"
+            options={collectionTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={formik.values.collections.map((id) => {
+              const exercise = collectionTitles?.find((exercise) => exercise._id === id);
+              return { label: exercise?.title || '', value: id };
+            })}
+            onChange={(value: any) =>
+              formik.setFieldValue(
+                'collections',
+                value.map((v: any) => v.value)
+              )
+            }
           />
         </form>
       </FormDrawer>

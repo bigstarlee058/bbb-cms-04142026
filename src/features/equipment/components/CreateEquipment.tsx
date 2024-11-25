@@ -5,7 +5,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createEquipmentSchema } from '@/utils/yup';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { Button } from '@/components/Elements';
-import { FormDrawer } from '@/components/Form';
+import { FormDrawer, Select } from '@/components/Form';
 import { Field, Dropzone } from '@/components/Form';
 import { createEquipment } from '../api';
 
@@ -15,9 +15,10 @@ interface FormikState {
   link: string;
   image: any;
   deleteImage: boolean;
+  collections: string[];
 }
 
-export const CreateEquipment = () => {
+export const CreateEquipment = ({titles}) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createEquipment, {
     onSuccess: (message: string) => {
@@ -29,12 +30,15 @@ export const CreateEquipment = () => {
     },
   });
 
+  const collectionTitles = titles || [];
+
   const initialValues: FormikState = {
     title: '',
     description: '',
     link: '',
     image: '',
     deleteImage: false,
+    collections: [],
   };
   const formik = useFormik({
     initialValues,
@@ -71,6 +75,23 @@ export const CreateEquipment = () => {
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Select
+            isMulti
+            formik={formik}
+            label="Related Collection"
+            name="relatedCollections"
+            options={collectionTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={formik.values.collections.map((id) => {
+              const exercise = collectionTitles?.find((exercise) => exercise._id === id);
+              return { label: exercise?.title || '', value: id };
+            })}
+            onChange={(value: any) =>
+              formik.setFieldValue(
+                'collections',
+                value.map((v: any) => v.value)
+              )
+            }
           />
         </form>
       </FormDrawer>
