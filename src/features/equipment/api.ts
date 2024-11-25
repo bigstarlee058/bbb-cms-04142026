@@ -35,6 +35,7 @@ export const createEquipment = async (payload: {
   description: string;
   link: string;
   image: File;
+  collections: [],
 }) => {
   try {
     const formData = new FormData();
@@ -42,6 +43,7 @@ export const createEquipment = async (payload: {
     formData.append('image', payload.image);
     formData.append('description', payload.description);
     formData.append('link', payload.link);
+    formData.append('collections', JSON.stringify(payload.collections));
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/equipments/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
@@ -66,7 +68,8 @@ export const updateEquipment = async (payload: {
   description: string;
   link: string;
   image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: Boolean
+  deleteImage: Boolean,
+  collections: String[],
 }) => {
   try {
     const formData = new FormData();
@@ -76,6 +79,7 @@ export const updateEquipment = async (payload: {
     formData.append('deleteImage', String(payload.deleteImage));
     formData.append('description', payload.description);
     formData.append('link', payload.link);
+    formData.append('collections', JSON.stringify(payload.collections));
     const result = (await axios.put('/equipments/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-equipments');

@@ -73,6 +73,7 @@ export const createUserSchema = Yup.object().shape({
 
 export const createCollectionSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
+  description: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
 

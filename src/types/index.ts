@@ -22,12 +22,15 @@ export interface TagPayload {
 export interface Collection extends BaseEntity {
   title: string;
   thumbnail: string;
-  tags: Tag[];
+  description: string;
+}
+export interface CollectionsResponse {
+  count: number;
+  collections: Collection[];
 }
 export interface CollectionPayload {
-  title: string;
-  thumbnail: string;
-  tags: string[];
+  count: number;
+  collections: Collection[];
 }
 export interface Quiz extends BaseEntity {
   title: string;
