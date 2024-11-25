@@ -1,12 +1,10 @@
-import { Collection, ErrorMessage, ResponseMessage } from '@/types';
-import { storage } from '@/utils/firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { Collection, CollectionsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
 export const fetchAllCollections = async (): Promise<Collection[]> => {
   try {
-    const collections = (await axios.get('/collections/all')) as Collection[];
+    const collections = (await axios.get('/collections/admin/get')) as Collection[];
     return collections;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -17,10 +15,12 @@ export const fetchAllCollections = async (): Promise<Collection[]> => {
   }
 };
 
-export const fetchCollections = async (): Promise<Collection[]> => {
+export const fetchCollections = async (filters: Filters) => {
   try {
-    const collections = (await axios.get('/collections')) as Collection[];
-    return collections;
+    const result = (await axios.get(`/collections/admin/get`, {
+      params: filters,
+    })) as CollectionsResponse;
+    return result;
   } catch (err: any) {
     const error: ErrorMessage = {
       status: true,
@@ -32,7 +32,7 @@ export const fetchCollections = async (): Promise<Collection[]> => {
 
 export const fetchCollection = async (collectionId: string) => {
   try {
-    const result = (await axios.get(`/collections/${collectionId}`)) as Collection;
+    const result = (await axios.get(`/collections/admin/get/${collectionId}`)) as Collection;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -43,20 +43,20 @@ export const fetchCollection = async (collectionId: string) => {
   }
 };
 
-export const createCollection = async (payload: { title: string; image: File }) => {
+export const createCollection = async (payload: {
+  title: string;
+  description: string;
+  image: File;
+}) => {
   try {
-    const storageRef = ref(
-      storage,
-      'collection_thumbnails/' + Date.now() + '_' + payload.image.name
-    );
-    await uploadBytes(storageRef, payload.image);
-    const downloadURL = await getDownloadURL(storageRef);
-    const newCollection = {
-      ...payload,
-      thumbnail: downloadURL,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.post('/collections', newCollection)) as ResponseMessage;
+    console.log('title', payload.title);
+    const formData = new FormData();
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    formData.append('description', payload.description);
+    // Post the new category data (including the image) to your backend
+    const result = (await axios.post('/collections/admin', formData)) as ResponseMessage;
+    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       queryClient.invalidateQueries('get-collections');
       return 'Collection successfully created.';
@@ -67,34 +67,29 @@ export const createCollection = async (payload: { title: string; image: File }) 
       status: true,
       message: err as string,
     };
+    console.log(error);
     return Promise.reject(error);
   }
 };
 
-export const updateCollection = async ({
-  collectionId,
-  payload,
-}: {
-  collectionId: string;
-  payload: { title: string; image: File };
+export const updateCollection = async (payload: {
+  collectionId: string 
+  title: string;
+  description: string;
+  image: File;  // Assuming the image comes as a File object from the client
+  deleteImage: Boolean
 }) => {
   try {
-    let downloadURL = undefined;
-    if (payload.image.name) {
-      const storageRef = ref(storage, 'collection_thumbnails/' + payload.image.name);
-      await uploadBytes(storageRef, payload.image);
-      downloadURL = await getDownloadURL(storageRef);
-    }
-
-    const updatedCollection = {
-      ...payload,
-      _id: collectionId,
-      thumbnail: downloadURL,
-      updatedAt: Date.now(),
-    };
-    const result = (await axios.put('/collections', updatedCollection)) as ResponseMessage;
+    const formData = new FormData();
+    formData.append('_id', payload.collectionId);
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    formData.append('deleteImage', String(payload.deleteImage));
+    formData.append('description', payload.description);
+    const result = (await axios.put('/collections/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries(['get-collection', collectionId]);
+      queryClient.invalidateQueries('get-collections');
+      queryClient.invalidateQueries(['get-collection', payload.collectionId]);
       return 'Collection successfully updated.';
     }
     return result.message;
@@ -109,7 +104,7 @@ export const updateCollection = async ({
 
 export const deleteCollection = async (collectionId: string) => {
   try {
-    const result = (await axios.delete(`/collections/${collectionId}`)) as ResponseMessage;
+    const result = (await axios.delete(`/collections/admin/${collectionId}`)) as ResponseMessage;
     if (result.result === true) {
       return 'Successfully deleted.';
     }

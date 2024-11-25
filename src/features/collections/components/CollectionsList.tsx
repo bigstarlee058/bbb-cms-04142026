@@ -1,12 +1,50 @@
-import { Table, Spinner, Link } from '@/components/Elements';
+import { useEffect, useState } from 'react';
+import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { useQuery } from 'react-query';
-import { fetchAllCollections } from '../api';
-import { Collection } from '@/types';
+import { fetchCollections } from '../api';
+import { Collection, Filters } from '@/types';
 import { DeleteCollection } from './DeleteCollection';
+import { EyeIcon } from '@heroicons/react/outline';
+import { UpdateCollection } from './UpdateCollection';
+import { useFilteringStore } from '@/stores/filter';
+import Pagination from '@/components/Elements/Pagination';
 
 export const CollectionsList = () => {
-  const { data, isLoading } = useQuery('get-collections', fetchAllCollections);
+  const [currentPage, setCurrentPage] = useState(1);
+  const { search, sortBy } = useFilteringStore();
+  const [filters, setFilters] = useState<Filters>({
+    perPage: 10,
+    page: 1,
+  });
+
+  const {
+    data: collectionData,
+    isLoading,
+    refetch,
+  } = useQuery(['get-collections'], () => fetchCollections(filters));
+
+  useEffect(() => {
+    refetch();
+  }, [filters]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      page: currentPage,
+    });
+  }, [currentPage]);
+
+  useEffect(() => {
+    setFilters((p) => ({ ...p, search: search }));
+  }, [search]);
+
+  useEffect(() => {
+    setFilters({
+      ...filters,
+      sortBy: sortBy?.value,
+    });
+  }, [sortBy]);
 
   if (isLoading) {
     return (
@@ -16,52 +54,62 @@ export const CollectionsList = () => {
     );
   }
 
-  if (!data) return null;
+  if (!collectionData) return null;
 
   return (
-    <Table<Collection>
-      data={data}
-      columns={[
-        {
-          title: 'Title',
-          field: 'title',
-        },
-        {
-          title: 'Thumbnail',
-          field: 'thumbnail',
-          Cell({ entry: { thumbnail } }) {
-            return <img className="w-24" src={thumbnail} alt="Thumbnail" />;
+    <>
+      <Table<Collection>
+        data={collectionData.collections}
+        columns={[
+          {
+            title: 'Title',
+            field: 'title',
           },
-        },
-        {
-          title: 'Tags',
-          field: 'tags',
-          Cell({ entry: { tags } }) {
-            return <span>{tags.length}</span>;
+          {
+            title: 'Thumbnail',
+            field: 'thumbnail',
+            Cell({ entry: { thumbnail } }) {
+              return (
+              <div className="justify-center items-center">
+                <img className="h-24 object-contain" src={thumbnail} />
+              </div>);
+            },
           },
-        },
-        {
-          title: 'Created At',
-          field: 'createdAt',
-          Cell({ entry: { createdAt } }) {
-            return <span>{formatDate(createdAt)}</span>;
+          {
+            title: 'Description',
+            field: 'description',
+          },          
+          {
+            title: 'Created On',
+            field: 'createdAt',
+            Cell({ entry: { createdAt } }) {
+              return <span>{formatDate(createdAt)}</span>;
+            },
+          },          
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <UpdateCollection collectionId={_id} collections={collectionData} />;
+            },
           },
-        },
-        {
-          title: '',
-          field: '_id',
-          Cell({ entry: { _id } }) {
-            return <Link to={`./${_id}`}>View</Link>;
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return <DeleteCollection collectionId={_id} />;
+            },
           },
-        },
-        {
-          title: '',
-          field: '_id',
-          Cell({ entry: { _id } }) {
-            return <DeleteCollection collectionId={_id} />;
-          },
-        },
-      ]}
-    />
+        ]}
+      />
+      <div className="flex justify-center mt-6">
+        <Pagination
+          currentPage={currentPage}
+          lastPage={Math.ceil(collectionData.count / (filters?.perPage || 10))}
+          maxLength={7}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
+    </>
   );
 };
