@@ -68,8 +68,8 @@ export const updateEquipment = async (payload: {
   description: string;
   link: string;
   image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: Boolean,
-  collections: String[],
+  deleteImage: boolean,
+  collections: string[],
 }) => {
   try {
     const formData = new FormData();
