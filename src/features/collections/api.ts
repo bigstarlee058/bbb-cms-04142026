@@ -47,12 +47,14 @@ export const createCollection = async (payload: {
   title: string;
   description: string;
   image: File;
+  isFeatured: boolean;
 }) => {
   try {
     const formData = new FormData();
     formData.append('title', payload.title);
     formData.append('image', payload.image);
     formData.append('description', payload.description);
+    formData.append('isFeatured', String(payload.isFeatured));
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/collections/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
@@ -76,7 +78,8 @@ export const updateCollection = async (payload: {
   title: string;
   description: string;
   image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: Boolean
+  deleteImage: boolean;
+  isFeatured: boolean;
 }) => {
   try {
     const formData = new FormData();
@@ -85,6 +88,7 @@ export const updateCollection = async (payload: {
     formData.append('image', payload.image);
     formData.append('deleteImage', String(payload.deleteImage));
     formData.append('description', payload.description);
+    formData.append('isFeatured', String(payload.isFeatured));
     const result = (await axios.put('/collections/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-collections');
