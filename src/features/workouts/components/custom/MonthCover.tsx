@@ -5,6 +5,7 @@ import { useMutation } from 'react-query';
 
 import { Dropzone } from '@/components/Form';
 import { createSettingsSchema } from '@/utils/yup';
+import { useRef } from 'react';
 
 interface FormikState {
   deleteImage: boolean;
@@ -14,6 +15,8 @@ interface FormikState {
 export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
   const { mutate, isSuccess } = useMutation(onSetMonthCover);
 
+  const formRef = useRef<HTMLFormElement | null>(null);
+
   const initialValues: FormikState = {
     image: initialMonthCover || '',
     deleteImage: false
@@ -21,11 +24,13 @@ export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
   const formik = useFormik({
     initialValues,
     validationSchema: createSettingsSchema,
-    onSubmit: (v) => onSubmit(v)
+    onSubmit: (v) =>{ 
+      onSubmit(v)}
   });
+
   const onSubmit = (value: any) => {
     mutate(value);
-  };
+  };  
 
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -33,14 +38,17 @@ export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
         icon="info"
         title="Default Month Cover"
         body={
-          <form onSubmit={formik.handleSubmit}>
+          <form ref={formRef} onSubmit={(e)=> {
+            e.preventDefault();
+            formik.handleSubmit(e)}}
+            >
             <Dropzone
               name="image"
               formik={formik}
               defaultImg={formik.values.image}
               onDrop={(img) => formik.setFieldValue('image', img)}
               onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-            />
+            />           
           </form>
         }
         isDone={isSuccess}
@@ -53,7 +61,11 @@ export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
           <Button
             variant="danger"
             type="button"
-            onClick={onSubmit}
+            onClick={() => {
+              if (formRef) {
+                formRef.current.requestSubmit();
+              }
+            }}
           >
             Save
           </Button>
