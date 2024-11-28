@@ -45,9 +45,6 @@ export const BonusDetail = () => {
                 <div className="flex gap-3">
                   <div>
                     <img src={data.thumbnail} />
-                    {/* <a target="_blank" rel="noreferrer">
-                      Visit Product
-                    </a> */}
                   </div>
                 </div>
                 <p className="font-bold">Description</p>
