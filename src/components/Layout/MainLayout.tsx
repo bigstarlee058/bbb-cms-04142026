@@ -319,6 +319,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     try {
       const result = await axios.get(`/settings/admin/get`);
       console.log('fetchSetting', result);
+      setMonthCover(result[0].monthCover)
       return result;
     } catch (err: any) {
       const error: ErrorMessage = {
@@ -336,7 +337,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       formData.append('image', payload.image);
 
       const result = (await axios.post('/settings/admin', formData)) as ResponseMessage;
-
+      fetchSetting();
       return result.message;
     } catch (err: any) {
       const error: ErrorMessage = {
