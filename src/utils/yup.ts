@@ -77,6 +77,12 @@ export const createCollectionSchema = Yup.object().shape({
   image: Yup.mixed().required('Thumbnail is required'),
 });
 
+export const createBonusSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  description: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Thumbnail is required'),
+});
+
 export const createCategorySchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),

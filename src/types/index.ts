@@ -32,6 +32,19 @@ export interface CollectionPayload {
   count: number;
   collections: Collection[];
 }
+export interface Bonus extends BaseEntity {
+  title: string;
+  thumbnail: string;
+  description: string;
+}
+export interface BonusesResponse {
+  count: number;
+  bonuses: Bonus[];
+}
+export interface BonusPayload {
+  count: number;
+  bonuses: Bonus[];
+}
 export interface Quiz extends BaseEntity {
   title: string;
   level: number;
