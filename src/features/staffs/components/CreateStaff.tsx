@@ -13,6 +13,7 @@ import { SelectOption } from '@/types';
 
 interface FormikState {
   title: string;
+  location: string;
   type: number;
   bio: string;
   deleteImage: boolean;
@@ -43,6 +44,7 @@ export const CreateStaff = () => {
   });
   const initialValues: FormikState = {
     title: '',
+    location:'',
     image: '',
     type: 0,
     bio: '',
@@ -74,7 +76,8 @@ export const CreateStaff = () => {
         }
       >
         <form id="create-staff" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <Field label="Name" formik={formik} name="title" />
+          <Field label="Location" formik={formik} name="location" />
           <Textarea label="Bio" formik={formik} name="bio" />
           <Dropzone
             label="Photo"

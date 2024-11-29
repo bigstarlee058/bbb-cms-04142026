@@ -65,6 +65,10 @@ export const StaffsList = () => {
             field: 'title',
           },
           {
+            title: 'Location',
+            field: 'location',
+          },
+          {
             title: 'Photo',
             field: 'photo',
             Cell({ entry: { photo } }) {

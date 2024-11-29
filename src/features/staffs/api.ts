@@ -32,6 +32,7 @@ export const fetchStaff = async (staffId: string) => {
 
 export const createStaff = async (payload: {
   title: string;
+  location: string;
   image: File;  // Assuming the image comes as a File object from the client
   type: number;
   bio: string
@@ -39,6 +40,7 @@ export const createStaff = async (payload: {
   try {
     const formData = new FormData();
     formData.append('title', payload.title);
+    formData.append('location', payload.location);
     formData.append('image', payload.image);
     formData.append('type', payload.type.toString());
     formData.append('bio', payload.bio);
@@ -64,6 +66,7 @@ export const createStaff = async (payload: {
 export const updateStaff = async (payload: {
   staffId: string 
   title: string;
+  location: string;
   image: File;  // Assuming the image comes as a File object from the client
   type: number;
   bio: string;
@@ -73,6 +76,7 @@ export const updateStaff = async (payload: {
     const formData = new FormData();
     formData.append('_id', payload.staffId);
     formData.append('title', payload.title);
+    formData.append('location', payload.location);
     formData.append('image', payload.image);
     formData.append('type', payload.type.toString());
     formData.append('bio', payload.bio);

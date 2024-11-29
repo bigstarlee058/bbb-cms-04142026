@@ -225,6 +225,7 @@ export interface DayWarmup extends WorkoutsBaseEntity {
 
 export interface Staff extends BaseEntity {
   title: string;
+  location: string;
   photo: string;
   type: number;
   bio: string;
