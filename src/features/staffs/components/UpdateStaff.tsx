@@ -11,6 +11,7 @@ import { SelectOption } from '@/types';
 
 interface FormikState {
   title: string;
+  location: string;
   type: number;
   bio: string;
   image?: any;
@@ -44,6 +45,7 @@ export const UpdateStaff = ({ staffId, staffs }) => {
 
   const initialValues: FormikState = {
     title: staffData?.title || '',
+    location: staffData?.location || '',
     type: staffData?.type || 0,
     bio: staffData?.bio || '',
     image: staffData?.photo || '',
@@ -55,9 +57,9 @@ export const UpdateStaff = ({ staffId, staffs }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, type, bio, deleteImage } = state;
+    const { title, location, image, type, bio, deleteImage } = state;
     console.log("sumit")
-    mutate({ staffId, title, image, type, bio, deleteImage });
+    mutate({ staffId, title, location, image, type, bio, deleteImage });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -72,7 +74,8 @@ export const UpdateStaff = ({ staffId, staffs }) => {
         }
       >
         <form id="update-staff" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <Field label="Name" formik={formik} name="title" />
+          <Field label="Location" formik={formik} name="location" />
           <Textarea label="Bio" formik={formik} name="bio" />
           <Dropzone
             label="Photo"
