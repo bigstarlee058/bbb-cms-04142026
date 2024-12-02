@@ -283,7 +283,7 @@ export const ExercisePlan = ({
               {exercise.extra.map((extra: ExtraExercise, index: number) => (
                 <div className="p-4 bg-teal-100 rounded shadow-md mt-4">
                   <div className="flex mb-2 justify-between items-center">
-                    <h2 className="text-md font-bold">EXTRA SET</h2>
+                    <h2 className="text-md font-bold">SET</h2>
                     <div className="flex gap-3">
                       <DeleteConfirmation
                         deleteFunction={() =>
