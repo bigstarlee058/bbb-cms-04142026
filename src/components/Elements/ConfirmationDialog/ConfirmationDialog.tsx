@@ -8,8 +8,9 @@ import { useDisclosure } from '@/hooks/useDisclosure';
 export type ConfirmationDialogProps = {
   triggerButton: React.ReactElement;
   confirmButton: React.ReactElement;
+  secondaryButton?: React.ReactElement;
   title: string;
-  body?: string;
+  body?: string | React.ReactElement;
   cancelButtonText?: string;
   icon?: 'danger' | 'info';
   isDone?: boolean;
@@ -18,6 +19,7 @@ export type ConfirmationDialogProps = {
 export const ConfirmationDialog = ({
   triggerButton,
   confirmButton,
+  secondaryButton,
   title,
   body = '',
   cancelButtonText = 'Cancel',
@@ -75,6 +77,7 @@ export const ConfirmationDialog = ({
             >
               {cancelButtonText}
             </Button>
+            {secondaryButton && secondaryButton}
             {confirmButton}
           </div>
         </div>

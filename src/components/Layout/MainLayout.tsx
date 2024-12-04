@@ -23,7 +23,9 @@ import logo from '@/assets/bbb-logo.png';
 import { useAuthStore } from '@/stores/auth';
 import { SaveConfirmation } from '@/features/workouts/components/custom/SaveConfirmation';
 import { useWorkoutContext } from '@/features/workouts/WorkoutContext';
-import MonthCoverButton from '@/features/workouts/components/custom/MonthCoverButton';
+import { MonthCover } from '@/features/workouts/components/custom/MonthCover';
+import { axios } from '@/lib/axios';
+import { ErrorMessage, ResponseMessage } from '@/types';
 
 type SideNavigationItem = {
   title: string;
@@ -303,6 +305,7 @@ const SortOption = [
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [monthCover, setMonthCover] = React.useState('');
 
   const { currentPage } = useUserStore();
   const { setSearchBoxValue, setSortByValue, sortBy } = useFilteringStore();
@@ -313,7 +316,42 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     setSortByValue(val.label, val.value);
   };
 
+  const fetchSetting = async () => {
+    try {
+      const result = await axios.get(`/settings/admin/get`);
+      setMonthCover(result[0].monthCover)
+      return result;
+    } catch (err: any) {
+      const error: ErrorMessage = {
+        status: true,
+        message: err as string
+      };
+      return Promise.reject(error);
+    }
+  };
+
+  const onSetMonthCover = async (payload: { image: File }) => {
+    try {
+      const formData = new FormData();
+      formData.append('image', payload.image);
+
+      const result = (await axios.post('/settings/admin', formData)) as ResponseMessage;
+      fetchSetting();
+      return result.message;
+    } catch (err: any) {
+      const error: ErrorMessage = {
+        status: true,
+        message: err as string
+      };
+      console.log(error);
+      return Promise.reject(error);
+    }
+  };
+
   useEffect(() => {}, [currentPage]);
+  useEffect(() => {
+    fetchSetting();
+  }, []);
 
   return (
     <div className="h-screen flex bg-gray-100">
@@ -366,7 +404,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <div className="ml-4 flex items-center md:ml-6">
               {pathname.includes('workouts') && (
                 <>
-                  <MonthCoverButton />
+                  <MonthCover initialMonthCover={monthCover} onSetMonthCover={onSetMonthCover} />
                   <SaveConfirmation allMonths={months} />
                 </>
               )}

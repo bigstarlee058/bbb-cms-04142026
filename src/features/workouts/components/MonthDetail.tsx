@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { Month } from '@/types';
 import { DateRangePicker } from './custom';
 import Modal from 'react-modal';
+
+import { axios } from '@/lib/axios';
 import { useMonthCoverContext } from '../MonthCoverContext';
-import { MONTH_DEFAULT_COVER } from '@/lib/global.constant';
 Modal.setAppElement('#root'); // Set root element for accessibility
 
 interface Props {
@@ -23,7 +24,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth }: Props
 
   useEffect(() => {
     if (count > 0) {
-      updateMonthDetail('thumbnail', MONTH_DEFAULT_COVER);
+      axios.get(`/settings/admin/get`).then((result) => updateMonthDetail('thumbnail', result[0].monthCover));
     }
   }, [count]);
 
