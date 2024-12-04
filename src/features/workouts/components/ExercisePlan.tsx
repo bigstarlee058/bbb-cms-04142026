@@ -281,7 +281,7 @@ export const ExercisePlan = ({
           {exercise?.extra?.length && exercise.extra.length > 0 ? (
             <>
               {exercise.extra.map((extra: ExtraExercise, index: number) => (
-                <div className="p-4 bg-teal-100 rounded shadow-md mt-4">
+                <div key={index} className="p-4 bg-teal-100 rounded shadow-md mt-4">
                   <div className="flex mb-2 justify-between items-center">
                     <h2 className="text-md font-bold">EXTRA SET</h2>
                     <div className="flex gap-3">

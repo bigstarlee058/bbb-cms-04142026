@@ -6,6 +6,7 @@ import { useMutation } from 'react-query';
 import { Dropzone } from '@/components/Form';
 import { createSettingsSchema } from '@/utils/yup';
 import { useRef } from 'react';
+import { useMonthCoverContext } from '../../MonthCoverContext';
 
 interface FormikState {
   deleteImage: boolean;
@@ -14,6 +15,7 @@ interface FormikState {
 
 export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
   const { mutate, isSuccess } = useMutation(onSetMonthCover);
+  const { onSetCount } = useMonthCoverContext();
 
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -61,6 +63,7 @@ export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
           <Button
             variant="danger"
             type="button"
+            disabled={!formik.values.image}
             onClick={() => {
               if (formRef) {
                 formRef.current.requestSubmit();
@@ -68,6 +71,21 @@ export const MonthCover = ({ initialMonthCover, onSetMonthCover }) => {
             }}
           >
             Save
+          </Button>
+        }
+        secondaryButton={
+          <Button
+            variant="primary"
+            type="button"
+            disabled={!formik.values.image}
+            onClick={() => {
+              if (formRef) {
+                onSetCount();
+                formRef.current.requestSubmit();
+              }
+            }}
+          >
+            Apply
           </Button>
         }
       />
