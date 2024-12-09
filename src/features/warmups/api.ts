@@ -30,11 +30,15 @@ export const fetchWarmup = async (warmupId: string) => {
 
 export const createWarmup = async (payload) => {
   try {
-    const newWarmup = {
-      ...payload,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.post('/warmups/admin', newWarmup)) as ResponseMessage;
+    const formData = new FormData();
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    formData.append('description', payload.description);
+    formData.append('vimeoId', payload.vimeoId);
+    formData.append('equipments', JSON.stringify(payload.equipments));
+    formData.append('length', payload.length);
+    // Post the new category data (including the image) to your backend
+    const result = (await axios.post('/warmups/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-warmups');
       return 'Warmup successfully created.';
@@ -51,12 +55,15 @@ export const createWarmup = async (payload) => {
 
 export const updateWarmup = async ({ warmupId, payload }) => {
   try {
-    const updatedWarmup = {
-      ...payload,
-      _id: warmupId,
-      updatedAt: Date.now(),
-    };
-    const result = (await axios.put('/warmups/admin', updatedWarmup)) as ResponseMessage;
+    const formData = new FormData();
+      formData.append('_id', warmupId);
+      formData.append('title', payload.title);
+      formData.append('image', payload.image);
+      formData.append('description', payload.description);
+      formData.append('vimeoId', payload.vimeoId);
+      formData.append('length', payload.length);
+      formData.append('equipments', JSON.stringify(payload.equipments));
+      const result = (await axios.put('/warmups/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-warmups');
       queryClient.invalidateQueries(['get-warmup', warmupId]);

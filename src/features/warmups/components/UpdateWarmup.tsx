@@ -14,6 +14,9 @@ interface FormikState {
   vimeoId: string;
   description: string;
   equipments: string[];
+  length: number;
+  image: any;
+  deleteImage: boolean;
 }
 
 export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
@@ -35,6 +38,9 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
     vimeoId: warmupData?.vimeoId || '',
     description: warmupData?.description || '',
     equipments: warmupData?.equipments || [],
+    length: warmupData?.length || 0,
+    image: warmupData?.thumbnail,
+    deleteImage: false,
   };
   const formik = useFormik({
     initialValues,
@@ -78,6 +84,15 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
                 value.map((v: any) => v.value)
               )
             }
+          />
+          <Field label="Length (min)" formik={formik} name="length" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
         </form>
       </FormDrawer>

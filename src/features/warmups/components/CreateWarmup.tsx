@@ -5,7 +5,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createWarmupSchema } from '@/utils/yup';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Select } from '@/components/Form';
+import { Dropzone, FormDrawer, Select } from '@/components/Form';
 import { Field } from '@/components/Form';
 import { createWarmup } from '../api';
 import { Textarea } from '@/components/Form';
@@ -15,6 +15,9 @@ interface FormikState {
   vimeoId: string;
   description: string;
   equipments: string[];
+  length: number;
+  image: any;
+  deleteImage: boolean;
 }
 
 export const CreateWarmUp = ({titles}) => {
@@ -36,6 +39,10 @@ export const CreateWarmUp = ({titles}) => {
     vimeoId: '',
     description: '',
     equipments: [],
+    length: 0,
+    image: '',
+    deleteImage: false,
+
   };
   const formik = useFormik({
     initialValues,
@@ -82,7 +89,15 @@ export const CreateWarmUp = ({titles}) => {
               )
             }
           />
-          {/* <Field label="Equipment" formik={formik} name="equipment" /> */}
+          <Field label="Length (min)" formik={formik} name="length" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
         </form>
       </FormDrawer>
     </Authorization>

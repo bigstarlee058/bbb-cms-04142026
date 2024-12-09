@@ -89,6 +89,8 @@ export interface Warmup extends BaseEntity {
   vimeoId: string;
   description: string;
   equipments: string[];
+  thumbnail: string;
+  length: number;
 }
 export interface UserWorkout extends BaseEntity {
   workoutId: string;

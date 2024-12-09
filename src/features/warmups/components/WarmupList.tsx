@@ -69,6 +69,20 @@ export const WarmupList = () => {
             field: 'title',
           },
           {
+            title: 'Thumbnail',
+            field: 'thumbnail',
+            Cell({ entry: { thumbnail } }) {
+              return (
+              <div className="justify-center items-center">
+                <img className="h-24 object-contain" src={thumbnail} />
+              </div>);
+            },
+          },
+          {
+            title: 'Length (min)',
+            field: 'length',
+          },
+          {
             title: 'Description',
             field: 'description',
           },
