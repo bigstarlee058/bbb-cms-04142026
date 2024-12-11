@@ -14,6 +14,7 @@ type InputT = Props & React.InputHTMLAttributes<HTMLInputElement>;
 export const Textarea = ({ label, formik, name, placeholder }: InputT) => {
   const error = getFormikError({ formik, name });
   const isInvalid = hasError({ formik, name });
+  const fieldValue = formik.getFieldProps(name).value;
 
   return (
     <div className={`form-group py-2 ${isInvalid ? 'invalid' : 'valid'}`}>
@@ -21,7 +22,7 @@ export const Textarea = ({ label, formik, name, placeholder }: InputT) => {
       <textarea
         placeholder={placeholder}
         className='rounded-lg h-[210px]'
-        value={formik.values[name]}
+        value={fieldValue || ''}
         onChange={(e) => formik.setFieldValue(name, e.target.value)}
       />
       {isInvalid && <p className="text-xs text-danger mt-1">{error}</p>}

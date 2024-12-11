@@ -38,21 +38,28 @@ export const BackgroundScreens = () => {
           <UpdateScreens screenData={data} />
         </div>
       </div>
-      <ContentLayout title="Login Screen 1 Background Video">
+      <ContentLayout title="Welcome Page Background Video">
         <div className="mt-6 flex flex-col space-y-16">
           <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-hidden sm:rounded-lg">
             <Vimeo className="h-full w-full" video={data.vimeoId} autoplay={false} />
           </div>
         </div>
       </ContentLayout>
-      <ContentLayout title="Login Screen 1 Welcome Note">
+      <ContentLayout title="Welcome Page Welcome Note">
         <div className="mt-6 flex flex-col space-y-16">
-          <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-hidden sm:rounded-lg">
-            {data.description}
+          <div className="flex flex-wrap items-center px-4 py-5 sm:px-6 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            {data.slides.map(({ title, description }, index) => (
+              <div key={index} className="w-full sm:w-1/2 md:w-1/3 p-4">
+                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <h3 className="text-md font-semibold text-gray-800 mb-2">{title}</h3>
+                  <p className="text-gray-600">{description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </ContentLayout>
-      <ContentLayout title="Login Screen 2 Background Picture">
+      <ContentLayout title="Log in Screen Background Picture">
         <div className="mt-6 flex flex-col space-y-16">
           <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-hidden sm:rounded-lg">
             <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imgUrl} alt="Thumbnail" />

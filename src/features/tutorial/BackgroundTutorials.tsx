@@ -49,7 +49,8 @@ export const BackgroundTutorials = () => {
       <ContentLayout title="Login Screen 1 Welcome Note">
         <div className="mt-6 flex flex-col space-y-16">
           <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-hidden sm:rounded-lg">
-            {data.description}
+            {/* {data.description} */}
+            description
           </div>
         </div>
       </ContentLayout>
