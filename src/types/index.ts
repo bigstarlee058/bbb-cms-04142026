@@ -254,3 +254,13 @@ export type SelectOption = {
   label: string;
   value: string;
 }
+
+export interface Section extends BaseEntity {
+  title: string;
+  description: string;
+  vimeoId: string;
+}
+export interface SectionsResponse {
+  count: number;
+  sections: Section[];
+}

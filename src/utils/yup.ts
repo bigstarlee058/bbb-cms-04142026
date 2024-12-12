@@ -116,3 +116,8 @@ export const updateScreensSchema = Yup.object().shape({
 export const createSettingsSchema = Yup.object().shape({
   image: Yup.mixed().required('Image is required'),
 });
+
+export const createSectionSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  description: Yup.string().max(255).required(),
+});
