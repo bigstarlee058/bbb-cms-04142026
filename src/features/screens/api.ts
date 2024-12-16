@@ -19,12 +19,15 @@ export const updateScreens = async (payload : {
   vimeo: string,
   image: File,
   deleteImage: boolean,
-  description: string
+  slides: {
+    title: string,
+    description: string
+  }[]
 }) => {
   try {
     const formData = new FormData();
     formData.append('vimeoId', payload.vimeo);
-    formData.append('description', payload.description);
+    formData.append('slides', JSON.stringify(payload.slides));
     if (payload.image) {
       formData.append('image', payload.image);
     }

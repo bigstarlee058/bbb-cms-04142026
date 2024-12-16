@@ -1,10 +1,10 @@
-import { ErrorMessage, ResponseMessage, ScreensResponse } from '@/types';
+import { ErrorMessage, ResponseMessage, TutorialResponse } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
 export const fetchTutorials = async () => {
   try {
-    const result = (await axios.get(`/tutorials`)) as ScreensResponse;
+    const result = (await axios.get(`/tutorials`)) as TutorialResponse;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -19,11 +19,13 @@ export const updateTutorials = async (payload : {
   vimeo: string,
   image: File,
   deleteImage: boolean,
+  title: string,
   description: string,
 }) => {
   try {
     const formData = new FormData();
     formData.append('vimeoId', payload.vimeo);
+    formData.append('title', payload.title);
     formData.append('description', payload.description);
     if (payload.image) {
       formData.append('image', payload.image);
