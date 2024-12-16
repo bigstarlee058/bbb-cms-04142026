@@ -77,7 +77,7 @@ export const UpdateScreens = ({ screenData }) => {
         }
       >
         <form id="update-screens" onSubmit={formik.handleSubmit}>
-          <Field label="Vimeo" formik={formik} name="vimeo" />
+          <Field disabled label="Vimeo" formik={formik} name="vimeo" />
           <div className="flex justify-between items-end">
             <label className="fieldLabel">Slides</label>
             <Button

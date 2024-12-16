@@ -142,6 +142,13 @@ export interface ScreensResponse {
   slides: {title: string, description: string}[];
 }
 
+export interface TutorialResponse {
+  vimeoId: string;
+  imgUrl: string;
+  title: string;
+  description: string;
+}
+
 export interface Filters {
   page?: number;
   perPage?: number;

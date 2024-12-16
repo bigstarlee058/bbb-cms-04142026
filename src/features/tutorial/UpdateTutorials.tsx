@@ -14,6 +14,7 @@ interface FormikState {
   vimeo: string;
   image?: any;
   deleteImage: boolean;
+  title: string;
   description: string;
 }
 
@@ -24,6 +25,7 @@ export const UpdateTutorials = ({screenData}) => {
     vimeo: screenData?.vimeoId || '',
     image: screenData?.imgUrl || '',
     deleteImage: false,
+    title: screenData?.title || '',
     description: screenData?.description || '',
   };
  const formik = useFormik({
@@ -42,8 +44,8 @@ export const UpdateTutorials = ({screenData}) => {
   });
 
   const onSubmit = (state: FormikState) => {
-    const { vimeo, image, deleteImage, description } = state;
-    mutate({ vimeo, image, deleteImage, description });
+    const { vimeo, image, deleteImage, title, description } = state;
+    mutate({ vimeo, image, deleteImage, title, description });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -63,6 +65,7 @@ export const UpdateTutorials = ({screenData}) => {
       >
         <form id="update-screens" onSubmit={formik.handleSubmit}>
           <Field label="Vimeo" formik={formik} name="vimeo" />
+          <Field label="Title" formik={formik} name={"title"} />
           <Textarea label="Description" formik={formik} name="description" />
         </form>
       </FormDrawer>
