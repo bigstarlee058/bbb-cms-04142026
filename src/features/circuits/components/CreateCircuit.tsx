@@ -101,6 +101,12 @@ export const CreateCircuit = ({ titles }) => {
     formik.setFieldValue('exercises', newExercises);
   };
 
+  const onDeleteSet = (exeIndex: number, extraIndex: number) => {
+    const newExercises = [...formik.values.exercises]
+    newExercises[exeIndex].extra = newExercises[exeIndex].extra.filter((_, i) => i !== extraIndex)
+    formik.setFieldValue('exercises', newExercises);
+  };
+
   const getExercise = (exerciseId: string) => {
     return exerciseTitles?.find((exercise) => exercise._id === exerciseId);
   };
@@ -158,9 +164,11 @@ export const CreateCircuit = ({ titles }) => {
                 <div key={extraIndex} className="p-4 bg-teal-100 rounded shadow-md mt-4">
                   <div className="flex mb-2 justify-between items-center">
                     <h2 className="text-md font-bold">SET</h2>
-                    <div className="flex gap-3">
-                      <DeleteConfirmation deleteFunction={() => {}} name={'Set'} />
-                    </div>
+                    <Button
+                      variant="danger"
+                      startIcon={<TrashIcon className="h-4 w-4" />}
+                      onClick={() => onDeleteSet(exeIndex, extraIndex)}
+                    ></Button>
                   </div>
                   <Select
                     label="Set Type"
@@ -210,7 +218,12 @@ export const CreateCircuit = ({ titles }) => {
                   </div>
                 </div>
               ))}
-              <Button variant="danger" onClick={() => onAddSet(exeIndex)} startIcon={<PlusIcon className="h-4 w-4" />} className="mt-4">
+              <Button
+                variant="danger"
+                onClick={() => onAddSet(exeIndex)}
+                startIcon={<PlusIcon className="h-4 w-4" />}
+                className="mt-4"
+              >
                 Set
               </Button>
             </div>
