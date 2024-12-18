@@ -2,14 +2,18 @@ import { Field, Textarea, Dropzone, Select } from './custom';
 import { useQuery } from 'react-query';
 import { fetchRestdayTitles } from '../api';
 import { TitleResponse } from '@/types';
+import { fetchPumpDayTitles } from '@/features/pump-days/api';
 
 export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
   const { data: titles, isLoading } = useQuery('get-restday-titles', () => fetchRestdayTitles({ filterString: '' }));
+  const { data: pumpDayTitles, isLoading: isPumpDayLoading } = useQuery('get-pump-day-titles', () =>
+    fetchPumpDayTitles({ filterString: '' })
+  );
 
   const updateWeekDetail = (key, value) => {
     const updatedWeek = { ...week, [key]: value };
     updateWeek(monthIndex, weekIndex, updatedWeek);
-  }
+  };
   const handleChange = (key, value) => {
     updateWeekDetail(key, value);
   };
@@ -17,9 +21,9 @@ export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" name="description" value={week.description} onChange={handleChange}/>
+        <Textarea label="Description" name="description" value={week.description} onChange={handleChange} />
       </div>
-      <div className="w-1/2 ml-4 mr-4 mt-6">
+      <div className="w-1/2 ml-4 mr-4 mt-6 space-y-2">
         {/* <Dropzone
           defaultImg={week.thumbnail}
           onDrop={(img) => {handleChange('thumbnail', img)}}
@@ -38,6 +42,23 @@ export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
           className="w-[300px]"
           onChange={(newValue: TitleResponse) => {
             handleChange('restdayId', newValue.id);
+          }}
+        />
+        <Select
+          isMulti
+          label="Pump Days"
+          options={pumpDayTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+          value={(week.pumpDayIds ?? []).map((id) => {
+            const selectedTitle = pumpDayTitles?.find((pumpDay) => pumpDay.id === id);
+            return { label: selectedTitle?.title || '', value: id };
+          })}
+          isLoading={isPumpDayLoading}
+          className="w-[300px]"
+          onChange={(value: TitleResponse[]) => {
+            handleChange(
+              'pumpDayIds',
+              value.map((v: any) => v.value)
+            );
           }}
         />
       </div>

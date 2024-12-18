@@ -64,7 +64,15 @@ const SideNavigation = () => {
     { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
     { title: 'Bonuses', path: './bonuses', icon: MenuAlt4Icon },
-    { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon }
+    { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon },
+    {
+      title: 'Pump Days',
+      icon: MenuAlt1Icon,
+      submenu: [
+        { title: 'Circuits', path: './circuits', icon: MenuAlt1Icon },
+        { title: 'Pump Days', path: './pump-days', icon: MenuAlt1Icon }
+      ]
+    },
   ].filter(Boolean) as SideNavigationItem[];
 
   return (

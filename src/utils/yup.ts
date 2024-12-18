@@ -120,3 +120,12 @@ export const createSectionSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   description: Yup.string().max(255).required(),
 });
+
+export const createPumpDaySchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  description: Yup.string().max(255).required(),
+});
+
+export const createCircuitSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+});

@@ -271,3 +271,23 @@ export interface SectionsResponse {
   count: number;
   sections: Section[];
 }
+
+export interface Circuit extends BaseEntity {
+  title: string;
+  exercises: ({ exerciseId: string; guide: string } & ExtraExercise)[];
+}
+export interface CircuitsResponse {
+  count: number;
+  circuits: Circuit[];
+}
+
+export interface PumpDay extends BaseEntity {
+  title: string;
+  description: string;
+  vimeoId: string;
+  circuits: {round: number, circuitId: string}[];
+}
+export interface PumpDaysResponse {
+  count: number;
+  pumpDays: PumpDay[];
+}
