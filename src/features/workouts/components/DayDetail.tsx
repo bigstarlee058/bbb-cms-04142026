@@ -32,7 +32,7 @@ const DAY_ORDERS: SelectOption[] = [
     label: 'Day 7',
     value: '7'
   }
-]
+];
 
 export const DayDetail = ({
   monthIndex,
@@ -43,6 +43,8 @@ export const DayDetail = ({
   states,
   updateStates,
   updateDay,
+  isPumpDay = false,
+  days = []
 }) => {
   const { addNotification } = useNotificationStore();
 
@@ -55,9 +57,16 @@ export const DayDetail = ({
 
   const handleCheckboxClick = (index: number) => {
     let existingCnt = 0;
-    week.days.forEach((day) => {
-      if (day.formats.includes(['3', '4', '5'][index])) existingCnt++;
-    });
+    if (isPumpDay) {
+      days.forEach((day) => {
+        const formats = Array.isArray(day.formats) ? day.formats : [];
+        if (formats.includes(['3', '4', '5'][index])) existingCnt++;
+      });
+    } else {
+      week.days.forEach((day) => {
+        if (day.formats.includes(['3', '4', '5'][index])) existingCnt++;
+      });
+    }
 
     if (existingCnt >= parseInt(['3', '4', '5'][index]) && states[index] === false) {
       addNotification({
@@ -79,7 +88,6 @@ export const DayDetail = ({
   const updateDayDetail = (key, value) => {
     const updatedDay = { ...day, [key]: value };
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
-
   };
 
   const handleChange = (key, value) => {
@@ -103,17 +111,20 @@ export const DayDetail = ({
           file={day.thumbnail}
         />
         <Field label="Vimeo Id" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
-        <Select
-          label="Day Order"
-          options={DAY_ORDERS}
-          value={{ label: `Day ${day.typeId}`, value: day.typeId }}
-          className="w-[300px]"
-          onChange={({ value }: SelectOption) => {
-            if (parseInt(value) !== day.typeId) {
-              updateDayDetail('typeId', parseInt(value));
-            }
-          }}
-        />
+        {!isPumpDay && (
+          <Select
+            label="Day Order"
+            options={DAY_ORDERS}
+            value={{ label: `Day ${day.typeId}`, value: day.typeId }}
+            className="w-[300px]"
+            onChange={({ value }: SelectOption) => {
+              if (parseInt(value) !== day.typeId) {
+                updateDayDetail('typeId', parseInt(value));
+              }
+            }}
+          />
+        )}
+
         <div className="flex mt-3">
           <div className="flex items-center">
             <label className="block mb-1 mr-4">Available in variations:</label>

@@ -31,7 +31,12 @@ export const ExercisePlan = ({
   addExercise,
   reassignExerciseTypeIds,
   months,
-  updateMonths
+  updateMonths,
+  isPumpDay = false,
+  days = [],
+  updateDays = (val) => {},
+  isCircuit = false,
+  circuitIndex = 0
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -46,39 +51,108 @@ export const ExercisePlan = ({
   }, [exercise.formats]);
 
   const updateExercise = (monthIndex, weekIndex, dayIndex, exerciseIndex, updatedExercise) => {
-    const updatedMonths = [...months];
-    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex] = updatedExercise;
-    updateMonths(updatedMonths);
+    if (isPumpDay) {
+      if (isCircuit) {
+        const updatedDays = [...days];
+        updatedDays[dayIndex].circuits[circuitIndex].circuitExercises[exerciseIndex] = updatedExercise;
+        updateDays(updatedDays);
+      } else {
+        const updatedDays = [...days];
+        updatedDays[dayIndex].exercises[exerciseIndex] = updatedExercise;
+        updateDays(updatedDays);
+      }
+    } else {
+      const updatedMonths = [...months];
+      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex] = updatedExercise;
+      updateMonths(updatedMonths);
+    }
   };
 
   const duplicateExercise = (monthIndex, weekIndex, dayIndex, exerciseIndex) => {
-    const originExercise = months[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex];
+    let originExercise;
+    if (isPumpDay) {
+      if (isCircuit) {
+        originExercise = days[dayIndex].circuits[circuitIndex].circuitExercises[exerciseIndex];
+      } else {
+        originExercise = days[dayIndex].exercises[exerciseIndex];
+      }
+    } else {
+      originExercise = months[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex];
+    }
     const newExercise = { ..._.cloneDeep(originExercise), formats: [] }; // Reset formats
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
-    const updatedMonths = [...months];
-    if (!nextFormat) {
-      newExercise.typeId = nextTypeId;
-      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.push(newExercise);
-    } else
-      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex + 1, 0, newExercise);
-    updateMonths(updatedMonths);
+    if (isPumpDay) {
+      if (isCircuit) {
+        const updatedDays = [...days];
+        if (!nextFormat) {
+          newExercise.typeId = nextTypeId;
+          updatedDays[dayIndex].circuits[circuitIndex].circuitExercises.push(newExercise);
+        } else updatedDays[dayIndex].circuits[circuitIndex].circuitExercises.splice(exerciseIndex + 1, 0, newExercise);
+        updateDays(updatedDays);
+      } else {
+        const updatedDays = [...days];
+        if (!nextFormat) {
+          newExercise.typeId = nextTypeId;
+          updatedDays[dayIndex].exercises.push(newExercise);
+        } else updatedDays[dayIndex].exercises.splice(exerciseIndex + 1, 0, newExercise);
+        updateDays(updatedDays);
+      }
+    } else {
+      const updatedMonths = [...months];
+      if (!nextFormat) {
+        newExercise.typeId = nextTypeId;
+        updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.push(newExercise);
+      } else
+        updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex + 1, 0, newExercise);
+      updateMonths(updatedMonths);
+    }
   };
 
   const deleteExercise = (monthIndex, weekIndex, dayIndex, exerciseIndex) => {
-    const updatedMonths = [...months];
-    const countSameType = updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.filter(
-      (ex) => ex.typeId === exercise.typeId
-    ).length;
-    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex, 1);
-    updateMonths(updatedMonths);
-    if (countSameType === 1) reassignExerciseTypeIds(exercise.typeId);
+    if (isPumpDay) {
+      if (isCircuit) {
+        const updatedDays = [...days];
+        const countSameType = updatedDays[dayIndex].circuits[circuitIndex].circuitExercises.filter(
+          (ex) => ex.typeId === exercise.typeId
+        ).length;
+        updatedDays[dayIndex].circuits[circuitIndex].circuitExercises.splice(exerciseIndex, 1);
+        updateDays(updatedDays);
+        if (countSameType === 1) reassignExerciseTypeIds(exercise.typeId);
+      } else {
+        const updatedDays = [...days];
+        const countSameType = updatedDays[dayIndex].exercises.filter((ex) => ex.typeId === exercise.typeId).length;
+        updatedDays[dayIndex].exercises.splice(exerciseIndex, 1);
+        updateDays(updatedDays);
+        if (countSameType === 1) reassignExerciseTypeIds(exercise.typeId);
+      }
+    } else {
+      const updatedMonths = [...months];
+      const countSameType = updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.filter(
+        (ex) => ex.typeId === exercise.typeId
+      ).length;
+      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex, 1);
+      updateMonths(updatedMonths);
+      if (countSameType === 1) reassignExerciseTypeIds(exercise.typeId);
+    }
   };
 
   const deleteExtraExercise = (monthIndex, weekIndex, dayIndex, exerciseIndex, extraIndex) => {
-    const updatedMonths = [...months];
-    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.splice(extraIndex, 1);
-    updateMonths(updatedMonths);
+    if (isPumpDay) {
+      if (isCircuit) {
+        const updatedDays = [...days];
+        updatedDays[dayIndex].circuits[circuitIndex].circuitExercises[exerciseIndex].extra.splice(extraIndex, 1);
+        updateDays(updatedDays);
+      } else {
+        const updatedDays = [...days];
+        updatedDays[dayIndex].exercises[exerciseIndex].extra.splice(extraIndex, 1);
+        updateDays(updatedDays);
+      }
+    } else {
+      const updatedMonths = [...months];
+      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.splice(extraIndex, 1);
+      updateMonths(updatedMonths);
+    }
   };
 
   const updateExtraExerciseDetail = (index, key, value) => {
@@ -108,9 +182,21 @@ export const ExercisePlan = ({
   // Check if a format is disabled in other exercises with the same typeId
   const isDisabled = (index) => {
     const format = ['A', 'B', 'C'][index];
-    return months[monthIndex].weeks[weekIndex].days[dayIndex].exercises
-      .filter((e) => e !== exercise && e.typeId === exercise.typeId)
-      .some((e) => e.formats?.includes(format));
+    if (isPumpDay) {
+      if (isCircuit) {
+        return days[dayIndex].circuits[circuitIndex].circuitExercises
+          .filter((e) => e !== exercise && e.typeId === exercise.typeId)
+          .some((e) => e.formats?.includes(format));
+      } else {
+        return days[dayIndex].exercises
+          .filter((e) => e !== exercise && e.typeId === exercise.typeId)
+          .some((e) => e.formats?.includes(format));
+      }
+    } else {
+      return months[monthIndex].weeks[weekIndex].days[dayIndex].exercises
+        .filter((e) => e !== exercise && e.typeId === exercise.typeId)
+        .some((e) => e.formats?.includes(format));
+    }
   };
 
   const handleChange = (key, value) => {
@@ -127,7 +213,6 @@ export const ExercisePlan = ({
     const availableFormats = allFormats.filter((format, index) => {
       return !selectedFormats.includes(format) && !isDisabled(index);
     });
-
     if (selectedFormats.length === 0 && availableFormats.length === 3) {
       const nextTypeId = getNextTypeId();
       return `Add Exercise ${nextTypeId}`;
@@ -177,23 +262,60 @@ export const ExercisePlan = ({
     // const typeIds = months.flatMap((month) =>
     //   month.weeks.flatMap((week) => week.days.flatMap((day) => day.exercises.map((ex) => ex.typeId)))
     // );
-    const typeIds = [...months][monthIndex].weeks[weekIndex].days[dayIndex].exercises.flatMap((ex) => ex.typeId);
+    let typeIds;
+    if (isPumpDay) {
+      if (isCircuit) {
+        typeIds = [...days][dayIndex].circuits[circuitIndex].circuitExercises.flatMap((ex) => ex.typeId);
+      } else {
+        typeIds = [...days][dayIndex].exercises.flatMap((ex) => ex.typeId);
+      }
+    } else {
+      typeIds = [...months][monthIndex].weeks[weekIndex].days[dayIndex].exercises.flatMap((ex) => ex.typeId);
+    }
     const maxTypeId = Math.max(0, ...typeIds);
     return maxTypeId + 1;
   };
 
   const handleAddExtraExerciseClick = () => {
-    const updatedMonths = [...months];
-    const newExtraExercise: ExtraExercise = {
-      sets: 0,
-      reps: 0,
-      weight: 0,
-      rest: 0,
-      load: 0,
-      type: 1
-    };
-    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.push(newExtraExercise);
-    updateMonths(updatedMonths);
+    if (isPumpDay) {
+      if (isCircuit) {
+        const updatedDays = [...days];
+        const newExtraExercise: ExtraExercise = {
+          sets: 0,
+          reps: 0,
+          weight: 0,
+          rest: 0,
+          load: 0,
+          type: 1
+        };
+        updatedDays[dayIndex].circuits[circuitIndex].circuitExercises[exerciseIndex].extra.push(newExtraExercise);
+        updateDays(updatedDays);
+      } else {
+        const updatedDays = [...days];
+        const newExtraExercise: ExtraExercise = {
+          sets: 0,
+          reps: 0,
+          weight: 0,
+          rest: 0,
+          load: 0,
+          type: 1
+        };
+        updatedDays[dayIndex].exercises[exerciseIndex].extra.push(newExtraExercise);
+        updateDays(updatedDays);
+      }
+    } else {
+      const updatedMonths = [...months];
+      const newExtraExercise: ExtraExercise = {
+        sets: 0,
+        reps: 0,
+        weight: 0,
+        rest: 0,
+        load: 0,
+        type: 1
+      };
+      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.push(newExtraExercise);
+      updateMonths(updatedMonths);
+    }
   };
 
   return (
@@ -356,7 +478,11 @@ export const ExercisePlan = ({
           Add Set
         </Button>
       </div>
-      {exerciseIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].exercises.length - 1 ? (
+      {(!isPumpDay && exerciseIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].exercises.length - 1) ||
+      (isPumpDay && !isCircuit && exerciseIndex === days[dayIndex].exercises.length - 1) ||
+      (isPumpDay &&
+        isCircuit &&
+        exerciseIndex === days[dayIndex].circuits[circuitIndex].circuitExercises.length - 1) ? (
         <Button
           variant="danger"
           onClick={handleAddExerciseClick}

@@ -18,6 +18,9 @@ export const WarmupPlan = ({
   reassignWarmupTypeIds,
   months,
   updateMonths,
+  isPumpDay = false,
+  updateDays = (val) => {},
+  days = []
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
 
@@ -30,9 +33,15 @@ export const WarmupPlan = ({
   }, [warmup.formats]);
 
   const updateWarmup = (monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup) => {
-    const updatedMonths = [...months];
-    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups[warmupIndex] = updatedWarmup;
-    updateMonths(updatedMonths);
+    if (isPumpDay) {
+      const updatedDays = [...days];
+      updatedDays[dayIndex].warmups[warmupIndex] = updatedWarmup;
+      updateDays(updatedDays);
+    } else {
+      const updatedMonths = [...months];
+      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups[warmupIndex] = updatedWarmup;
+      updateMonths(updatedMonths);
+    }
   };
 
   const duplicateWarmup = (monthIndex, weekIndex, dayIndex, warmupIndex) => {
@@ -40,29 +49,44 @@ export const WarmupPlan = ({
     const newWarmup = { ..._.cloneDeep(originWarmup), formats: [] }; // Reset formats
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
-    const updatedMonths = [...months];
-    if(!nextFormat){
-      newWarmup.typeId = nextTypeId;
-      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
+    if (isPumpDay) {
+      const updatedDays = [...days];
+      if (!nextFormat) {
+        newWarmup.typeId = nextTypeId;
+        updatedDays[dayIndex].warmups.push(newWarmup);
+      } else updatedDays[dayIndex].warmups.splice(warmupIndex + 1, 0, newWarmup);
+      updateDays(updatedDays);
+    } else {
+      const updatedMonths = [...months];
+      if (!nextFormat) {
+        newWarmup.typeId = nextTypeId;
+        updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
+      } else updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex + 1, 0, newWarmup);
+      updateMonths(updatedMonths);
     }
-    else
-      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex + 1, 0, newWarmup);
-    updateMonths(updatedMonths);
   };
 
   const deleteWarmup = (monthIndex, weekIndex, dayIndex, warmupIndex) => {
-    const updatedMonths = [...months];
-    const countSameType = updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.filter(
-      (e) => e.typeId === warmup.typeId
-    ).length;
-    updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex, 1);
-    updateMonths(updatedMonths);
-    if (countSameType === 1) reassignWarmupTypeIds(warmup.typeId);
+    if (isPumpDay) {
+      const updatedDays = [...days];
+      const countSameType = updatedDays[dayIndex].warmups.filter((e) => e.typeId === warmup.typeId).length;
+      updatedDays[dayIndex].warmups.splice(warmupIndex, 1);
+      updateDays(updatedDays);
+      if (countSameType === 1) reassignWarmupTypeIds(warmup.typeId);
+    } else {
+      const updatedMonths = [...months];
+      const countSameType = updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.filter(
+        (e) => e.typeId === warmup.typeId
+      ).length;
+      updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex, 1);
+      updateMonths(updatedMonths);
+      if (countSameType === 1) reassignWarmupTypeIds(warmup.typeId);
+    }
   };
 
   const updateWarmupDetail = (key, value) => {
-    const updatedWarmup = { ...warmup, [key] : value};
-    updateWarmup(monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup);  
+    const updatedWarmup = { ...warmup, [key]: value };
+    updateWarmup(monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup);
   };
 
   const updateWarmupTitle = (title) => {
@@ -86,9 +110,15 @@ export const WarmupPlan = ({
   // Check if a format is disabled in other warmups with the same typeId
   const isDisabled = (index) => {
     const format = ['A', 'B', 'C'][index];
-    return months[monthIndex].weeks[weekIndex].days[dayIndex].warmups
-      .filter((e) => e !== warmup && e.typeId === warmup.typeId)
-      .some((e) => e.formats?.includes(format));
+    if (isPumpDay) {
+      return days[dayIndex].warmups
+        .filter((e) => e !== warmup && e.typeId === warmup.typeId)
+        .some((e) => e.formats?.includes(format));
+    } else {
+      return months[monthIndex].weeks[weekIndex].days[dayIndex].warmups
+        .filter((e) => e !== warmup && e.typeId === warmup.typeId)
+        .some((e) => e.formats?.includes(format));
+    }
   };
 
   const handleChange = (key, value) => {
@@ -135,7 +165,7 @@ export const WarmupPlan = ({
     });
 
     return availableFormats.length > 0 && availableFormats.length < 3 ? availableFormats[0] : null;
-  }
+  };
 
   const handleAddWarmupClick = () => {
     const nextFormat = getNextFormat();
@@ -152,9 +182,14 @@ export const WarmupPlan = ({
 
   // Determine the next type ID
   const getNextTypeId = () => {
-    const typeIds = months.flatMap((month) =>
-      month.weeks.flatMap((week) => week.days.flatMap((day) => day.warmups.map((ex) => ex.typeId)))
-    );
+    let typeIds;
+    if (isPumpDay) {
+      typeIds = days.flatMap((day) => day.warmups.map((ex) => ex.typeId));
+    } else {
+      typeIds = months.flatMap((month) =>
+        month.weeks.flatMap((week) => week.days.flatMap((day) => day.warmups.map((ex) => ex.typeId)))
+      );
+    }
     const maxTypeId = Math.max(0, ...typeIds);
     return maxTypeId + 1;
   };
@@ -165,17 +200,17 @@ export const WarmupPlan = ({
         className={`p-4 bg-gray-500 rounded shadow-md mt-4`}
         style={
           warmup.typeId === 1
-            ? { backgroundColor: '#E0F67F' }  // Original light yellow for typeId 1
+            ? { backgroundColor: '#E0F67F' } // Original light yellow for typeId 1
             : warmup.typeId === 2
-            ? { backgroundColor: '#D4E96A' }  // Bolder yellow for typeId 2
+            ? { backgroundColor: '#D4E96A' } // Bolder yellow for typeId 2
             : warmup.typeId === 3
-            ? { backgroundColor: '#C0D45C' }  // Even bolder yellow for typeId 3
-            : { backgroundColor: '#C0D45C' }  // Default to the boldest yellow
+            ? { backgroundColor: '#C0D45C' } // Even bolder yellow for typeId 3
+            : { backgroundColor: '#C0D45C' } // Default to the boldest yellow
         }
       >
         <div className="flex mb-2 justify-between items-center">
           <CustomTitle
-            type={"WARMUP"}
+            type={'WARMUP'}
             index={warmup.typeId}
             customTitle={warmup.title}
             updateFunction={updateWarmupTitle}
@@ -220,8 +255,7 @@ export const WarmupPlan = ({
               label=""
               options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
               value={titles?.map((title) => {
-                if(title.id === warmup.warmupId)
-                  return { label: title?.title || '', value: title.id };
+                if (title.id === warmup.warmupId) return { label: title?.title || '', value: title.id };
               })}
               isLoading={isLoading}
               onChange={(newValue: TitleResponse) => {
@@ -231,10 +265,11 @@ export const WarmupPlan = ({
           </div>
         </div>
         <div>
-          <Field label="Guideline" name="guide" value={warmup.guide} onChange={handleChange}/>
+          <Field label="Guideline" name="guide" value={warmup.guide} onChange={handleChange} />
         </div>
       </div>
-      {warmupIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].warmups.length - 1 ? (
+      {(!isPumpDay && warmupIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].warmups.length - 1) ||
+      (isPumpDay && warmupIndex === days[dayIndex].warmups.length - 1) ? (
         <Button
           variant="danger"
           onClick={handleAddWarmupClick}
@@ -245,5 +280,5 @@ export const WarmupPlan = ({
         </Button>
       ) : null}
     </>
-  )
+  );
 };

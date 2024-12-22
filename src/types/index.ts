@@ -203,6 +203,7 @@ export interface Day extends WorkoutsBaseEntity {
   
   warmups: DayWarmup[];
   exercises: DayExercise[];
+  circuits?: any[];
 }
 export interface ExtraExercise {
   sets: number;
