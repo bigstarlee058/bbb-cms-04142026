@@ -76,31 +76,27 @@ export const DayPlan = ({
     }
   };
 
-  const addCircuit = (
-    dayIndex: number,
-    newTypeId: number,
-    newFormats: string[]
-  ) => {
-      const updatedDays = [...days];
-      const newCircuit: {round: number, circuitExercises: DayExercise[]} = {
-        round: 0,
-        circuitExercises: [
-          {
-            typeId: newTypeId,
-            exerciseId: '',
-            guide: '',
-            sets: 0,
-            reps: 0,
-            weight: 0,
-            rest: 0,
-            formats: newFormats,
-            status: '',
-            extra: []
-          }
-        ]
-      };
-      updatedDays[dayIndex].circuits.push(newCircuit);
-      updateDays(updatedDays);
+  const addCircuit = (dayIndex: number, newTypeId: number, newFormats: string[]) => {
+    const updatedDays = [...days];
+    const newCircuit: { round: number; formats: string[]; typeId: number; circuitExercises: DayExercise[] } = {
+      round: 0,
+      formats: newFormats,
+      typeId: newTypeId,
+      circuitExercises: [
+        {
+          exerciseId: '',
+          guide: '',
+          sets: 0,
+          reps: 0,
+          weight: 0,
+          rest: 0,
+          status: '',
+          extra: []
+        }
+      ]
+    };
+    updatedDays[dayIndex].circuits.push(newCircuit);
+    updateDays(updatedDays);
   };
 
   const addWarmup = (
@@ -350,53 +346,62 @@ export const DayPlan = ({
               updateDays={updateDays}
             />
           ))}
-          {day.exercises.map((exercise, exerciseIndex) => (
-            <ExercisePlan
-              key={exerciseIndex}
-              monthIndex={monthIndex}
-              weekIndex={weekIndex}
-              dayIndex={dayIndex}
-              exerciseIndex={exerciseIndex}
-              exercise={exercise}
-              addExercise={addExercise}
-              reassignExerciseTypeIds={reassignExerciseTypeIds}
-              months={months}
-              updateMonths={updateMonths}
-              isPumpDay={isPumpDay}
-              days={days}
-              updateDays={updateDays}
-            />
-          ))}
-          {day.exercises.length === 0 ? (
-            <Button
-              variant="danger"
-              onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
-              startIcon={<PlusIcon className="h-4 w-4" />}
-              className="mt-4"
-            >
-              Add Exercise
-            </Button>
-          ) : null}
-          {(day.circuits || []).map((circuit, circuitIndex) => (
-            <CircuitPlan
-              key={circuitIndex}
-              dayIndex={dayIndex}
-              circuitIndex={circuitIndex}
-              circuit={circuit}
-              days={days}
-              updateDays={updateDays}
-            />
-          ))}
-          {day.circuits ? (
-            <Button
-              variant="danger"
-              onClick={() => addCircuit(dayIndex, 1, [])}
-              startIcon={<PlusIcon className="h-4 w-4" />}
-              className="mt-4"
-            >
-              Add Circuit
-            </Button>
-          ) : null}
+          <div className="flex gap-6">
+            <div className="flex-1">
+              {day.exercises.map((exercise, exerciseIndex) => (
+                <ExercisePlan
+                  key={exerciseIndex}
+                  monthIndex={monthIndex}
+                  weekIndex={weekIndex}
+                  dayIndex={dayIndex}
+                  exerciseIndex={exerciseIndex}
+                  exercise={exercise}
+                  addExercise={addExercise}
+                  reassignExerciseTypeIds={reassignExerciseTypeIds}
+                  months={months}
+                  updateMonths={updateMonths}
+                  isPumpDay={isPumpDay}
+                  days={days}
+                  updateDays={updateDays}
+                />
+              ))}
+              {day.exercises.length === 0 ? (
+                <Button
+                  variant="danger"
+                  onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
+                  startIcon={<PlusIcon className="h-4 w-4" />}
+                  className="mt-4"
+                >
+                  Add Exercise
+                </Button>
+              ) : null}
+            </div>
+            {day.circuits && (
+              <div className="flex-1">
+                {(day.circuits || []).map((circuit, circuitIndex) => (
+                  <CircuitPlan
+                    key={circuitIndex}
+                    dayIndex={dayIndex}
+                    circuitIndex={circuitIndex}
+                    circuit={circuit}
+                    days={days}
+                    updateDays={updateDays}
+                    addCircuit={addCircuit}
+                  />
+                ))}
+                {day.circuits && day.circuits.length === 0 && (
+                  <Button
+                    variant="danger"
+                    onClick={() => addCircuit(dayIndex, 1, [])}
+                    startIcon={<PlusIcon className="h-4 w-4" />}
+                    className="mt-4"
+                  >
+                    Add Circuit
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {(!isPumpDay && dayIndex === months[monthIndex].weeks[weekIndex].days.length - 1 && isSevenDays) || isPumpDay ? (

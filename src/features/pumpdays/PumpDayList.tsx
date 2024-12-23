@@ -5,9 +5,26 @@ import { DayPlan } from '../workouts/components/DayPlan';
 import { Button } from '@/components/Elements';
 import { PlusIcon } from '@heroicons/react/outline';
 import { Day } from '@/types';
+import { usePumpDaysContext } from './PumpDaysContext';
+import { fetchPumpDays } from '../workouts/api';
+import { useQuery } from 'react-query';
 
 export const PumpDayList = () => {
   const [days, setDays] = useState([]);
+  const { onSetDays } = usePumpDaysContext();
+
+  const {
+    data: pumpDays,
+  } = useQuery(['get-workouts'], () => fetchPumpDays(), {
+    onSuccess: (data) => {
+      const days = data.pumpDays;
+      setDays(days);
+      onSetDays(days);
+    },
+    onError: (err) => {
+      console.error('Error fetching workouts:', err);
+    }
+  });
 
   const addDay = (newTypeId: number, newFormats: string[]) => {
     const newDay: Day = {
@@ -20,9 +37,10 @@ export const PumpDayList = () => {
 
       warmups: [],
       exercises: [],
-      circuits: [],
+      circuits: []
     };
     setDays((prev) => {
+      onSetDays([...prev, newDay]);
       return [...prev, newDay];
     });
   };
@@ -33,6 +51,7 @@ export const PumpDayList = () => {
       updatedDays.forEach((day, index) => {
         if (day.typeId > deletedDayTypeId) day.typeId--;
       });
+      onSetDays(updatedDays);
       return updatedDays;
     });
   };
@@ -58,7 +77,10 @@ export const PumpDayList = () => {
           isSevenDays
           isWeekCollapsed={false}
           isPumpDay
-          updateDays={(val) => setDays(val)}
+          updateDays={(val) => {
+            onSetDays(val);
+            setDays(val);
+          }}
           days={days}
         />
       ))}

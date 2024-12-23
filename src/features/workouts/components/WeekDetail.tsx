@@ -1,14 +1,14 @@
 import { Field, Textarea, Dropzone, Select } from './custom';
 import { useQuery } from 'react-query';
-import { fetchRestdayTitles } from '../api';
+import { fetchPumpDayTitles, fetchRestdayTitles } from '../api';
 import { TitleResponse } from '@/types';
 // import { fetchPumpDayTitles } from '@/features/pump-days/api';
 
 export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
   const { data: titles, isLoading } = useQuery('get-restday-titles', () => fetchRestdayTitles({ filterString: '' }));
-  // const { data: pumpDayTitles, isLoading: isPumpDayLoading } = useQuery('get-pump-day-titles', () =>
-  //   fetchPumpDayTitles({ filterString: '' })
-  // );
+  const { data: pumpDayTitles, isLoading: isPumpDayLoading } = useQuery('get-pump-day-titles', () =>
+    fetchPumpDayTitles({ filterString: '' })
+  );
 
   const updateWeekDetail = (key, value) => {
     const updatedWeek = { ...week, [key]: value };
@@ -44,12 +44,12 @@ export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
             handleChange('restdayId', newValue.id);
           }}
         />
-        {/* <Select
+        <Select
           isMulti
           label="Pump Days"
-          options={pumpDayTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+          options={pumpDayTitles?.map(({ title, _id }) => ({ label: title, value: _id })) || []}
           value={(week.pumpDayIds ?? []).map((id) => {
-            const selectedTitle = pumpDayTitles?.find((pumpDay) => pumpDay.id === id);
+            const selectedTitle = pumpDayTitles?.find((pumpDay) => pumpDay._id === id);
             return { label: selectedTitle?.title || '', value: id };
           })}
           isLoading={isPumpDayLoading}
@@ -60,7 +60,7 @@ export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
               value.map((v: any) => v.value)
             );
           }}
-        /> */}
+        />
       </div>
     </div>
   );

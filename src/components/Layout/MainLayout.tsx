@@ -26,6 +26,8 @@ import { useWorkoutContext } from '@/features/workouts/WorkoutContext';
 import { MonthCover } from '@/features/workouts/components/custom/MonthCover';
 import { axios } from '@/lib/axios';
 import { ErrorMessage, ResponseMessage } from '@/types';
+import { SavePumpDays } from '@/features/pumpdays/SavePumpDays';
+import { usePumpDaysContext } from '@/features/pumpdays/PumpDaysContext';
 
 type SideNavigationItem = {
   title: string;
@@ -312,6 +314,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const { currentPage } = useUserStore();
   const { setSearchBoxValue, setSortByValue, sortBy } = useFilteringStore();
   const { months } = useWorkoutContext();
+  const { days } = usePumpDaysContext();
   const { pathname } = useLocation();
 
   const handleSortOptionChange = (val: any) => {
@@ -409,6 +412,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                   <MonthCover initialMonthCover={monthCover} onSetMonthCover={onSetMonthCover} />
                   <SaveConfirmation allMonths={months} />
                 </>
+              )}
+              {pathname.includes('pumpdays') && (
+                <SavePumpDays allDays={days} />
               )}
               <UserNavigation />
             </div>

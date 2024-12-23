@@ -7,6 +7,7 @@ import { BackgroundScreens } from '@/features/screens/BackgroundScreens';
 import { BackgroundTutorials } from '@/features/tutorial/BackgroundTutorials';
 import { WorkoutContextProvider } from '@/features/workouts/WorkoutContext';
 import { MonthCoverContextProvider } from '@/features/workouts/MonthCoverContext';
+import { PumpDaysContextProvider } from '@/features/pumpdays/PumpDaysContext';
 
 const { Dashboard } = lazyImport(() => import('@/features/misc'), 'Dashboard');
 const { Profile } = lazyImport(() => import('@/features/users'), 'Profile');
@@ -29,19 +30,21 @@ const { PumpDaysRoutes } = lazyImport(() => import('@/features/pumpdays'), 'Pump
 const ProtectedApp = () => {
   return (
     <WorkoutContextProvider>
-      <MonthCoverContextProvider>
-        <MainLayout>
-          <Suspense
-            fallback={
-              <div className="h-full w-full flex items-center justify-center">
-                <Spinner size="xl" />
-              </div>
-            }
-          >
-            <Outlet />
-          </Suspense>
-        </MainLayout>
-      </MonthCoverContextProvider>
+      <PumpDaysContextProvider>
+        <MonthCoverContextProvider>
+          <MainLayout>
+            <Suspense
+              fallback={
+                <div className="h-full w-full flex items-center justify-center">
+                  <Spinner size="xl" />
+                </div>
+              }
+            >
+              <Outlet />
+            </Suspense>
+          </MainLayout>
+        </MonthCoverContextProvider>
+      </PumpDaysContextProvider>
     </WorkoutContextProvider>
   );
 };

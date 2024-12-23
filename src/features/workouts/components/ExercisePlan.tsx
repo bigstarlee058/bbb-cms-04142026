@@ -204,6 +204,7 @@ export const ExercisePlan = ({
   };
 
   const getAddExerciseButtonTitle = () => {
+    if (isCircuit) return "Add Exercise"
     const allFormats = ['A', 'B', 'C'];
     const selectedFormats = checkedStates
       .map((isChecked, index) => (isChecked ? allFormats[index] : ''))
@@ -356,27 +357,29 @@ export const ExercisePlan = ({
         </div>
         <div className={`collapse-content ${isCollapsed ? 'collapsed' : 'expanded'}`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex">
-              <div className="flex items-center">
-                <label className="block mb-1 mr-4">Available in formats:</label>
-              </div>
-              <div className="flex gap-3 items-center">
-                {['A', 'B', 'C'].map((label, index) => (
-                  <div
-                    key={index}
-                    onClick={() => !isDisabled(index) && handleCheckboxClick(index)}
-                    className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors 
+            {!isCircuit && (
+              <div className="flex">
+                <div className="flex items-center">
+                  <label className="block mb-1 mr-4">Available in formats:</label>
+                </div>
+                <div className="flex gap-3 items-center">
+                  {['A', 'B', 'C'].map((label, index) => (
+                    <div
+                      key={index}
+                      onClick={() => !isDisabled(index) && handleCheckboxClick(index)}
+                      className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors 
                   ${isDisabled(index) ? 'bg-gray-300 border-gray-400 cursor-not-allowed opacity-60' : ''}
                   `}
-                    style={checkedStates[index] ? { backgroundColor: '#FFA89E' } : { backgroundColor: '#FFFFFF' }}
-                  >
-                    <span className={`text-md font-medium ${checkedStates[index] ? 'text-white' : 'text-gray-800'}`}>
-                      {label}
-                    </span>
-                  </div>
-                ))}
+                      style={checkedStates[index] ? { backgroundColor: '#FFA89E' } : { backgroundColor: '#FFFFFF' }}
+                    >
+                      <span className={`text-md font-medium ${checkedStates[index] ? 'text-white' : 'text-gray-800'}`}>
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <div>
               <Select
                 label=""
