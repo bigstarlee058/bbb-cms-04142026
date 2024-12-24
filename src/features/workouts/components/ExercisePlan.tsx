@@ -39,7 +39,7 @@ export const ExercisePlan = ({
   circuitIndex = 0
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const { data: titles, isLoading } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
 

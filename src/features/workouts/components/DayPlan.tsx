@@ -25,7 +25,7 @@ export const DayPlan = ({
   updateDays = (val) => {},
   days = []
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
 
   if (!isPumpDay && !months[monthIndex]?.weeks[weekIndex]?.days[dayIndex]) return null;

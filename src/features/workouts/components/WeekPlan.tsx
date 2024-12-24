@@ -15,7 +15,7 @@ import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
 
 export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateMonths, isFourWeeksOrLess }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
 
   if(!months[monthIndex]?.weeks[weekIndex])
