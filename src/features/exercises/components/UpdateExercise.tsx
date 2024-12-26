@@ -8,6 +8,8 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createExerciseSchema } from '@/utils/yup';
 import { TitleResponse, Exercise } from '@/types';
+import { createCategory } from '@/features/categories/api';
+import { useState } from 'react';
 
 interface FormikState {
   title: string;
@@ -21,24 +23,36 @@ interface FormikState {
   deleteImage: boolean;
 }
 
-export const UpdateExercise = (
-  { exerciseId, exercises, exTitles, eqTitles, caTitles }: 
-  { exerciseId: string, exercises: { exercises: Exercise[] }, exTitles: TitleResponse[], eqTitles: TitleResponse[], caTitles: TitleResponse[] }
-) => {
+export const UpdateExercise = ({
+  exerciseId,
+  exercises,
+  exTitles,
+  eqTitles,
+  caTitles,
+  onCategoryCreate,
+}: {
+  exerciseId: string;
+  exercises: { exercises: Exercise[] };
+  exTitles: TitleResponse[];
+  eqTitles: TitleResponse[];
+  caTitles: TitleResponse[];
+  onCategoryCreate: () => void;
+}) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(updateExercise, {
     onSuccess: (message: string) => {
       addNotification({
         type: 'success',
-        title: message,
+        title: message
       });
-    },
+    }
   });
 
   const exerciseData = exercises.exercises.find((ex) => ex._id === exerciseId);
-  const exerciseTitles = exTitles && exTitles.filter(title => title.id !== exerciseId);
-  const categoryTitles = caTitles;
+  const exerciseTitles = exTitles && exTitles.filter((title) => title.id !== exerciseId);
   const equipmentTitles = eqTitles;
+
+  const [categoryTitles, setCategoryTitles] = useState(caTitles)
 
   const initialValues: FormikState = {
     title: exerciseData?.title || '',
@@ -49,15 +63,16 @@ export const UpdateExercise = (
     usedEquipments: exerciseData?.usedEquipments || [],
     relatedExercises: exerciseData?.relatedExercises || [],
     image: exerciseData?.thumbnail,
-    deleteImage: false,
+    deleteImage: false
   };
   const formik = useFormik({
     initialValues,
     validationSchema: createExerciseSchema,
-    onSubmit: (v) => onSubmit(v),
+    onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (value: any) => {
     mutate({ exerciseId, payload: value });
+    onCategoryCreate();
   };
 
   return (
@@ -67,13 +82,7 @@ export const UpdateExercise = (
         triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
         title="Update Exercise"
         submitButton={
-          <Button
-            form="update-exercise"
-            variant="danger"
-            type="submit"
-            size="sm"
-            isLoading={isLoading}
-          >
+          <Button form="update-exercise" variant="danger" type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }
@@ -104,23 +113,15 @@ export const UpdateExercise = (
                 value.map((v: any) => v.value)
               )
             }
+            isCreatable
+            onCreateOption={async (category: string) => {
+              const data = await createCategory({ title: category });
+              formik.setFieldValue('categories', [...formik.values.categories, data.id]);
+              setCategoryTitles((prev) => ([...prev, {title: category, id: data.id}]))
+            }}
           />
-          {/* <Select
-            isMulti
-            label="Categories"
-            formik={formik}
-            name="categories"
-            options={categoryOptions}
-            value={formik.values.categories.map((category) => {
-              const categoryOption = categoryOptions.find((option) => option.value === category);
-              return { label: categoryOption?.label || category, value: category };
-            })}
-            onChange={(value: any) => formik.setFieldValue('categories', value.map((v: any) => v.value))}
-          /> */}
-          {/* <Field label="Categories" formik={formik} name="categories" /> */}
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />
-          {/* <Textarea label="Guide" formik={formik} name="guide" /> */}
           <Select
             isMulti
             formik={formik}

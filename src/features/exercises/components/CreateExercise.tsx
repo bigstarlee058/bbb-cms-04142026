@@ -8,6 +8,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { Field, Dropzone, Textarea, Select } from '@/components/Form';
 import { createExerciseSchema } from '@/utils/yup';
+import { createCategory } from '@/features/categories/api';
 
 interface FormikState {
   title: string;
@@ -21,16 +22,16 @@ interface FormikState {
   deleteImage: boolean;
 }
 
-export const CreateExercise = ({exerciseTitles, equipmentTitles, categoryTitles}) => {
+export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles, onCategoryCreate }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createExercise, {
     onSuccess: (message: string) => {
       formik.resetForm();
       addNotification({
         type: 'success',
-        title: message,
+        title: message
       });
-    },
+    }
   });
 
   const initialValues: FormikState = {
@@ -42,38 +43,31 @@ export const CreateExercise = ({exerciseTitles, equipmentTitles, categoryTitles}
     usedEquipments: [],
     relatedExercises: [],
     image: '',
-    deleteImage: false,
+    deleteImage: false
   };
 
   const formik = useFormik({
     initialValues,
     validationSchema: createExerciseSchema,
-    onSubmit: (values) => onSubmit(values),
+    onSubmit: (values) => onSubmit(values)
   });
 
   const onSubmit = (values: any) => {
     mutate(values);
   };
 
-
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
         isDone={isSuccess}
         triggerButton={
-          <Button variant='danger' size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button variant="danger" size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
             &nbsp;&nbsp;Create Exercise
           </Button>
         }
         title="Create Exercise"
         submitButton={
-          <Button
-            form="create-exercise"
-            variant="danger"
-            type="submit"
-            size="sm"
-            isLoading={isLoading}
-          >
+          <Button form="create-exercise" variant="danger" type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }
@@ -104,19 +98,18 @@ export const CreateExercise = ({exerciseTitles, equipmentTitles, categoryTitles}
                 value.map((v: any) => v.value)
               )
             }
+            isCreatable
+            onCreateOption={async (category: string) => {
+              const data = await createCategory({ title: category });
+              formik.setFieldValue(
+                'categories',
+                [...formik.values.categories, data.id]
+              )
+              onCategoryCreate();
+            }}
           />
-          {/* <Select
-            isMulti
-            label="Categories"
-            formik={formik}
-            name="categories"
-            options={categoryOptions}
-            onChange={(value: any) => formik.setFieldValue('categories', value.map((v: any) => v.value))}
-          /> */}
-          {/* <Field label="Categories" formik={formik} name="categories" /> */}
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />
-          {/* <Textarea label="Guide" formik={formik} name="guide" /> */}
           <Select
             isMulti
             formik={formik}

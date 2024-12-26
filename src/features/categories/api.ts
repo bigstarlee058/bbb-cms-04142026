@@ -32,19 +32,19 @@ export const fetchCategory = async (categoryId: string) => {
 
 export const createCategory = async (payload: {
   title: string;
-  image: File;  // Assuming the image comes as a File object from the client
+  image?: File;  // Assuming the image comes as a File object from the client
 }) => {
   try {
     const formData = new FormData();
     formData.append('title', payload.title);
     formData.append('image', payload.image);
     // Post the new category data (including the image) to your backend
-    const result = (await axios.post('/categories/admin', formData)) as ResponseMessage;
+    const result = (await axios.post('/categories/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       console.log(result);
       queryClient.invalidateQueries('get-categories');
-      return 'Category successfully created.';
+      return result.category;
     }
     return result.message;
   } catch (err: any) {

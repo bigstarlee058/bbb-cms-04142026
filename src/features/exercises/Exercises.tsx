@@ -7,28 +7,28 @@ import { useQuery } from 'react-query';
 import { useUserStore } from '@/stores/user';
 
 export const Exercises = () => {
-  const { data: exerciseTitles } = useQuery('get-exercise-titles', () =>
-    fetchExerciseTitles({ filterString: '' })
-  );
 
-  const { data: equipmentTitles } = useQuery('get-equipment-titles', () =>
-    fetchEquipmentTitles({ filterString: '' })
-  );
+  const { data: exerciseTitles } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
 
-  const { data: categoryTitles } = useQuery('get-category-titles', () =>
-    fetchCategoryTitles({ filterString: '' })
-  );
+  const { data: equipmentTitles } = useQuery('get-equipment-titles', () => fetchEquipmentTitles({ filterString: '' }));
+
+  const { data: categoryTitles, refetch: refetchCategoryTitles } = useQuery('get-category-titles', () => fetchCategoryTitles({ filterString: '' }));
 
   const { setCurrentPage } = useUserStore();
 
   useEffect(() => {
-    setCurrentPage("equipments");
+    setCurrentPage('equipments');
   }, []);
 
   return (
     <ContentLayout title="">
       <div className="flex justify-end">
-        <CreateExercise exerciseTitles={exerciseTitles} equipmentTitles={equipmentTitles} categoryTitles={categoryTitles}/>
+        <CreateExercise
+          exerciseTitles={exerciseTitles}
+          equipmentTitles={equipmentTitles}
+          categoryTitles={categoryTitles}
+          onCategoryCreate={refetchCategoryTitles}
+        />
       </div>
       <div className="mt-4">
         <ExercisesList />

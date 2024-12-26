@@ -15,20 +15,12 @@ export const ExercisesList = () => {
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
-    page: 1,
+    page: 1
   });
-  const {
-    data: exercises,
-    isLoading,
-    refetch,
-  } = useQuery(['get-exercises'], () => fetchExercises(filters));
-  const { data: exerciseTitles } = useQuery('get-exercise-titles', () =>
-    fetchExerciseTitles({ filterString: '' })
-  );
-  const { data: equipmentTitles } = useQuery('get-equipment-titles', () =>
-    fetchEquipmentTitles({ filterString: '' })
-  );
-  const { data: categoryTitles } = useQuery('get-category-titles', () =>
+  const { data: exercises, isLoading, refetch } = useQuery(['get-exercises'], () => fetchExercises(filters));
+  const { data: exerciseTitles } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
+  const { data: equipmentTitles } = useQuery('get-equipment-titles', () => fetchEquipmentTitles({ filterString: '' }));
+  const { data: categoryTitles, refetch: refetchCategoryTitles } = useQuery('get-category-titles', () =>
     fetchCategoryTitles({ filterString: '' })
   );
   useEffect(() => {
@@ -38,7 +30,7 @@ export const ExercisesList = () => {
   useEffect(() => {
     setFilters({
       ...filters,
-      page: currentPage,
+      page: currentPage
     });
   }, [currentPage]);
 
@@ -49,7 +41,7 @@ export const ExercisesList = () => {
   useEffect(() => {
     setFilters({
       ...filters,
-      sortBy: sortBy?.value,
+      sortBy: sortBy?.value
     });
   }, [sortBy]);
 
@@ -70,26 +62,25 @@ export const ExercisesList = () => {
         columns={[
           {
             title: 'Title',
-            field: 'title',
+            field: 'title'
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
             Cell({ entry: { thumbnail } }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
-              </div>);
-            },
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={thumbnail} />
+                </div>
+              );
+            }
           },
           {
             title: 'Description',
             field: 'description',
             Cell({ entry: { description } }) {
-              return (
-                <p>{description.length > 50 ? `${description.slice(0, 50)}...` : description}</p>
-              );
-            },
+              return <p>{description.length > 50 ? `${description.slice(0, 50)}...` : description}</p>;
+            }
           },
           {
             title: 'Categories',
@@ -101,7 +92,7 @@ export const ExercisesList = () => {
                 .map((title) => title.title)
                 .join(', ');
               return <span>{filteredTitles}</span>;
-            },
+            }
           },
           {
             title: 'Equipment',
@@ -113,14 +104,14 @@ export const ExercisesList = () => {
                 .map((title) => title.title)
                 .join(', ');
               return <span>{filteredTitles}</span>;
-            },
+            }
           },
           {
             title: 'Vimeo',
             field: 'vimeoId',
             Cell({ entry: { vimeoId } }) {
               return <p>{vimeoId}</p>;
-            },
+            }
           },
           {
             title: 'View',
@@ -131,22 +122,31 @@ export const ExercisesList = () => {
                   <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
                 </Link>
               );
-            },
+            }
           },
           {
             title: 'Edit',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <UpdateExercise exerciseId={_id} exercises={exercises} exTitles={exerciseTitles} eqTitles={equipmentTitles} caTitles={categoryTitles}/>;
-            },
+              return (
+                <UpdateExercise
+                  exerciseId={_id}
+                  exercises={exercises}
+                  exTitles={exerciseTitles}
+                  eqTitles={equipmentTitles}
+                  caTitles={categoryTitles}
+                  onCategoryCreate={refetchCategoryTitles}
+                />
+              );
+            }
           },
           {
             title: 'Delete',
             field: '_id',
             Cell({ entry: { _id } }) {
               return <DeleteExercise exerciseId={_id} />;
-            },
-          },
+            }
+          }
         ]}
       />
       <div className="flex justify-center mt-6">
