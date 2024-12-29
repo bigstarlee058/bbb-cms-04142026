@@ -471,7 +471,6 @@ export const ExercisePlan = ({
               ))}
             </>
           ) : null}
-        </div>
         <Button
           variant="danger"
           onClick={handleAddExtraExerciseClick}
@@ -480,6 +479,7 @@ export const ExercisePlan = ({
         >
           Add Set
         </Button>
+        </div>
       </div>
       {(!isPumpDay && exerciseIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].exercises.length - 1) ||
       (isPumpDay && !isCircuit && exerciseIndex === days[dayIndex].exercises.length - 1) ||
