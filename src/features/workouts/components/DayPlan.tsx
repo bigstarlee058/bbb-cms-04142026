@@ -369,7 +369,6 @@ export const DayPlan = ({
                 <Button
                   variant="danger"
                   onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
-                  startIcon={<PlusIcon className="h-4 w-4" />}
                   className="mt-4"
                 >
                   Add Exercise

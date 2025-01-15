@@ -51,7 +51,7 @@ export const CreateRestday = ({titles}) => {
         isDone={isSuccess}
         triggerButton={
           <Button size="sm" variant='danger' startIcon={<PlusIcon className="h-4 w-4" />}>
-            Create restday
+            Create Rest Day
           </Button>
         }
         title="Create Rest Day"

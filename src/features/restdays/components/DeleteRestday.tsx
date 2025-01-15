@@ -26,8 +26,8 @@ export const DeleteRestday = ({ restdayId }: DeleteRestdayProps) => {
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <ConfirmationDialog
         icon="danger"
-        title="Delete Restday"
-        body="Are you sure you want to delete this restday?"
+        title="Delete Rest Day"
+        body="Are you sure you want to delete this rest day?"
         isDone={isSuccess}
         triggerButton={
           <Button variant="danger" startIcon={<TrashIcon className="h-4 w-4" />}></Button>

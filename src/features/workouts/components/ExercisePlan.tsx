@@ -474,7 +474,6 @@ export const ExercisePlan = ({
         <Button
           variant="danger"
           onClick={handleAddExtraExerciseClick}
-          startIcon={<PlusIcon className="h-4 w-4" />}
           className="mt-4"
         >
           Add Set
@@ -489,7 +488,6 @@ export const ExercisePlan = ({
         <Button
           variant="danger"
           onClick={handleAddExerciseClick}
-          startIcon={<PlusIcon className="h-4 w-4" />}
           className="mt-4"
         >
           {getAddExerciseButtonTitle()}

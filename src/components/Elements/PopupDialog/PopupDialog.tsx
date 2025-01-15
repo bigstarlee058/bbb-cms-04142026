@@ -16,6 +16,106 @@ export type PopupDialogProps = {
   isDone?: boolean;
   workoutsHistory: UserWorkout[];
 };
+
+const workouts = [
+  {
+    monthTitle: 'Glute Squad Special',
+    weekTitle: 'Week 2',
+    dayTitle: 'Workout Day 2',
+    day: '10/09/2024',
+    exercises: [
+      {
+        exerciseTitle: 'Pull up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Skipped'
+      },
+      {
+        exerciseTitle: 'Push up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Completed'
+      },
+      {
+        exerciseTitle: 'Pull up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Skipped'
+      },
+      {
+        exerciseTitle: 'Push up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Completed'
+      },
+      {
+        exerciseTitle: 'Pull up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Skipped'
+      },
+      {
+        exerciseTitle: 'Push up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Completed'
+      },
+      {
+        exerciseTitle: 'Pull & Push up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Completed'
+      }
+    ]
+  },
+  {
+    monthTitle: 'Glute Squad Special',
+    weekTitle: 'Week 3',
+    dayTitle: 'Workout Day 1',
+    day: '10/19/2024',
+    exercises: [
+      {
+        exerciseTitle: 'Pull up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Skipped'
+      },
+      {
+        exerciseTitle: 'Push up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Completed'
+      },
+      {
+        exerciseTitle: 'Pull & Push up',
+        sets: 5,
+        reps: 6,
+        weight: 7,
+        rest: 8,
+        status: 'Completed'
+      }
+    ]
+  }
+];
+
 export const PopupDialog = ({
   name,
   email = '',
@@ -40,26 +140,53 @@ export const PopupDialog = ({
   const tabContents = [
     <div>Summary</div>,
 
-    <div className="space-y-4">
-      {workoutsHistory.map(({ day, exercises }: UserWorkout) => (
-        <div key={day} className="bg-white p-4 rounded-lg shadow-md">
-          <h3 className="text-md font-semibold text-gray-900">{day}</h3>
-          <div className="space-y-2 mt-2">
-            {exercises?.map(({ status, sets, reps, weight, rest }: DayExercise, index) => (
-              <div key={index} className="p-3 bg-gray-50 rounded-lg flex items-center space-x-4">
-                <span className="text-sm text-gray-600">{sets} Sets</span>
-                <span className="text-sm text-gray-600">of {reps} reps</span>
-                <span className="text-sm text-gray-600">with {weight} kg</span>
-                <span className={`text-sm ${status === 'Completed' ? 'text-green-500' : 'text-red-500'}`}>
+    <div className="space-y-6 max-h-[500px] overflow-auto px-2">
+      {workouts.map(({ monthTitle, weekTitle, dayTitle, day, exercises }, index) => (
+        <div key={day} className='border-t'>
+          <div className="flex flex-col md:flex-row justify-between items-center py-4 border-b">
+            <div>
+              <h3 className="text-md font-bold text-gray-900">{monthTitle}</h3>
+              <div className="flex items-center space-x-6">
+                <h4 className="text-sm font-semibold text-gray-700">{weekTitle}</h4>
+                <p className="text-sm text-gray-500">{dayTitle}</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 italic">{day}</p>
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {exercises.map(({ exerciseTitle, sets, reps, weight, rest, status }, index) => (
+              <div
+                key={index}
+                className={`p-4 rounded-lg border ${
+                  status === 'Completed' ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
+                }`}
+              >
+                <h5 className="text-md font-medium text-gray-800">{exerciseTitle}</h5>
+                <ul className="mt-2 text-sm text-gray-600 space-y-1">
+                  <li>
+                    <span className="font-semibold">Sets:</span> {sets}
+                  </li>
+                  <li>
+                    <span className="font-semibold">Reps:</span> {reps}
+                  </li>
+                  <li>
+                    <span className="font-semibold">Weight:</span> {weight} kg
+                  </li>
+                  <li>
+                    <span className="font-semibold">Rest:</span> {rest} sec
+                  </li>
+                </ul>
+                <p
+                  className={`mt-3 text-sm font-semibold ${status === 'Completed' ? 'text-green-600' : 'text-red-600'}`}
+                >
                   {status}
-                </span>
+                </p>
               </div>
             ))}
           </div>
         </div>
       ))}
     </div>,
-
     <div>Analysis</div>
   ];
   return (
