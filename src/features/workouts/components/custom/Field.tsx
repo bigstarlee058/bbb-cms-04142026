@@ -4,6 +4,14 @@ import { BsEye, BsPerson } from 'react-icons/bs';
 export const Field = ({ label, name, value, onChange, disabled = false, ...rest }) => {
   const [type, setType] = useState(rest.type || 'text');
 
+  const handleWheel = (e) => {
+    if (rest.type === 'number') {
+      e.target.blur();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
   return (
     <div className={`form-group py-2 w-100 relative`}>
       <label className="fieldLabel">{label}</label>
@@ -15,6 +23,7 @@ export const Field = ({ label, name, value, onChange, disabled = false, ...rest 
         value={value || ''}
         {...rest}
         type={type}
+        onWheel={handleWheel}
       />
       {rest.type === 'email' && (
         <BsPerson className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
