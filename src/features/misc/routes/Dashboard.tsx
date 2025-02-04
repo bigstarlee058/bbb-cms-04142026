@@ -2,14 +2,24 @@ import { ContentLayout } from '@/components/Layout';
 import { useAuthStore }  from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const Dashboard = () => {
-  const { user } = useAuthStore();
+  const { user, setUser, setIsLogged } = useAuthStore();
+  const navigate = useNavigate();
   const { setCurrentPage } = useUserStore();
-
   useEffect(() => {
-    setCurrentPage("dashboard");
-  }, []);
+    console.log("this is dashboard page", user.role);
+    if (user.role != 1) {
+      setIsLogged(false);
+      setUser(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
+    } else {
+      setCurrentPage("dashboard");
+    }
+  }, [user, navigate]);
 
   return (
     <ContentLayout title="Dashboard">
