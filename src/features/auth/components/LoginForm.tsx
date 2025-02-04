@@ -28,13 +28,13 @@ export const LoginForm = () => {
   const [loading, setLoading] = useState(false);
   const { addNotification } = useNotificationStore();
 
-  useEffect(() => {
-    console.log("this is login page", user);
-    if(user) {
-      console.log("this is login page user", user);
-      navigate('/app');
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   console.log("this is login page", user);
+  //   if(user) {
+  //     console.log("this is login page user", user);
+  //     navigate('/app');
+  //   }
+  // }, [user, navigate]);
 
   const initialValues: FormikState = {
     email: '',
@@ -49,15 +49,14 @@ export const LoginForm = () => {
       mutate(values, {
         onSuccess: async (resp: { success: boolean; data: { uid: string; _id: string }; message?: string }) => {
           setLoading(false);
-          if (resp.success) {
-            setIsLogged(true);
+          if (resp.success) {            
             const newUser = await fetchMe();
             if(newUser?.role == 1) {
+              setIsLogged(true);
               console.log("this is login page success", user);
               setUser(newUser);
               navigate('/app');
             } else {
-              setIsLogged(false);
               localStorage.clear();
               sessionStorage.clear();
               window.location.href = '/';
