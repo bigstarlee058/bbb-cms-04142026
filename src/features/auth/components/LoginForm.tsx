@@ -52,6 +52,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
             setIsLogged(true);
             const newUser = await fetchMe();
             if(newUser?.role == 1) {
+              console.log("this is login page success", user);
               setUser(newUser);
               navigate('/app');
               onSuccess();
