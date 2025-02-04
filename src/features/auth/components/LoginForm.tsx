@@ -37,6 +37,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
       setUser(null);
       localStorage.clear();
       sessionStorage.clear();
+      window.location.href = '/';
     }
   }, [user, navigate]);
 
