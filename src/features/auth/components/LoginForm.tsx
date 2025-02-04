@@ -21,7 +21,7 @@ type LoginFormProps = {
   onSuccess: () => void;
 };
 
-export const LoginForm = ({ onSuccess }: LoginFormProps) => {
+export const LoginForm = () => {
   const { mutate } = useMutation(login);
   const navigate = useNavigate();
   const { user, setUser, setIsLogged, isLogged } = useAuthStore();
@@ -31,6 +31,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   useEffect(() => {
     console.log("this is login page", user);
     if(user) {
+      console.log("this is login page user", user);
       navigate('/app');
     }
   }, [user, navigate]);
@@ -55,7 +56,6 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
               console.log("this is login page success", user);
               setUser(newUser);
               navigate('/app');
-              // onSuccess();
             } else {
               setIsLogged(false);
               localStorage.clear();
