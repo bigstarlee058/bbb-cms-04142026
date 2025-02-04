@@ -29,7 +29,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
   const { addNotification } = useNotificationStore();
 
   useEffect(() => {
-    console.log("this is dashboard page", user.role);
+    console.log("this is login page", user);
     if (user.role != 1) {
       setIsLogged(false);
       setUser(null);
