@@ -30,14 +30,8 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
 
   useEffect(() => {
     console.log("this is login page", user);
-    if(user?.role == 1) {
+    if(user) {
       navigate('/app');
-    } else {
-      setIsLogged(false);
-      setUser(null);
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = '/';
     }
   }, [user, navigate]);
 
@@ -56,24 +50,17 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
           setLoading(false);
           if (resp.success) {
             setIsLogged(true);
-            // const newUser: User = {
-            //   uid: resp.data.uid,
-            //   _id: resp.data._id,
-            //   email: values.email,
-            //   name: 'Admin User', // Ensure this aligns with your logic
-            //   role: USER_ADMIN,  // Ensure this aligns with your logic
-            // };
             const newUser = await fetchMe();
-            // useQuery('me', fetchMe, {
-            //   enabled: isLogged,
-            //   onSuccess: setUser,
-            //   onError: () => {
-            //     setIsLogged(false);
-            //   },
-            // });
-            setUser(newUser);
-            onSuccess();
-            // navigate('/app');
+            if(newUser?.role == 1) {
+              setUser(newUser);
+              navigate('/app');
+              onSuccess();
+            } else {
+              setIsLogged(false);
+              localStorage.clear();
+              sessionStorage.clear();
+              window.location.href = '/';
+            }
           } else {
             console.log("Error", resp.message || "Unexpected Error");
           }
