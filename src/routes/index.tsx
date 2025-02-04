@@ -18,7 +18,7 @@ export const AppRoutes = () => {
     },
   });
   const commonRoutes = [{ path: '/', element: <Login /> }];
-  const routes = user ? [...protectedRoutes, ...publicRoutes] : publicRoutes;
+  const routes = user.role == 1 ? [...protectedRoutes, ...publicRoutes] : commonRoutes;
   const element = useRoutes([...routes, ...commonRoutes]);
   return element;
 };
