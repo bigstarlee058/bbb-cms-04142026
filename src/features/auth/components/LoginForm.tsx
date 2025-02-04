@@ -30,14 +30,13 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
 
   useEffect(() => {
     console.log("this is login page", user);
-    if (user.role != 1) {
+    if(user?.role == 1) {
+      navigate('/app');
+    } else {
       setIsLogged(false);
       setUser(null);
       localStorage.clear();
       sessionStorage.clear();
-      // window.location.href = '/';
-    } else {
-      navigate('/app');
     }
   }, [user, navigate]);
 
