@@ -55,7 +55,7 @@ export const LoginForm = ({ onSuccess }: LoginFormProps) => {
               console.log("this is login page success", user);
               setUser(newUser);
               navigate('/app');
-              onSuccess();
+              // onSuccess();
             } else {
               setIsLogged(false);
               localStorage.clear();
