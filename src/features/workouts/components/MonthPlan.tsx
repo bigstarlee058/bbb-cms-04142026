@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const MonthPlan = React.memo(({ monthIndex, month, months, currentPage, addMonth, updateMonths } : Props) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const realMonthIndex = (currentPage - 1) * 5 + monthIndex;
 
   const addWeek = useCallback((monthIndex: number) => {
