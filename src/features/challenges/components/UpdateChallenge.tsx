@@ -12,6 +12,8 @@ interface FormikState {
   title: string;
   description: string;
   image?: any;
+  link: string;
+  buttonText: string;
   deleteImage: boolean;
   isFeatured: false;
 }
@@ -32,6 +34,8 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
   const initialValues: FormikState = {
     title: challengeData?.title || '',
     description: challengeData?.description || '',
+    link: challengeData?.link || '',
+    buttonText: challengeData?.buttonText || '',
     image: challengeData?.photo || '',
     deleteImage: false,
     isFeatured: challengeData?.isFeatured || false,
@@ -42,8 +46,8 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, description, deleteImage, isFeatured } = state;
-    mutate({ challengeId, title, image, description, deleteImage, isFeatured });
+    const { title, image, description, link, buttonText, deleteImage, isFeatured } = state;
+    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isFeatured });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -60,6 +64,8 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
         <form id="update-challenge" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
           <Textarea label="Description" formik={formik} name="description" />
+          <Field label="Link" formik={formik} name="link" />
+          <Field label="Button Text" formik={formik} name="buttonText" />
           <Dropzone
             label="Photo"
             name="image"

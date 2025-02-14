@@ -13,6 +13,8 @@ import { createChallenge } from '../api';
 interface FormikState {
   title: string;
   description: string;
+  link: string;
+  buttonText: string;
   deleteImage: boolean;
   image: any;
   isFeatured: false;
@@ -33,6 +35,8 @@ export const CreateChallenge = () => {
     title: '',
     image: '',
     description: '',
+    link: '',
+    buttonText: '',
     deleteImage: false,
     isFeatured: false,
   };
@@ -64,6 +68,8 @@ export const CreateChallenge = () => {
         <form id="create-challenge" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
           <Textarea label="Description" formik={formik} name="description" />
+          <Field label="Link" formik={formik} name="link" />
+          <Field label="Button Text" formik={formik} name="buttonText" />
           <Dropzone
             label="Photo"
             name="image"

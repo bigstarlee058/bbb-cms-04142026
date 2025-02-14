@@ -79,6 +79,14 @@ export const ChallengesList = () => {
             field: 'description',
           },
           {
+            title: 'Button Text',
+            field: 'buttonText',
+          },
+          {
+            title: 'Link',
+            field: 'link',
+          },
+          {
             title: 'Featured',
             field: 'isFeatured',
             Cell({ entry: { isFeatured } }) {

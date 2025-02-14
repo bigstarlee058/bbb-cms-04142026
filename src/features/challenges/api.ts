@@ -34,6 +34,8 @@ export const createChallenge = async (payload: {
   title: string;
   image: File;  // Assuming the image comes as a File object from the client
   description: string;
+  link: string;
+  buttonText: string;
   isFeatured: boolean;
 }) => {
   try {
@@ -41,6 +43,8 @@ export const createChallenge = async (payload: {
     formData.append('title', payload.title);
     formData.append('image', payload.image);
     formData.append('description', payload.description);
+    formData.append('link', payload.link);
+    formData.append('buttonText', payload.buttonText);
     formData.append('isFeatured', String(payload.isFeatured));
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/challenges/admin', formData)) as ResponseMessage;
@@ -66,6 +70,8 @@ export const updateChallenge = async (payload: {
   title: string;
   image: File;  // Assuming the image comes as a File object from the client
   description: string;
+  link: string;
+  buttonText: string;
   deleteImage: Boolean;
   isFeatured: boolean;
 }) => {
@@ -75,6 +81,8 @@ export const updateChallenge = async (payload: {
     formData.append('title', payload.title);
     formData.append('image', payload.image);
     formData.append('description', payload.description);
+    formData.append('link', payload.link);
+    formData.append('buttonText', payload.buttonText);
     formData.append('deleteImage', String(payload.deleteImage));
     formData.append('isFeatured', String(payload.isFeatured));
     const result = (await axios.put('/challenges/admin', formData)) as ResponseMessage;

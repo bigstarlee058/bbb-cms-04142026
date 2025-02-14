@@ -251,6 +251,8 @@ export interface Challenge extends BaseEntity {
   photo: string;
   description: string;
   isFeatured: boolean;
+  link: string;
+  buttonText: string;
   joinedUsers: User[];
 }
 export interface ChallengesResponse {
