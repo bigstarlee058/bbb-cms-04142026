@@ -251,6 +251,7 @@ export interface Challenge extends BaseEntity {
   photo: string;
   description: string;
   isFeatured: boolean;
+  isHide: boolean;
   link: string;
   buttonText: string;
   joinedUsers: User[];

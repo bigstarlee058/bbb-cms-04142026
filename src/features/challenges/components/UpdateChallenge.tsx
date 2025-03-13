@@ -16,6 +16,7 @@ interface FormikState {
   buttonText: string;
   deleteImage: boolean;
   isFeatured: false;
+  isHide: false;
 }
 
 export const UpdateChallenge = ({ challengeId, challenges }) => {
@@ -39,6 +40,7 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
     image: challengeData?.photo || '',
     deleteImage: false,
     isFeatured: challengeData?.isFeatured || false,
+    isHide: challengeData?.isHide || false,
   };
   const formik = useFormik({
     initialValues,
@@ -46,8 +48,8 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, description, link, buttonText, deleteImage, isFeatured } = state;
-    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isFeatured });
+    const { title, image, description, link, buttonText, deleteImage, isFeatured, isHide } = state;
+    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isFeatured, isHide });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -75,6 +77,7 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
           <Field type="checkbox" label="Featured" formik={formik} name="isFeatured" style={{maxWidth: "20px"}} />
+          <Field type="checkbox" label="Hide" formik={formik} name="isHide" style={{maxWidth: "20px"}} />
         </form>
       </FormDrawer>
     </Authorization>

@@ -37,6 +37,7 @@ export const createChallenge = async (payload: {
   link: string;
   buttonText: string;
   isFeatured: boolean;
+  isHide: boolean;
 }) => {
   try {
     const formData = new FormData();
@@ -46,6 +47,7 @@ export const createChallenge = async (payload: {
     formData.append('link', payload.link);
     formData.append('buttonText', payload.buttonText);
     formData.append('isFeatured', String(payload.isFeatured));
+    formData.append('isHide', String(payload.isHide));
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/challenges/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
@@ -74,6 +76,7 @@ export const updateChallenge = async (payload: {
   buttonText: string;
   deleteImage: Boolean;
   isFeatured: boolean;
+  isHide: boolean;
 }) => {
   try {
     const formData = new FormData();
@@ -85,6 +88,7 @@ export const updateChallenge = async (payload: {
     formData.append('buttonText', payload.buttonText);
     formData.append('deleteImage', String(payload.deleteImage));
     formData.append('isFeatured', String(payload.isFeatured));
+    formData.append('isHide', String(payload.isHide));
     const result = (await axios.put('/challenges/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-challenges');

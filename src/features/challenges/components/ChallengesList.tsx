@@ -97,6 +97,16 @@ export const ChallengesList = () => {
             },
           },
           {
+            title: 'Hide',
+            field: 'isHide',
+            Cell({ entry: { isHide } }) {
+              return (
+              <div className="justify-center items-center">
+                {isHide ? "Hiden" : "Show"}
+              </div>);
+            },
+          },
+          {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {

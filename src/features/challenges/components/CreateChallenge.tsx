@@ -18,6 +18,7 @@ interface FormikState {
   deleteImage: boolean;
   image: any;
   isFeatured: false;
+  isHide: false;
 }
 
 export const CreateChallenge = () => {
@@ -39,6 +40,7 @@ export const CreateChallenge = () => {
     buttonText: '',
     deleteImage: false,
     isFeatured: false,
+    isHide: false,
   };
   const formik = useFormik({
     initialValues,
@@ -79,6 +81,7 @@ export const CreateChallenge = () => {
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
           <Field type="checkbox" label="Featured" formik={formik} name="isFeatured" style={{maxWidth: "20px"}} />
+          <Field type="checkbox" label="Hide" formik={formik} name="isHide" style={{maxWidth: "20px"}} />
         </form>
       </FormDrawer>
     </Authorization>
