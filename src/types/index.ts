@@ -23,6 +23,7 @@ export interface Collection extends BaseEntity {
   title: string;
   thumbnail: string;
   description: string;
+  isFeatured: boolean;
 }
 export interface CollectionsResponse {
   count: number;
