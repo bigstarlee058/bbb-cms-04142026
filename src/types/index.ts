@@ -37,6 +37,7 @@ export interface Bonus extends BaseEntity {
   title: string;
   thumbnail: string;
   description: string;
+  isFeatured: boolean;
 }
 export interface BonusesResponse {
   count: number;
