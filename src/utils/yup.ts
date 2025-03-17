@@ -34,14 +34,13 @@ export const userLoginSchema = Yup.object().shape({
 
 export const createExerciseSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
+  // description: Yup.string().max(255).required(),
   vimeoId: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
 
 export const createEquipmentSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
   link: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
@@ -49,7 +48,6 @@ export const createEquipmentSchema = Yup.object().shape({
 export const createWarmupSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   vimeoId: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
 
@@ -74,13 +72,11 @@ export const createUserSchema = Yup.object().shape({
 
 export const createCollectionSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
 
 export const createBonusSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
 
@@ -92,13 +88,11 @@ export const createCategorySchema = Yup.object().shape({
 export const createStaffSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   type: Yup.string().max(255).required(),
-  bio: Yup.string().max(255).required(),
   image: Yup.mixed().required('Photo is required'),
 });
 
 export const createChallengeSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
   link: Yup.string().max(255).required(),
   buttonText: Yup.string().max(255).required(),
   image: Yup.mixed().required('Photo is required'),
@@ -120,12 +114,10 @@ export const createSettingsSchema = Yup.object().shape({
 
 export const createSectionSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
 });
 
 export const createPumpDaySchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(255).required(),
 });
 
 export const createCircuitSchema = Yup.object().shape({
