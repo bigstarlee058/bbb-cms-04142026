@@ -79,7 +79,7 @@ export const ExercisesList = () => {
             title: 'Description',
             field: 'description',
             Cell({ entry: { description } }) {
-              return <p>{description.length > 50 ? `${description.slice(0, 50)}...` : description}</p>;
+              return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
             }
           },
           {

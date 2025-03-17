@@ -77,6 +77,9 @@ export const ChallengesList = () => {
           {
             title: 'Description',
             field: 'description',
+            Cell({ entry: { description } }) {
+              return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
+            }
           },
           {
             title: 'Button Text',

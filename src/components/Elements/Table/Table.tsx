@@ -51,7 +51,7 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
                         key={title + columnIndex}
                         className={`${
                           columnIndex === 0 ? 'pl-4' : 'px-2'
-                        } py-4 text-sm font-medium text-gray-900 whitespace-nowrap`}
+                        } py-4 text-sm font-medium text-gray-900`}
                       >
                         {Cell ? (
                           <Cell entry={entry} />

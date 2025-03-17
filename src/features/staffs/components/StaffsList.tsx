@@ -88,6 +88,9 @@ export const StaffsList = () => {
           {
             title: 'Bio',
             field: 'bio',
+            Cell({ entry: { bio } }) {
+              return <p>{bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}</p>;
+            }
           },
           {
             title: '',
