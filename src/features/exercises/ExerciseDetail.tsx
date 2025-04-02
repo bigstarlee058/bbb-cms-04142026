@@ -6,7 +6,7 @@ import { useQuery } from 'react-query';
 import { fetchExercise } from './api';
 import { useNotificationStore } from '@/stores/notifications';
 import { ErrorMessage } from '@/types';
-import { fetchCategoryTitles, fetchExerciseTitles } from '../workouts/api';
+import { fetchCategoryTitles, fetchTagTitles, fetchExerciseTitles } from '../workouts/api';
 import Vimeo from '@u-wave/react-vimeo';
 
 export const ExerciseDetail = () => {
@@ -28,6 +28,10 @@ export const ExerciseDetail = () => {
   );
   const { data: categoryTitles } = useQuery('get-category-titles', () =>
     fetchCategoryTitles({ filterString: '' })
+  );
+
+  const { data: tagTitles } = useQuery('get-tag-titles', () =>
+    fetchTagTitles({ filterString: '' })
   );
 
   if (isLoading || !data) {
@@ -55,6 +59,10 @@ export const ExerciseDetail = () => {
                 <p className="font-bold">Categories</p>
                 {categoryTitles ? (
                  categoryTitles.filter(title => data.categories.includes(title.id)).map(title => title.title).join(', ')
+                ) : null}
+                <p className="font-bold">Tags</p>
+                {tagTitles ? (
+                 tagTitles.filter(title => data.tags.includes(title.id)).map(title => title.title).join(', ')
                 ) : null}
                 <p className="font-bold">Description</p>
                 <p>{data.description}</p>

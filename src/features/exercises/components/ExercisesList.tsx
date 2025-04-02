@@ -6,7 +6,7 @@ import { DeleteExercise } from './DeleteExercise';
 import { useEffect, useState } from 'react';
 import { EyeIcon } from '@heroicons/react/solid';
 import { UpdateExercise } from './UpdateExercise';
-import { fetchCategoryTitles, fetchEquipmentTitles, fetchExerciseTitles } from '@/features/workouts/api';
+import { fetchCategoryTitles, fetchTagTitles, fetchEquipmentTitles, fetchExerciseTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
@@ -22,6 +22,8 @@ export const ExercisesList = () => {
   const { data: equipmentTitles } = useQuery('get-equipment-titles', () => fetchEquipmentTitles({ filterString: '' }));
   const { data: categoryTitles, refetch: refetchCategoryTitles } = useQuery('get-category-titles', () =>
     fetchCategoryTitles({ filterString: '' })
+  );
+  const { data: tagTitles, refetch: refetchTagTitles } = useQuery('get-tag-titles', () => fetchTagTitles({ filterString: '' })
   );
   useEffect(() => {
     refetch();
@@ -95,6 +97,19 @@ export const ExercisesList = () => {
             }
           },
           {
+            title: 'Tags',
+            field: 'tags',
+            Cell({ entry: { tags } }) {
+              if (!tagTitles) return null; 
+              if (!tags) return null; // Check if titles is defined
+              const filteredTitles = tagTitles
+                .filter((title) => tags.includes(title.id))
+                .map((title) => title.title)
+                .join(', ');
+              return <span>{filteredTitles}</span>;
+            }
+          },
+          {
             title: 'Equipment',
             field: 'usedEquipments',
             Cell({ entry: { usedEquipments } }) {
@@ -135,6 +150,7 @@ export const ExercisesList = () => {
                   exTitles={exerciseTitles}
                   eqTitles={equipmentTitles}
                   caTitles={categoryTitles}
+                  tagTitles={tagTitles}
                   onCategoryCreate={refetchCategoryTitles}
                 />
               );

@@ -16,6 +16,7 @@ interface FormikState {
   description: string;
   vimeoId: string;
   categories: string[];
+  tags: string[];
   guide: string;
   usedEquipments: string[];
   relatedExercises: string[];
@@ -29,6 +30,7 @@ export const UpdateExercise = ({
   exTitles,
   eqTitles,
   caTitles,
+  tagTitles,
   onCategoryCreate,
 }: {
   exerciseId: string;
@@ -36,6 +38,7 @@ export const UpdateExercise = ({
   exTitles: TitleResponse[];
   eqTitles: TitleResponse[];
   caTitles: TitleResponse[];
+  tagTitles: TitleResponse[];
   onCategoryCreate: () => void;
 }) => {
   const { addNotification } = useNotificationStore();
@@ -59,6 +62,7 @@ export const UpdateExercise = ({
     description: exerciseData?.description || '',
     vimeoId: exerciseData?.vimeoId || '',
     categories: exerciseData?.categories || [],
+    tags: exerciseData?.tags || [],
     guide: exerciseData?.guide || '',
     usedEquipments: exerciseData?.usedEquipments || [],
     relatedExercises: exerciseData?.relatedExercises || [],
@@ -113,12 +117,29 @@ export const UpdateExercise = ({
                 value.map((v: any) => v.value)
               )
             }
-            isCreatable
+            // isCreatable
             onCreateOption={async (category: string) => {
               const data = await createCategory({ title: category });
               formik.setFieldValue('categories', [...formik.values.categories, data.id]);
               setCategoryTitles((prev) => ([...prev, {title: category, id: data.id}]))
             }}
+          />
+          <Select
+            isMulti
+            formik={formik}
+            label="Tags"
+            name="tags"
+            options={tagTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={formik.values.tags.map((id) => {
+              const tag = tagTitles?.find((c) => c.id === id);
+              return { label: tag?.title || '', value: id };
+            })}
+            onChange={(value: any) =>
+              formik.setFieldValue(
+                'tags',
+                value.map((v: any) => v.value)
+              )
+            }
           />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />

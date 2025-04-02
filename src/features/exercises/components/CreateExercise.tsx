@@ -15,6 +15,7 @@ interface FormikState {
   description: string;
   vimeoId: string;
   categories: string[];
+  tags: string[];
   guide: string;
   usedEquipments: string[];
   relatedExercises: string[];
@@ -22,7 +23,7 @@ interface FormikState {
   deleteImage: boolean;
 }
 
-export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles, onCategoryCreate }) => {
+export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles, tagTitles, onCategoryCreate }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createExercise, {
     onSuccess: (message: string) => {
@@ -39,6 +40,7 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
     description: '',
     vimeoId: '',
     categories: [],
+    tags: [],
     guide: '',
     usedEquipments: [],
     relatedExercises: [],
@@ -98,7 +100,6 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
                 value.map((v: any) => v.value)
               )
             }
-            isCreatable
             onCreateOption={async (category: string) => {
               const data = await createCategory({ title: category });
               formik.setFieldValue(
@@ -107,6 +108,23 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
               )
               onCategoryCreate();
             }}
+          />
+          <Select
+            isMulti
+            formik={formik}
+            label="Tags"
+            name="tags"
+            options={tagTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={formik.values.tags.map((id) => {
+              const tag = tagTitles?.find((c) => c._id === id);
+              return { label: tag?.title || '', value: id };
+            })}
+            onChange={(value: any) =>
+              formik.setFieldValue(
+                'tags',
+                value.map((v: any) => v.value)
+              )
+            }
           />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />
