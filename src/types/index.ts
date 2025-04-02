@@ -136,6 +136,7 @@ export interface Exercise extends BaseEntity {
   thumbnail: string;
   guide: string;
   categories: string[];
+  tags: string[];
   usedEquipments: string[];
   relatedExercises: string[];
 }

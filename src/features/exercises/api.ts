@@ -34,6 +34,7 @@ export const createExercise = async (payload: {
   vimeoId: string;
   image: File;
   categories: [];
+  tags: [];
   usedEquipments: [],
   relatedExercises: [],
 }) => {
@@ -44,6 +45,7 @@ export const createExercise = async (payload: {
       formData.append('description', payload.description);
       formData.append('vimeoId', payload.vimeoId);
       formData.append('categories', JSON.stringify(payload.categories));
+      formData.append('tags', JSON.stringify(payload.tags));
       formData.append('usedEquipments', JSON.stringify(payload.usedEquipments));
       formData.append('relatedExercises', JSON.stringify(payload.relatedExercises));
       // Post the new category data (including the image) to your backend
@@ -78,6 +80,7 @@ export const createExercise = async (payload: {
       vimeoId: string;
       image: File;
       categories: [];
+      tags: [];
       usedEquipments: [],
       relatedExercises: [], 
     };
@@ -90,6 +93,7 @@ export const createExercise = async (payload: {
       formData.append('description', payload.description);
       formData.append('vimeoId', payload.vimeoId);
       formData.append('categories', JSON.stringify(payload.categories));
+      formData.append('tags', JSON.stringify(payload.tags));
       formData.append('usedEquipments', JSON.stringify(payload.usedEquipments));
       formData.append('relatedExercises', JSON.stringify(payload.relatedExercises));
       const result = (await axios.put('/exercises/admin', formData)) as ResponseMessage;
