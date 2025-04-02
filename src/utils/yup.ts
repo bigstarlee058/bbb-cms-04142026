@@ -57,10 +57,6 @@ export const createRestdaySchema = Yup.object().shape({
   description: Yup.string().max(255).required(),
 });
 
-export const createTagSchema = Yup.object().shape({
-  name: Yup.string().max(255).required(),
-});
-
 export const createVimeoSchema = Yup.object().shape({
   vimeoId: Yup.string().max(255).required(),
 });
@@ -81,6 +77,10 @@ export const createBonusSchema = Yup.object().shape({
 });
 
 export const createCategorySchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Thumbnail is required'),
+});
+export const createTagSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });

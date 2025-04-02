@@ -76,6 +76,16 @@ export interface CategoriesResponse {
   categories: Category[];
 }
 
+export interface Tags extends BaseEntity {
+  title: string;
+  thumbnail: string;
+  exerciseCount: number;
+}
+export interface TagsResponse {
+  count: number;
+  tags: Tags[];
+}
+
 export interface Equipment extends BaseEntity {
   title: string;
   thumbnail: string;

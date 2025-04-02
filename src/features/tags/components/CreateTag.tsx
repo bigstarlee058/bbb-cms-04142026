@@ -1,24 +1,23 @@
 import { PlusIcon } from '@heroicons/react/outline';
-import { Button } from '@/components/Elements';
-import { Field, FormDrawer } from '@/components/Form';
-import { Authorization, ROLES } from '@/lib/authorization';
-import { createTag } from '../api';
-import { useMutation, useQuery } from 'react-query';
-import { useNotificationStore } from '@/stores/notifications';
-import { queryClient } from '@/lib/react-query';
 import { useFormik } from 'formik';
+import { useMutation } from 'react-query';
+
+import { Button } from '@/components/Elements';
+import { FormDrawer, Field, Dropzone } from '@/components/Form';
+import { Authorization, ROLES } from '@/lib/authorization';
+import { useNotificationStore } from '@/stores/notifications';
 import { createTagSchema } from '@/utils/yup';
-import { Select } from '@/components/Form';
-import { fetchAllCollections } from '@/features/collections/api';
+
+import { createTag } from '../api';
 
 interface FormikState {
-  name: string;
-  featuredCollections: Array<string>;
+  title: string;
+  deleteImage: boolean;
+  image: any;
 }
 
 export const CreateTag = () => {
   const { addNotification } = useNotificationStore();
-  const { data: collections } = useQuery('get-collections', fetchAllCollections);
   const { mutate, isLoading, isSuccess } = useMutation(createTag, {
     onSuccess: (message: string) => {
       formik.resetForm();
@@ -28,12 +27,10 @@ export const CreateTag = () => {
       });
     },
   });
-  const collectionOptions = collections?.map((v) => {
-    return { value: v._id, label: v.title };
-  });
   const initialValues: FormikState = {
-    name: '',
-    featuredCollections: [],
+    title: '',
+    image: '',
+    deleteImage: false,
   };
   const formik = useFormik({
     initialValues,
@@ -43,38 +40,32 @@ export const CreateTag = () => {
   const onSubmit = (value: any) => {
     mutate(value);
   };
+
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
         isDone={isSuccess}
         triggerButton={
-          <Button size="sm" startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4" />}>
             Create Tag
           </Button>
         }
         title="Create Tag"
         submitButton={
-          <Button form="create-tag" type="submit" size="sm" isLoading={isLoading}>
+          <Button form="create-tag" variant="danger" type="submit" size="sm" isLoading={isLoading}>
             Submit
           </Button>
         }
       >
         <form id="create-tag" onSubmit={formik.handleSubmit}>
-          <Field label="Name" formik={formik} name="name" />
-          <Select
-            className="mb-4"
-            isMulti
+          <Field label="Title" formik={formik} name="title" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
             formik={formik}
-            label="Collections"
-            name="featuredCollections"
-            options={collectionOptions}
-            value={collectionOptions?.filter((el) =>
-              formik.values.featuredCollections.includes(el.value)
-            )}
-            onChange={(value: any) => {
-              const subs = value.map((v: any) => v.value);
-              formik.setFieldValue('featuredCollections', subs);
-            }}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
         </form>
       </FormDrawer>

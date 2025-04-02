@@ -17,11 +17,12 @@ export const TagDetail = () => {
     onError: (err: ErrorMessage) => {
       addNotification({
         type: 'success',
-        title: err.message,
+        title: err.message
       });
       navigate('/app/tags');
-    },
+    }
   });
+
   if (isLoading || !data) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -29,26 +30,19 @@ export const TagDetail = () => {
       </div>
     );
   }
-
   return (
     <>
-      <Head title={data.name} />
-      <ContentLayout title={data.name}>
-        *<span className="text-xs font-bold">{formatDate(data.createdAt)}</span>
+      <Head title={data.title} />
+      <ContentLayout title={data.title}>
+        <span className="text-xs font-bold">{formatDate(data.createdAt)}</span>
         <div className="mt-6 flex flex-col space-y-16">
-          <div className="flex justify-end">
-            <UpdateTag tagId={tagId} />
-          </div>
           <div>
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:px-6">
-                <div className="mt-1 max-w-2xl text-sm text-gray-500">
-                  <div className="flex flex-col text-lg">
-                    {data.featuredCollections.map((v) => {
-                      return <Link to={`/app/collections/${v._id}`}>{v.title}</Link>;
-                    })}
+                <div className="flex gap-3">
+                  <div>
+                    <img src={data.thumbnail} />
                   </div>
-                  <MDPreview value={data.name + ' with id = ' + data._id} />
                 </div>
               </div>
             </div>

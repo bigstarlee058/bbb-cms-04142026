@@ -1,11 +1,14 @@
-import { TagPayload, Tag, ErrorMessage, ResponseMessage } from '@/types';
+import { Tags, TagsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
-export const fetchTags = async (): Promise<Tag[]> => {
+export const fetchTags = async (filters: Filters) => {
   try {
-    const tags = (await axios.get('/tags')) as Tag[];
-    return tags;
+    const result = (await axios.get(`/tags/admin/get`, {
+      params: filters,
+    })) as TagsResponse;
+    console.log("result:::", result);
+    return result;
   } catch (err: any) {
     const error: ErrorMessage = {
       status: true,
@@ -17,7 +20,7 @@ export const fetchTags = async (): Promise<Tag[]> => {
 
 export const fetchTag = async (tagId: string) => {
   try {
-    const result = (await axios.get(`/tags/${tagId}`)) as Tag;
+    const result = (await axios.get(`/tags/admin/get/${tagId}`)) as Tags;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -28,14 +31,19 @@ export const fetchTag = async (tagId: string) => {
   }
 };
 
-export const createTag = async (payload: TagPayload) => {
+export const createTag = async (payload: {
+  title: string;
+  image?: File;  // Assuming the image comes as a File object from the client
+}) => {
   try {
-    const newTag = {
-      ...payload,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.post('/tags', newTag)) as ResponseMessage;
+    const formData = new FormData();
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    // Post the new tag data (including the image) to your backend
+    const result = (await axios.post('/tags/admin', formData)) as any;
+    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
+      console.log(result);
       queryClient.invalidateQueries('get-tags');
       return 'Tag successfully created.';
     }
@@ -45,20 +53,28 @@ export const createTag = async (payload: TagPayload) => {
       status: true,
       message: err as string,
     };
+    console.log(error);
     return Promise.reject(error);
   }
 };
 
-export const updateTag = async ({ tagId, payload }: { tagId: string; payload: TagPayload }) => {
+
+export const updateTag = async (payload: {
+  tagId: string 
+  title: string;
+  image: File;  // Assuming the image comes as a File object from the client
+  deleteImage: Boolean
+}) => {
   try {
-    const updatedTag = {
-      ...payload,
-      _id: tagId,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.put('/tags', updatedTag)) as ResponseMessage;
+    const formData = new FormData();
+    formData.append('_id', payload.tagId);
+    formData.append('title', payload.title);
+    formData.append('image', payload.image);
+    formData.append('deleteImage', String(payload.deleteImage));
+    const result = (await axios.put('/tags/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries(['get-tag', tagId]);
+      queryClient.invalidateQueries('get-tags');
+      queryClient.invalidateQueries(['get-tag', payload.tagId]);
       return 'Tag successfully updated.';
     }
     return result.message;
@@ -73,7 +89,7 @@ export const updateTag = async ({ tagId, payload }: { tagId: string; payload: Ta
 
 export const deleteTag = async (tagId: string) => {
   try {
-    const result = (await axios.delete(`/tags/${tagId}`)) as ResponseMessage;
+    const result = (await axios.delete(`/tags/admin/${tagId}`)) as ResponseMessage;
     if (result.result === true) {
       return 'Successfully deleted.';
     }

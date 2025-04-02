@@ -44,7 +44,7 @@ export const createCategory = async (payload: {
     if (result.result === true) {
       console.log(result);
       queryClient.invalidateQueries('get-categories');
-      return result.category;
+      return 'Category successfully created.';
     }
     return result.message;
   } catch (err: any) {

@@ -20,6 +20,7 @@ const { ExercisesRoutes } = lazyImport(() => import('@/features/exercises'), 'Ex
 const { EquipmentRoutes } = lazyImport(() => import('@/features/equipment'), 'EquipmentRoutes');
 const { RestdayRoutes } = lazyImport(() => import('@/features/restdays'), 'RestdayRoutes');
 const { CategoriesRoutes } = lazyImport(() => import('@/features/categories'), 'CategoriesRoutes');
+const { TagsRoutes } = lazyImport(() => import('@/features/tags'), 'TagsRoutes');
 const { StaffsRoutes } = lazyImport(() => import('@/features/staffs'), 'StaffsRoutes');
 const { ChallengesRoutes } = lazyImport(() => import('@/features/challenges'), 'ChallengesRoutes');
 const { CollectionsRoutes } = lazyImport(() => import('@/features/collections'), 'CollectionsRoutes');
@@ -71,6 +72,7 @@ export const protectedRoutes = [
       { path: 'equipments/*', element: <EquipmentRoutes /> },
       { path: 'restdays/*', element: <RestdayRoutes /> },
       { path: 'categories/*', element: <CategoriesRoutes /> },
+      { path: 'tags/*', element: <TagsRoutes /> },
       { path: 'staffs/*', element: <StaffsRoutes /> },
       { path: 'challenges/*', element: <ChallengesRoutes /> },
       { path: 'collections/*', element: <CollectionsRoutes /> },

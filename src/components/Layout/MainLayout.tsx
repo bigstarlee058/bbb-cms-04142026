@@ -62,6 +62,7 @@ const SideNavigation = () => {
     { title: 'Equipment', path: './equipments', icon: MenuAlt4Icon },
     { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
+    { title: 'Tags', path: './tags', icon: MenuAlt4Icon },
     { title: 'People', path: './staffs', icon: MenuAlt4Icon },
     { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
