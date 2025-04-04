@@ -87,6 +87,7 @@ export const ExercisesList = () => {
           {
             title: 'Categories',
             field: 'categories',
+            minwidth: 150,
             Cell({ entry: { categories } }) {
               if (!categoryTitles) return null; // Check if titles is defined
               const filteredTitles = categoryTitles
@@ -99,6 +100,7 @@ export const ExercisesList = () => {
           {
             title: 'Tags',
             field: 'tags',
+            minwidth: 150,
             Cell({ entry: { tags } }) {
               if (!tagTitles) return null; 
               if (!tags) return null; // Check if titles is defined
@@ -152,6 +154,7 @@ export const ExercisesList = () => {
                   caTitles={categoryTitles}
                   tagTitles={tagTitles}
                   onCategoryCreate={refetchCategoryTitles}
+                  onTagCreate={refetchTagTitles}
                 />
               );
             }

@@ -30,6 +30,7 @@ export const Exercises = () => {
           categoryTitles={categoryTitles}
           tagTitles={tagTitles}
           onCategoryCreate={refetchCategoryTitles}
+          onTagCreate={refetchTagTitles}
         />
       </div>
       <div className="mt-4">

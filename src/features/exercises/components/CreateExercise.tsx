@@ -9,6 +9,7 @@ import { useFormik } from 'formik';
 import { Field, Dropzone, Textarea, Select } from '@/components/Form';
 import { createExerciseSchema } from '@/utils/yup';
 import { createCategory } from '@/features/categories/api';
+import { createTag } from '@/features/tags/api';
 
 interface FormikState {
   title: string;
@@ -23,7 +24,7 @@ interface FormikState {
   deleteImage: boolean;
 }
 
-export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles, tagTitles, onCategoryCreate }) => {
+export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles, tagTitles, onCategoryCreate, onTagCreate }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createExercise, {
     onSuccess: (message: string) => {
@@ -100,6 +101,7 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
                 value.map((v: any) => v.value)
               )
             }
+            isCreatable
             onCreateOption={async (category: string) => {
               const data = await createCategory({ title: category });
               formik.setFieldValue(
@@ -125,6 +127,15 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
                 value.map((v: any) => v.value)
               )
             }
+            isCreatable
+            onCreateOption={async (tag: string) => {
+              const data = await createTag({ title: tag });
+              formik.setFieldValue(
+                'tags',
+                [...formik.values.tags, data.id]
+              )
+              onTagCreate();
+            }}
           />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />

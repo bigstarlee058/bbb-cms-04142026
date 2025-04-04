@@ -9,6 +9,7 @@ import { useFormik } from 'formik';
 import { createExerciseSchema } from '@/utils/yup';
 import { TitleResponse, Exercise } from '@/types';
 import { createCategory } from '@/features/categories/api';
+import { createTag } from '@/features/tags/api';
 import { useState } from 'react';
 
 interface FormikState {
@@ -32,6 +33,7 @@ export const UpdateExercise = ({
   caTitles,
   tagTitles,
   onCategoryCreate,
+  onTagCreate
 }: {
   exerciseId: string;
   exercises: { exercises: Exercise[] };
@@ -40,6 +42,7 @@ export const UpdateExercise = ({
   caTitles: TitleResponse[];
   tagTitles: TitleResponse[];
   onCategoryCreate: () => void;
+  onTagCreate: () => void;
 }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(updateExercise, {
@@ -56,6 +59,7 @@ export const UpdateExercise = ({
   const equipmentTitles = eqTitles;
 
   const [categoryTitles, setCategoryTitles] = useState(caTitles)
+  const [taTitles, setTaTitles] = useState(tagTitles)
 
   const initialValues: FormikState = {
     title: exerciseData?.title || '',
@@ -77,6 +81,7 @@ export const UpdateExercise = ({
   const onSubmit = (value: any) => {
     mutate({ exerciseId, payload: value });
     onCategoryCreate();
+    onTagCreate();
   };
 
   return (
@@ -117,7 +122,7 @@ export const UpdateExercise = ({
                 value.map((v: any) => v.value)
               )
             }
-            // isCreatable
+            isCreatable
             onCreateOption={async (category: string) => {
               const data = await createCategory({ title: category });
               formik.setFieldValue('categories', [...formik.values.categories, data.id]);
@@ -129,9 +134,9 @@ export const UpdateExercise = ({
             formik={formik}
             label="Tags"
             name="tags"
-            options={tagTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            options={taTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
             value={formik.values.tags.map((id) => {
-              const tag = tagTitles?.find((c) => c.id === id);
+              const tag = taTitles?.find((c) => c.id === id);
               return { label: tag?.title || '', value: id };
             })}
             onChange={(value: any) =>
@@ -140,6 +145,12 @@ export const UpdateExercise = ({
                 value.map((v: any) => v.value)
               )
             }
+            isCreatable
+            onCreateOption={async (tag: string) => {
+              const data = await createTag({ title: tag });
+              formik.setFieldValue('tags', [...formik.values.tags, data.id]);
+              setTaTitles((prev) => ([...prev, {title: tag, id: data.id}]))
+            }}
           />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
           <Textarea label="Description" formik={formik} name="description" />

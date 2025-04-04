@@ -82,7 +82,6 @@ export const createCategorySchema = Yup.object().shape({
 });
 export const createTagSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Thumbnail is required'),
 });
 
 export const createStaffSchema = Yup.object().shape({

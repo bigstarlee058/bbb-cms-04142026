@@ -19,11 +19,11 @@ interface FormikState {
 export const CreateTag = () => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createTag, {
-    onSuccess: (message: string) => {
+    onSuccess: () => {
       formik.resetForm();
       addNotification({
         type: 'success',
-        title: message,
+        title: "Tag successfully created.",
       });
     },
   });
