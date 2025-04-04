@@ -19,11 +19,11 @@ interface FormikState {
 export const CreateCategory = () => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createCategory, {
-    onSuccess: (message: string) => {
+    onSuccess: () => {
       formik.resetForm();
       addNotification({
         type: 'success',
-        title: message,
+        title: "Category successfully created.",
       });
     },
   });

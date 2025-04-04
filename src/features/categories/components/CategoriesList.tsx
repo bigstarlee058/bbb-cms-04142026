@@ -75,7 +75,7 @@ export const CategoriesList = () => {
             },
           },
           {
-            title: 'Exercises Counts',
+            title: 'Exercise Count',
             field: 'exerciseCount',
           },
           {

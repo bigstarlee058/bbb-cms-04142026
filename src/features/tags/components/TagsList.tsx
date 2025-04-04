@@ -75,7 +75,7 @@ export const TagsList = () => {
             },
           },
           {
-            title: 'Exercises Counts',
+            title: 'Exercise Count',
             field: 'exerciseCount',
           },
           {

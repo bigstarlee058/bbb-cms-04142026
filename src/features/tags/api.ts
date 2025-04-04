@@ -45,7 +45,7 @@ export const createTag = async (payload: {
     if (result.result === true) {
       console.log(result);
       queryClient.invalidateQueries('get-tags');
-      return 'Tag successfully created.';
+      return result.tag;
     }
     return result.message;
   } catch (err: any) {
