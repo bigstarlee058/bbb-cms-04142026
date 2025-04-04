@@ -52,7 +52,8 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
                         key={title + columnIndex}
                         className={`${
                           columnIndex === 0 ? 'pl-4' : 'px-2'
-                        } ${minwidth ? `min-w-[${minwidth}px]` : 'min-w-[0px]'} py-4 text-sm font-medium text-gray-900`}
+                        } py-4 text-sm font-medium text-gray-900`}
+                        style={{ minWidth: `${minwidth || 0}px` }}
                       >
                         {Cell ? (
                           <Cell entry={entry} />
