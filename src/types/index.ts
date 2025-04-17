@@ -211,6 +211,8 @@ export interface Day extends WorkoutsBaseEntity {
   title: string;
   description: string;
   vimeoId: string;
+  vimeoIdTwo: string;
+  vimeoIdThree: string;
   thumbnail: any;
   formats: string[];
   

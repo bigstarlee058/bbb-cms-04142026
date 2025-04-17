@@ -21,7 +21,7 @@ export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" name="description" value={week.description} onChange={handleChange} />
+        <Textarea label="Description" name="description" value={week.description} onChange={handleChange} hasHeight = {false} />
       </div>
       <div className="w-1/2 ml-4 mr-4 mt-6 space-y-2">
         {/* <Dropzone

@@ -97,7 +97,7 @@ export const DayDetail = ({
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" name="description" value={day.description} onChange={handleChange} />
+        <Textarea label="Description" name="description" value={day.description} onChange={handleChange} hasHeight = {true} />
       </div>
       <div className="w-1/2 ml-4 mr-4 mt-6">
         <Dropzone
@@ -110,7 +110,9 @@ export const DayDetail = ({
           }}
           file={day.thumbnail}
         />
-        <Field label="Vimeo Id" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
+        <Field label="Vimeo Id One" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
+        <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
+        <Field label="Vimeo Id Three" name="vimeoIdThree" value={day.vimeoIdThree} onChange={handleChange} />
         {!isPumpDay && (
           <Select
             label="Day Order"
