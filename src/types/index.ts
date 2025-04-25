@@ -162,6 +162,11 @@ export interface TutorialResponse {
   description: string;
 }
 
+export interface VersionResponse {
+  latest_version: string;
+  update_message: string;
+}
+
 export interface Filters {
   page?: number;
   perPage?: number;
