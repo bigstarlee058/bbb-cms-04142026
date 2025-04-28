@@ -4,11 +4,13 @@ import { updatePumpDays } from '@/features/workouts/api';
 import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
 import SaveIcon from "@/lib/icons/SaveIcon";
+import { useState } from "react";
 
 export const SavePumpDays = ({allDays}) => {
   // Access the client
   const queryClient = useQueryClient();
   const { addNotification } = useNotificationStore();
+  // const [isSuccess, setIsSuccess] = useState(false);
   const { mutate, isSuccess, isLoading } = useMutation(updatePumpDays, {
     onSuccess: (message: string) => {
       addNotification({
@@ -23,7 +25,34 @@ export const SavePumpDays = ({allDays}) => {
   });
 
   const handleSavePumpDays = () => {
-    mutate(allDays);
+    // setIsSuccess(false);
+    console.log(allDays);
+    let isExerciseId = true;
+    allDays.forEach((workout) => {
+      workout.circuits.forEach(circuit => {
+        circuit.circuitExercises.forEach(exercise => {
+          if (!exercise.exerciseId) {
+            isExerciseId = false;
+          }
+        });
+      });
+
+      workout.exercises.forEach(exercise => {
+        if (!exercise.exerciseId) {
+          isExerciseId = false;
+        }
+      });
+    });
+
+    if(!isExerciseId) {
+      addNotification({
+        type: 'error',
+        title: 'Exercise data is not exist',
+      });
+    } else {
+      mutate(allDays);
+    }
+    // setIsSuccess(true);
   };
 
   return (
