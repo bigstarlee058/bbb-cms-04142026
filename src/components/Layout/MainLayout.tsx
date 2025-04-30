@@ -53,7 +53,8 @@ const SideNavigation = () => {
       submenu: [
         { title: 'Login Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
         { title: 'Tutorial Video', path: './backgroundTutorials', icon: MenuAlt1Icon },
-        { title: 'Version Manage', path: './versionManage', icon: MenuAlt1Icon }
+        { title: 'Version Manage', path: './versionManage', icon: MenuAlt1Icon },
+        { title: 'Popup Information', path: './popupInformation', icon: MenuAlt1Icon },
       ]
     },
 

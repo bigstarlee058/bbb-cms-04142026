@@ -167,6 +167,13 @@ export interface VersionResponse {
   update_message: string;
 }
 
+export interface PopupinfoResponse {
+  vimeoId: string;
+  imgUrl: string;
+  title: string;
+  description: string;
+}
+
 export interface Filters {
   page?: number;
   perPage?: number;
