@@ -3,7 +3,7 @@ import { Button } from '@/components/Elements';
 import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation } from 'react-query';
-import { updateFaqs } from '../api';
+import { updateFaq } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createFaqsSchema } from '@/utils/yup';
@@ -13,9 +13,9 @@ interface FormikState {
   answer: string;
 }
 
-export const UpdateFaqs = ({ faqsId, faqses }) => {
+export const UpdateFaq = ({ faqId, faqs }) => {
   const { addNotification } = useNotificationStore();
-  const { mutate, isLoading, isSuccess } = useMutation(updateFaqs, {
+  const { mutate, isLoading, isSuccess } = useMutation(updateFaq, {
     onSuccess: (message: string) => {
       addNotification({
         type: 'success',
@@ -24,11 +24,11 @@ export const UpdateFaqs = ({ faqsId, faqses }) => {
     }
   });
 
-  const faqsData = faqses.faqs.find((ex) => ex._id === faqsId);
+  const faqData = faqs.faqs.find((ex) => ex._id === faqId);
 
   const initialValues: FormikState = {
-    question: faqsData?.question || '',
-    answer: faqsData?.answer || '',
+    question: faqData?.question || '',
+    answer: faqData?.answer || '',
   };
   const formik = useFormik({
     initialValues,
@@ -38,7 +38,7 @@ export const UpdateFaqs = ({ faqsId, faqses }) => {
   const onSubmit = (state: FormikState) => {
     const { question, answer } = state;
     console.log("sumit")
-    mutate({ faqsId, question, answer });
+    mutate({ faqId, question, answer });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>

@@ -6,13 +6,13 @@ import { ErrorMessage } from '@/types';
 import { Spinner } from '@/components/Elements';
 import { Head } from '@/components/Head';
 import { formatDate } from '@/utils/format';
-import { fetchFaqs } from './api';
+import { fetchFaq } from './api';
 
-export const FaqsDetail = () => {
-  const { faqsId } = useParams();
+export const FaqDetail = () => {
+  const { faqId } = useParams();
   const { addNotification } = useNotificationStore();
   const navigate = useNavigate();
-  const { data, isLoading } = useQuery(['get-faqs', faqsId], () => fetchFaqs(faqsId), {
+  const { data, isLoading } = useQuery(['get-faq', faqId], () => fetchFaq(faqId), {
     onError: (err: ErrorMessage) => {
       addNotification({
         type: 'success',

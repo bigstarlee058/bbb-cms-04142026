@@ -8,16 +8,16 @@ import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { createFaqsSchema } from '@/utils/yup';
 
-import { createFaqs } from '../api';
+import { createFaq } from '../api';
 
 interface FormikState {
   question: string;
   answer: string;
 }
 
-export const CreateFaqs = () => {
+export const CreateFaq = () => {
   const { addNotification } = useNotificationStore();
-  const { mutate, isLoading, isSuccess } = useMutation(createFaqs, {
+  const { mutate, isLoading, isSuccess } = useMutation(createFaq, {
     onSuccess: (message: string) => {
       formik.resetForm();
       addNotification({
@@ -46,10 +46,10 @@ export const CreateFaqs = () => {
         isDone={isSuccess}
         triggerButton={
           <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4" />}>
-            Create FAQs
+            Create FAQ
           </Button>
         }
-        title="Create Faqs"
+        title="Create FAQ"
         submitButton={
           <Button form="create-section" variant="danger" type="submit" size="sm" isLoading={isLoading}>
             Submit

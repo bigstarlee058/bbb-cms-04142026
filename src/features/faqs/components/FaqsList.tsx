@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
-import { fetchFaqses } from '../api';
-import { Filters, Faqs } from '@/types';
+import { fetchFaqs } from '../api';
+import { Filters, Faq } from '@/types';
 import { EyeIcon } from '@heroicons/react/outline';
-import { DeleteFaqs } from './DeleteFaqs';
-import { UpdateFaqs } from './UpdateFaqs';
+import { DeleteFaq } from './DeleteFaq';
+import { UpdateFaq } from './UpdateFaq';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
@@ -21,7 +21,7 @@ export const FaqsList = () => {
     data: faqsData,
     isLoading,
     refetch,
-  } = useQuery(['get-faqses'], () => fetchFaqses(filters));
+  } = useQuery(['get-faqs'], () => fetchFaqs(filters));
 
   useEffect(() => {
     refetch();
@@ -57,7 +57,7 @@ export const FaqsList = () => {
 
   return (
     <>
-      <Table<Faqs>
+      <Table<Faq>
         data={faqsData.faqs}
         columns={[
           {
@@ -83,14 +83,14 @@ export const FaqsList = () => {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <UpdateFaqs faqsId={_id} faqses={faqsData} />;
+              return <UpdateFaq faqId={_id} faqs={faqsData} />;
             },
           },
           {
             title: '',
             field: '_id',
             Cell({ entry: { _id } }) {
-              return <DeleteFaqs faqsId={_id} />;
+              return <DeleteFaq faqId={_id} />;
             },
           },
         ]}

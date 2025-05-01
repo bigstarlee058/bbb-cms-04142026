@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { ContentLayout } from '@/components/Layout';
 import { FaqsList } from './components/FaqsList';
-import { CreateFaqs } from './components/CreateFaqs';
+import { CreateFaq } from './components/CreateFaq';
 import { useUserStore } from '@/stores/user';
 
 export const Faqs = () => {
@@ -13,7 +13,7 @@ export const Faqs = () => {
   return (
     <ContentLayout title="">
       <div className="flex justify-end">
-        <CreateFaqs/>
+        <CreateFaq/>
       </div>
       <div className="mt-4">
         <FaqsList />

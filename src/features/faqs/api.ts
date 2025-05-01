@@ -1,12 +1,12 @@
-import { Faqs, FaqsesResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
+import { Faq, FaqsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
-export const fetchFaqses = async (filters: Filters) => {
+export const fetchFaqs = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/faqs/admin/get`, {
       params: filters,
-    })) as FaqsesResponse;
+    })) as FaqsResponse;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -17,9 +17,9 @@ export const fetchFaqses = async (filters: Filters) => {
   }
 };
 
-export const fetchFaqs = async (faqsId: string) => {
+export const fetchFaq = async (faqId: string) => {
   try {
-    const result = (await axios.get(`/faqs/admin/get/${faqsId}`)) as Faqs;
+    const result = (await axios.get(`/faqs/admin/get/${faqId}`)) as Faq;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -30,7 +30,7 @@ export const fetchFaqs = async (faqsId: string) => {
   }
 };
 
-export const createFaqs = async (payload: {
+export const createFaq = async (payload: {
   question: string;
   answer: string;
 }) => {
@@ -40,8 +40,8 @@ export const createFaqs = async (payload: {
     formData.append('answer', payload.answer);
     const result = (await axios.post('/faqs/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-faqses');
-      return 'Faqs successfully created.';
+      queryClient.invalidateQueries('get-faqs');
+      return 'FAG successfully created.';
     }
     return result.message;
   } catch (err: any) {
@@ -55,21 +55,21 @@ export const createFaqs = async (payload: {
 };
 
 
-export const updateFaqs = async (payload: {
-  faqsId: string 
+export const updateFaq = async (payload: {
+  faqId: string 
   question: string;
   answer: string;
 }) => {
   try {
     const formData = new FormData();
-    formData.append('_id', payload.faqsId);
+    formData.append('_id', payload.faqId);
     formData.append('question', payload.question);
     formData.append('answer', payload.answer);
     const result = (await axios.put('/faqs/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-faqses');
-      queryClient.invalidateQueries(['get-faqs', payload.faqsId]);
-      return 'Faqs successfully updated.';
+      queryClient.invalidateQueries('get-faqs');
+      queryClient.invalidateQueries(['get-faq', payload.faqId]);
+      return 'FAQ successfully updated.';
     }
     return result.message;
   } catch (err: any) {
@@ -81,7 +81,7 @@ export const updateFaqs = async (payload: {
   }
 };
 
-export const deleteFaqs = async (faqsId: string) => {
+export const deleteFaq = async (faqsId: string) => {
   try {
     const result = (await axios.delete(`/faqs/admin/${faqsId}`)) as ResponseMessage;
     if (result.result === true) {
