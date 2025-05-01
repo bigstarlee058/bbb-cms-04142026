@@ -33,6 +33,7 @@ const { CollectionsRoutes } = lazyImport(() => import('@/features/collections'),
 const { BonusesRoutes } = lazyImport(() => import('@/features/bonuses'), 'BonusesRoutes');
 const { ProgramInfoRoutes } = lazyImport(() => import('@/features/program-info'), 'ProgramInfoRoutes');
 const { PumpDaysRoutes } = lazyImport(() => import('@/features/pumpdays'), 'PumpDaysRoutes');
+const { FaqsRoutes } = lazyImport(() => import('@/features/faqs'), 'FaqsRoutes');
 
 const ProtectedApp = () => {
   return (
@@ -97,6 +98,7 @@ export const protectedRoutes = [
       { path: 'bonuses/*', element: <BonusesRoutes /> },
       { path: 'program-info/*', element: <ProgramInfoRoutes /> },
       { path: 'pumpdays/*', element: <PumpDaysRoutes /> },
+      { path: 'faqs/*', element: <FaqsRoutes /> },
       { path: '*', element: <Navigate to="/app" /> }
     ]
   }

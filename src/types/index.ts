@@ -306,3 +306,12 @@ export interface PumpDaysResponse {
   count: number;
   pumpDays: Day[];
 }
+
+export interface Faqs extends BaseEntity {
+  question: string;
+  answer: string;
+}
+export interface FaqsesResponse {
+  count: number;
+  faqs: Faqs[];
+}

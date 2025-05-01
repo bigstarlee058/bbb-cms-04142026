@@ -127,6 +127,10 @@ export const createPumpDaySchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
 });
 
+export const createFaqsSchema = Yup.object().shape({
+  question: Yup.string().max(1024).required(),
+});
+
 export const createCircuitSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
 });

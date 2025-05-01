@@ -72,6 +72,7 @@ const SideNavigation = () => {
     { title: 'Bonuses', path: './bonuses', icon: MenuAlt4Icon },
     { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon },
     { title: 'Pump Days', path: './pumpdays', icon: MenuAlt4Icon },
+    { title: 'FAQs', path: './faqs', icon: MenuAlt4Icon },
   ].filter(Boolean) as SideNavigationItem[];
 
   return (
