@@ -4,7 +4,7 @@ import { queryClient } from '@/lib/react-query';
 
 export const fetchPopupInfo = async () => {
   try {
-    const result = (await axios.get(`/popupinfo`)) as PopupinfoResponse;
+    const result = (await axios.get(`/popupequipment`)) as PopupinfoResponse;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -32,9 +32,9 @@ export const updatePopupInfo = async (payload : {
     }
     const updatedScreens = formData;
     console.log('updatedScreens', updatedScreens);
-    const result = (await axios.put('/popupinfo', updatedScreens)) as ResponseMessage;
+    const result = (await axios.put('/popupequipment', updatedScreens)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-popupinfo');
+      queryClient.invalidateQueries('get-popupequipment');
       return 'Popup information successfully updated.';
     }
     return result.message;

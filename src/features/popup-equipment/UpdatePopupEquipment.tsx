@@ -18,7 +18,7 @@ interface FormikState {
   description: string;
 }
 
-export const UpdatePopup = ({screenData}) => {
+export const UpdatePopupEquipment = ({screenData}) => {
   const { addNotification } = useNotificationStore();
 
   const initialValues: FormikState = {

@@ -7,11 +7,11 @@ import { ContentLayout } from '@/components/Layout';
 import { ErrorMessage } from '@/types';
 import { fetchPopupInfo } from './api';
 import { useNotificationStore } from '@/stores/notifications';
-import { UpdatePopup } from './UpdatePopup';
+import { UpdatePopupWorkout } from './UpdatePopupWorkout';
 
-export const PopupInfo = () => {
+export const PopupWorkout = () => {
   const { addNotification } = useNotificationStore();
-  const { data, isLoading, error } = useQuery('get-popupinfo', fetchPopupInfo, {
+  const { data, isLoading, error } = useQuery('get-popupworkout', fetchPopupInfo, {
     onError: (err: ErrorMessage) => {
       addNotification({
         type: 'success',
@@ -36,7 +36,7 @@ export const PopupInfo = () => {
     <>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8 py-6">
         <div className="flex justify-end">
-          <UpdatePopup screenData={data} />
+          <UpdatePopupWorkout screenData={data} />
         </div>
       </div>
       <ContentLayout title="Popup Modal Background Video">

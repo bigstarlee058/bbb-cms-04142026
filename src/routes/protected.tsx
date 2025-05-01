@@ -6,7 +6,8 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { BackgroundScreens } from '@/features/screens/BackgroundScreens';
 import { BackgroundTutorials } from '@/features/tutorial/BackgroundTutorials';
 import { VersionManage } from '@/features/version/VersionManage';
-import { PopupInfo } from '@/features/popup-info/PopupInfo';
+import { PopupWorkout } from '@/features/popup-workout/PopupWorkout';
+import { PopupEquipment } from '@/features/popup-equipment/PopupEquipment';
 import { WorkoutContextProvider } from '@/features/workouts/WorkoutContext';
 import { MonthCoverContextProvider } from '@/features/workouts/MonthCoverContext';
 import { PumpDaysContextProvider } from '@/features/pumpdays/PumpDaysContext';
@@ -16,7 +17,8 @@ const { Profile } = lazyImport(() => import('@/features/users'), 'Profile');
 const { ScreensRoutes } = lazyImport(() => import('@/features/screens'), 'ScreensRoutes');
 const { TutorialsRoutes } = lazyImport(() => import('@/features/tutorial'), 'TutorialsRoutes');
 const { VersionRoutes } = lazyImport(() => import('@/features/version'), 'VersionRoutes');
-const { PopupRoutes } = lazyImport(() => import('@/features/popup-info'), 'PopupRoutes');
+const { PopupEquipmentRoutes } = lazyImport(() => import('@/features/popup-equipment'), 'PopupEquipmentRoutes');
+const { PopupWorkoutRoutes } = lazyImport(() => import('@/features/popup-workout/'), 'PopupWorkoutRoutes');
 const { UsersRoutes } = lazyImport(() => import('@/features/users'), 'UsersRoutes');
 const { WorkoutsRoutes } = lazyImport(() => import('@/features/workouts'), 'WorkoutsRoutes');
 const { WarmupRoutes } = lazyImport(() => import('@/features/warmups'), 'WarmupRoutes');
@@ -74,8 +76,12 @@ export const protectedRoutes = [
         children: [{ path: 'versionManage', element: <VersionManage /> }]
       },
       {
-        element: <PopupRoutes />,
-        children: [{ path: 'popupInformation', element: <PopupInfo /> }]
+        element: <PopupWorkoutRoutes />,
+        children: [{ path: 'popupWorkout', element: <PopupWorkout /> }]
+      },
+      {
+        element: <PopupEquipmentRoutes />,
+        children: [{ path: 'popupEquipment', element: <PopupEquipment /> }]
       },
       { path: 'users/*', element: <UsersRoutes /> },
       { path: 'workouts/*', element: <WorkoutsRoutes /> },
