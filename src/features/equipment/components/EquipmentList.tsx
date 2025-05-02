@@ -106,6 +106,7 @@ export const EquipmentList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -117,6 +118,7 @@ export const EquipmentList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateEquipment equipmentId={_id} equipments={equipmentData} titles={titles} />;
             },
@@ -124,6 +126,7 @@ export const EquipmentList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteEquipment equipmentId={_id} />;
             },

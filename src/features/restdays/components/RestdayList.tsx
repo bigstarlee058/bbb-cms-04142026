@@ -98,6 +98,7 @@ export const RestdayList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -109,6 +110,7 @@ export const RestdayList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateRestday restdayId={_id} restdays={restdayData} titles={titles} />;
             },
@@ -116,6 +118,7 @@ export const RestdayList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteRestday restdayId={_id} />;
             },

@@ -75,6 +75,7 @@ export const SectionsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -86,6 +87,7 @@ export const SectionsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateSection sectionId={_id} sections={sectionData} />;
             },
@@ -93,6 +95,7 @@ export const SectionsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteSection sectionId={_id} />;
             },

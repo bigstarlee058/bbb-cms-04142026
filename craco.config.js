@@ -1,6 +1,9 @@
 const path = require('path');
 
 module.exports = {
+  devServer: {
+    historyApiFallback: true,
+  },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

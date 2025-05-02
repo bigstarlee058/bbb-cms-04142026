@@ -81,6 +81,7 @@ export const CategoriesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -92,6 +93,7 @@ export const CategoriesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateCategory categoryId={_id} categories={categoryData} />;
             },
@@ -99,6 +101,7 @@ export const CategoriesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteCategory categoryId={_id} />;
             },

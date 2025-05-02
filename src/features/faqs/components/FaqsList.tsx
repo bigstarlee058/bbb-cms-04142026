@@ -71,6 +71,7 @@ export const FaqsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -82,6 +83,7 @@ export const FaqsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateFaq faqId={_id} faqs={faqsData} />;
             },
@@ -89,6 +91,7 @@ export const FaqsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteFaq faqId={_id} />;
             },

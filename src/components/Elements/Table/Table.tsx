@@ -5,6 +5,7 @@ type TableColumn<Entry> = {
   title: string;
   field: keyof Entry;
   minwidth?: number;
+  width?: number;
   Cell?: ({ entry }: { entry: Entry }) => React.ReactElement;
 };
 
@@ -47,13 +48,14 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
               <tbody>
                 {data.map((entry, entryIndex) => (
                   <tr key={entry?._id || entryIndex} className="odd:bg-white even:bg-gray-100">
-                    {columns.map(({ Cell, field, title, minwidth }, columnIndex) => (
+                    {columns.map(({ Cell, field, title, minwidth, width }, columnIndex) => (
                       <td
                         key={title + columnIndex}
                         className={`${
                           columnIndex === 0 ? 'pl-4' : 'px-2'
                         } py-4 text-sm font-medium text-gray-900`}
-                        style={{ minWidth: `${minwidth || 0}px` }}
+                        style={{ ...(minwidth && { minWidth: `${minwidth}px` }), 
+                        ...(width && { width: `${width}px` })}}
                       >
                         {Cell ? (
                           <Cell entry={entry} />

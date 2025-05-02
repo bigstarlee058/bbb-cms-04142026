@@ -102,6 +102,7 @@ export const CollectionsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -113,6 +114,7 @@ export const CollectionsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateCollection collectionId={_id} collections={collectionData} />;
             },
@@ -120,6 +122,7 @@ export const CollectionsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteCollection collectionId={_id} />;
             },

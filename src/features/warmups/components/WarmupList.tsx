@@ -115,6 +115,7 @@ export const WarmupList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -126,6 +127,7 @@ export const WarmupList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateWarmup warmupId={_id} warmups={warmupData} titles={titles} />;
             },
@@ -133,6 +135,7 @@ export const WarmupList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteWarmup warmupId={_id} />;
             },

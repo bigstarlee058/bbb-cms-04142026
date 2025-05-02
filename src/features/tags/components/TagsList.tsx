@@ -65,33 +65,13 @@ export const TagsList = () => {
             field: 'title',
           },
           {
-            title: 'Thumbnail',
-            field: 'thumbnail',
-            Cell({ entry: { thumbnail } }) {
-              return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
-              </div>);
-            },
-          },
-          {
             title: 'Exercise Count',
             field: 'exerciseCount',
           },
           {
             title: '',
             field: '_id',
-            Cell({ entry: { _id } }) {
-              return (
-                <Link to={`./${_id}`}>
-                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
-                </Link>
-              );
-            },
-          },
-          {
-            title: '',
-            field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateTag tagId={_id} tags={tagData} />;
             },
@@ -99,6 +79,7 @@ export const TagsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteTag tagId={_id} />;
             },

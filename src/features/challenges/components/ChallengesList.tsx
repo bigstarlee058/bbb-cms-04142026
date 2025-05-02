@@ -112,6 +112,7 @@ export const ChallengesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -123,6 +124,7 @@ export const ChallengesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateChallenge challengeId={_id} challenges={challengeData} />;
             },
@@ -130,6 +132,7 @@ export const ChallengesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteChallenge challengeId={_id} />;
             },

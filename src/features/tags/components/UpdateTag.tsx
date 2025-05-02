@@ -55,14 +55,6 @@ export const UpdateTag = ({ tagId, tags }) => {
       >
         <form id="update-tag" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Dropzone
-            label="Thumbnail"
-            name="thumbnail"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
         </form>
       </FormDrawer>
     </Authorization>

@@ -133,6 +133,7 @@ export const ExercisesList = () => {
           {
             title: 'View',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -144,6 +145,7 @@ export const ExercisesList = () => {
           {
             title: 'Edit',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <UpdateExercise
@@ -162,6 +164,7 @@ export const ExercisesList = () => {
           {
             title: 'Delete',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteExercise exerciseId={_id} />;
             }
