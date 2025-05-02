@@ -102,6 +102,7 @@ export const BonusesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -112,7 +113,8 @@ export const BonusesList = () => {
           },
           {
             title: '',
-            field: '_id',
+            field: '_id',            
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateBonus bonusId={_id} bonuses={bonusData} />;
             },
@@ -120,6 +122,7 @@ export const BonusesList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteBonus bonusId={_id} />;
             },

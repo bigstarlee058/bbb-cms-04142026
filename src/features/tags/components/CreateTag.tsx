@@ -59,14 +59,6 @@ export const CreateTag = () => {
       >
         <form id="create-tag" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
         </form>
       </FormDrawer>
     </Authorization>

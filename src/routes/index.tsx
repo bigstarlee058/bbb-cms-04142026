@@ -10,13 +10,13 @@ import { fetchMe } from '@/features/users';
 
 export const AppRoutes = () => {
   const { isLogged, setIsLogged, setUser, user } = useAuthStore();
-  // useQuery('me', fetchMe, {
-  //   enabled: isLogged,
-  //   onSuccess: setUser,
-  //   onError: () => {
-  //     setIsLogged(false);
-  //   },
-  // });
+  useQuery('me', fetchMe, {
+    enabled: isLogged,
+    onSuccess: setUser,
+    onError: () => {
+      setIsLogged(false);
+    },
+  });
   const commonRoutes = [{ path: '/', element: <Login /> }];
   const routes = user ? [...protectedRoutes, ...publicRoutes] : publicRoutes;
   const element = useRoutes([...routes, ...commonRoutes]);

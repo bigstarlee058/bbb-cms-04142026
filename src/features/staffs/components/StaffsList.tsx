@@ -95,6 +95,7 @@ export const StaffsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
@@ -106,6 +107,7 @@ export const StaffsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateStaff staffId={_id} staffs={staffData} />;
             },
@@ -113,6 +115,7 @@ export const StaffsList = () => {
           {
             title: '',
             field: '_id',
+            width: 70,
             Cell({ entry: { _id } }) {
               return <DeleteStaff staffId={_id} />;
             },
