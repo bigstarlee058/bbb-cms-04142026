@@ -67,6 +67,7 @@ export const TagsList = () => {
           {
             title: 'Exercise Count',
             field: 'exerciseCount',
+            width: 200,
           },
           {
             title: '',

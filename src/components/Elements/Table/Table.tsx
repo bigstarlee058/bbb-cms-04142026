@@ -5,6 +5,7 @@ type TableColumn<Entry> = {
   title: string;
   field: keyof Entry;
   minwidth?: number;
+  maxwidth?: number;
   width?: number;
   Cell?: ({ entry }: { entry: Entry }) => React.ReactElement;
 };
@@ -39,6 +40,10 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
                       key={column.title + index}
                       scope="col"
                       className="px-3 py-2 text-xs font-medium tracking-wider text-left text-gray-500 uppercase"
+                      style={{
+                        ...(column.minwidth && { minWidth: `${column.minwidth}px` }), 
+                        ...(column.maxwidth && { maxWidth: `${column.maxwidth}px` }), 
+                        ...(column.width && { width: `${column.width}px` })}}
                     >
                       {column.title}
                     </th>
@@ -48,14 +53,16 @@ export const Table = <Entry extends { _id: string }>({ data, columns }: TablePro
               <tbody>
                 {data.map((entry, entryIndex) => (
                   <tr key={entry?._id || entryIndex} className="odd:bg-white even:bg-gray-100">
-                    {columns.map(({ Cell, field, title, minwidth, width }, columnIndex) => (
+                    {columns.map(({ Cell, field, title, minwidth, maxwidth, width }, columnIndex) => (
                       <td
                         key={title + columnIndex}
                         className={`${
                           columnIndex === 0 ? 'pl-4' : 'px-2'
                         } py-4 text-sm font-medium text-gray-900`}
-                        style={{ ...(minwidth && { minWidth: `${minwidth}px` }), 
-                        ...(width && { width: `${width}px` })}}
+                        style={{ 
+                          ...(minwidth && { minWidth: `${minwidth}px` }), 
+                          ...(maxwidth && { maxWidth: `${maxwidth}px` }), 
+                          ...(width && { width: `${width}px` })}}
                       >
                         {Cell ? (
                           <Cell entry={entry} />
