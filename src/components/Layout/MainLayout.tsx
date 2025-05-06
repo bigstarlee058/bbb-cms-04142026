@@ -8,7 +8,8 @@ import {
   MenuAlt4Icon,
   UsersIcon,
   XIcon,
-  TagIcon
+  TagIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/outline';
 import clsx from 'clsx';
 import * as React from 'react';
@@ -73,7 +74,7 @@ const SideNavigation = () => {
     { title: 'Bonuses', path: './bonuses', icon: MenuAlt4Icon },
     { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon },
     { title: 'Pump Days', path: './pumpdays', icon: MenuAlt4Icon },
-    { title: 'FAQs', path: './faqs', icon: MenuAlt4Icon },
+    { title: 'FAQs', path: './faqs', icon: QuestionMarkCircleIcon },
   ].filter(Boolean) as SideNavigationItem[];
 
   return (
