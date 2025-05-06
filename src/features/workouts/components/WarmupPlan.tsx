@@ -184,12 +184,16 @@ export const WarmupPlan = ({
   const getNextTypeId = () => {
     let typeIds;
     if (isPumpDay) {
-      typeIds = days.flatMap((day) => day.warmups.map((ex) => ex.typeId));
+      // typeIds = days.flatMap((day) => day.warmups.map((ex) => ex.typeId));
+      typeIds = days[dayIndex].warmups.flatMap((warmup) => warmup.typeId);
     } else {
-      typeIds = months.flatMap((month) =>
-        month.weeks.flatMap((week) => week.days.flatMap((day) => day.warmups.map((ex) => ex.typeId)))
-      );
+      // typeIds = months.flatMap((month) =>
+      //   month.weeks.flatMap((week) => week.days.flatMap((day) => day.warmups.map((ex) => ex.typeId)))
+      // );
+      typeIds = [...months][monthIndex].weeks[weekIndex].days[dayIndex].warmups.flatMap((warmup) => warmup.typeId);
     }
+
+
     const maxTypeId = Math.max(0, ...typeIds);
     return maxTypeId + 1;
   };
