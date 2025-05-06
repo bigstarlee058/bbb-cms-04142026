@@ -58,10 +58,10 @@ export const CreateWarmUp = ({titles}) => {
         isDone={isSuccess}
         triggerButton={
           <Button size="sm" variant='danger' startIcon={<PlusIcon className="h-4 w-4" />}>
-            Create Warm-Up
+            Create Warmup
           </Button>
         }
-        title="Create Warm-Up"
+        title="Create Warmup"
         submitButton={
           <Button form="create-warmup" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit

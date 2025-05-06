@@ -63,7 +63,7 @@ const SideNavigation = () => {
 
     { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
     { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
-    { title: 'Warm-up', path: './warmups', icon: MenuAlt3Icon },
+    { title: 'Warmups', path: './warmups', icon: MenuAlt3Icon },
     { title: 'Equipment', path: './equipments', icon: MenuAlt4Icon },
     { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
