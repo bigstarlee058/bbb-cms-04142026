@@ -81,7 +81,14 @@ export const ExercisesList = () => {
             title: 'Description',
             field: 'description',
             Cell({ entry: { description } }) {
-              return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
+              // return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
+              return (
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: description.length > 100 ? `${description.slice(0, 100)}...` : description,
+                  }}
+                />
+              );
             }
           },
           {

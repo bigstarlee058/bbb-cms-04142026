@@ -10,6 +10,7 @@ import { Field, Dropzone, Textarea, Select } from '@/components/Form';
 import { createExerciseSchema } from '@/utils/yup';
 import { createCategory } from '@/features/categories/api';
 import { createTag } from '@/features/tags/api';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -138,7 +139,8 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
             }}
           />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Textarea label="Description" formik={formik} name="description" />
+          {/* <Textarea label="Description" formik={formik} name="description" /> */}
+          <TextareaWithFormatting label="Description" formik={formik} name="description" />
           <Select
             isMulti
             formik={formik}

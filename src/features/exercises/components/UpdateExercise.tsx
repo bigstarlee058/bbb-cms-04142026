@@ -11,6 +11,7 @@ import { TitleResponse, Exercise } from '@/types';
 import { createCategory } from '@/features/categories/api';
 import { createTag } from '@/features/tags/api';
 import { useState } from 'react';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -153,7 +154,8 @@ export const UpdateExercise = ({
             }}
           />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Textarea label="Description" formik={formik} name="description" />
+          {/* <Textarea label="Description" formik={formik} name="description" /> */}
+          <TextareaWithFormatting label="Description" formik={formik} name="description" />
           <Select
             isMulti
             formik={formik}
