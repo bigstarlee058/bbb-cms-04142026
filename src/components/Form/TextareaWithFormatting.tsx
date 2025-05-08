@@ -27,7 +27,7 @@ export const TextareaWithFormatting = ({ label, formik, name, placeholder }: Inp
         theme="snow"
         placeholder={placeholder}
         value={fieldValue || ''}
-        // onChange={(value) => formik.setFieldValue(name, value)}
+        onChange={(value) => formik.setFieldValue(name, value)}
         className='rounded-lg'
         modules={{
           toolbar: [
