@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export const CustomTitle = ({ type, index, customTitle, updateFunction }) => {
+export const CustomTitle = ({ type, index, customTitle, updateFunction , isPumpDay = false }) => {
   const [editingTitle, setEditingTitle] = useState(false);
   const [title, setTitle] = useState(customTitle || '');
   const inputRef = useRef(null);
@@ -22,7 +22,7 @@ export const CustomTitle = ({ type, index, customTitle, updateFunction }) => {
   return (
     <div className="flex justify-between items-center mb-2">
       <h2 className="text-md font-bold">
-        {type} {index && index}
+        {!isPumpDay && `${type} ${index && index}`}
         {editingTitle ? (
           <input
             type="text"
@@ -30,11 +30,11 @@ export const CustomTitle = ({ type, index, customTitle, updateFunction }) => {
             onChange={handleTitleChange}
             onBlur={saveTitle}
             onKeyDown={(e) => e.key === 'Enter' && saveTitle()}
-            className="ml-7 border rounded px-2 py-1"
+            className={`${!isPumpDay && "ml-7"} border rounded px-2 py-1`}
             ref={inputRef}
           />
         ) : (
-          <span className="ml-7 cursor-pointer" onClick={() => setEditingTitle(true)}>
+          <span className= {`${!isPumpDay && "ml-7"} cursor-pointer`} onClick={() => setEditingTitle(true)}>
             {customTitle || 'Custom Title Here'}
           </span>
         )}

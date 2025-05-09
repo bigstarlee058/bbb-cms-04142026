@@ -286,7 +286,7 @@ export const DayPlan = ({
     <>
       <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${dayIndex}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
-          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} />
+          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay />
           <div className="flex gap-3">
             {isSevenDays ? (
               <Button
@@ -403,7 +403,7 @@ export const DayPlan = ({
           </div>
         </div>
       </div>
-      {(!isPumpDay && dayIndex === months[monthIndex].weeks[weekIndex].days.length - 1 && isSevenDays) || isPumpDay ? (
+      {(!isPumpDay && dayIndex === months[monthIndex].weeks[weekIndex].days.length - 1 && isSevenDays) ? (
         <Button
           variant="danger"
           onClick={handleAddDayClick}

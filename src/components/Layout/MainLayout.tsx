@@ -9,8 +9,11 @@ import {
   UsersIcon,
   XIcon,
   TagIcon,
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
 } from '@heroicons/react/outline';
+
+import { LuDumbbell  } from "react-icons/lu";
+
 import clsx from 'clsx';
 import * as React from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
@@ -30,6 +33,7 @@ import { axios } from '@/lib/axios';
 import { ErrorMessage, ResponseMessage } from '@/types';
 import { SavePumpDays } from '@/features/pumpdays/SavePumpDays';
 import { usePumpDaysContext } from '@/features/pumpdays/PumpDaysContext';
+import WeightClockIcon from '../Elements/Icon/WeightClockIcon';
 
 type SideNavigationItem = {
   title: string;
@@ -64,6 +68,7 @@ const SideNavigation = () => {
     { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
     { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
     { title: 'Warmups', path: './warmups', icon: MenuAlt3Icon },
+    { title: 'Pump Days', path: './pumpdays', icon: WeightClockIcon },
     { title: 'Equipment', path: './equipments', icon: MenuAlt4Icon },
     { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
@@ -73,7 +78,6 @@ const SideNavigation = () => {
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
     { title: 'Bonuses', path: './bonuses', icon: MenuAlt4Icon },
     { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon },
-    { title: 'Pump Days', path: './pumpdays', icon: MenuAlt4Icon },
     { title: 'FAQs', path: './faqs', icon: QuestionMarkCircleIcon },
   ].filter(Boolean) as SideNavigationItem[];
 
