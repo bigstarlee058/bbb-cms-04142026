@@ -60,11 +60,7 @@ export const PumpDayList = () => {
 
   return (
     <>
-      {days.length < 1 ? (
-        <Button variant="danger" onClick={() => addDay(1, [])} startIcon={<PlusIcon className="h-4 w-4" />}>
-          Add Day
-        </Button>
-      ) : null}
+      
       {days.map((day, dayIndex) => (
         <DayPlan
           key={dayIndex}
@@ -86,6 +82,15 @@ export const PumpDayList = () => {
           days={days}
         />
       ))}
+
+      {days.length < 1 ? 
+        <Button variant="danger" className="mt-7" onClick={() => addDay(1, [])} startIcon={<PlusIcon className="h-4 w-4" />}>
+          Add Day
+        </Button>
+       : 
+        <Button variant="danger" className="mt-7" onClick={() => addDay(days.length + 1, [])} startIcon={<PlusIcon className="h-4 w-4" />}>
+        Add Day
+      </Button>}
     </>
   );
 };
