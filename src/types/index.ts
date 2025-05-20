@@ -152,6 +152,23 @@ export interface Screen extends BaseEntity {
 export interface ScreensResponse {
   vimeoId: string;
   imgUrl: string;
+  imageLogin: string,
+  imageSignup: string,
+  imageForgot: string,
+  imageEmailConfirm: string,
+  imageDashboard: string,
+  imageStreakCalendar: string,
+  imageMonthView: string,
+  imageToday: string,
+  imageTools: string,
+  imageExerciseLibrary: string,
+  imageGraphs: string,
+  imageAchievement: string,
+  imageApparel: string,
+  imageFAQs: string,
+  imageProfile: string,
+  imageMyProfle: string,
+  imageSetting: string,
   slides: {title: string, description: string}[];
 }
 

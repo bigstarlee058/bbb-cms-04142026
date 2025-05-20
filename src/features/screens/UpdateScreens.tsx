@@ -13,7 +13,42 @@ import { DeleteConfirmation } from '../workouts/components/custom';
 interface FormikState {
   vimeo: string;
   image?: any;
+  imageLogin?: any;
+  imageSignup?: any;
+  imageForgot?: any;
+  imageEmailConfirm?: any;
+  imageDashboard?: any;
+  imageStreakCalendar?: any;
+  imageMonthView?: any;
+  imageToday?: any;
+  imageTools?: any;
+  imageExerciseLibrary?: any;
+  imageGraphs?: any;
+  imageAchievement?: any;
+  imageApparel?: any;
+  imageFAQs?: any;
+  imageProfile?: any;
+  imageMyProfle?: any;
+  imageSetting?: any;
   deleteImage: boolean;
+  deleteImageLogin: boolean;
+  deleteImageSignup: boolean;
+  deleteImageForgot: boolean;
+  deleteImageEmailConfirm: boolean;
+  deleteImageDashboard: boolean;
+  deleteImageStreakCalendar: boolean;
+  deleteImageMonthView: boolean;
+  deleteImageToday: boolean;
+  deleteImageTools: boolean;
+  deleteImageExerciseLibrary: boolean;
+  deleteImageGraphs: boolean;
+  deleteImageAchievement: boolean;
+  deleteImageApparel: boolean;
+  deleteImageFAQs: boolean;
+  deleteImageProfile: boolean;
+  deleteImageMyProfile: boolean;
+  deleteImageSetting: boolean;
+
   slides: {
     title: string;
     description: string;
@@ -26,7 +61,41 @@ export const UpdateScreens = ({ screenData }) => {
   const initialValues: FormikState = {
     vimeo: screenData?.vimeoId || '',
     image: screenData?.imgUrl || '',
+    imageLogin: screenData?.imageLogin || '',
+    imageSignup: screenData?.imageSignup || '',
+    imageForgot: screenData?.imageForgot || '',
+    imageEmailConfirm: screenData?.imageEmailConfirm || '',
+    imageDashboard: screenData?.imageDashboard || '',
+    imageStreakCalendar: screenData?.imageStreakCalendar || '',
+    imageMonthView: screenData?.imageMonthView || '',
+    imageToday: screenData?.imageToday || '',
+    imageTools: screenData?.imageTools || '',
+    imageExerciseLibrary: screenData?.imageExerciseLibrary || '',
+    imageGraphs: screenData?.imageGraphs || '',
+    imageAchievement: screenData?.imageAchievement || '',
+    imageApparel: screenData?.imageApparel || '',
+    imageFAQs: screenData?.imageFAQs || '',
+    imageProfile: screenData?.imageProfile || '',
+    imageMyProfle: screenData?.imageMyProfle || '',
+    imageSetting: screenData?.imageSetting || '',
     deleteImage: false,
+    deleteImageLogin: false,
+    deleteImageSignup: false,
+    deleteImageForgot: false,
+    deleteImageEmailConfirm: false,
+    deleteImageDashboard: false,
+    deleteImageStreakCalendar: false,
+    deleteImageMonthView: false,
+    deleteImageToday: false,
+    deleteImageTools: false,
+    deleteImageExerciseLibrary: false,
+    deleteImageGraphs: false,
+    deleteImageAchievement: false,
+    deleteImageApparel: false,
+    deleteImageFAQs: false,
+    deleteImageProfile: false,
+    deleteImageMyProfile: false,
+    deleteImageSetting: false,
     slides: screenData?.slides || [{ title: '', description: '' }]
   };
   const formik = useFormik({
@@ -45,8 +114,10 @@ export const UpdateScreens = ({ screenData }) => {
   });
 
   const onSubmit = (state: FormikState) => {
-    const { vimeo, image, deleteImage, slides } = state;
-    mutate({ vimeo, image, deleteImage, slides });
+    const { vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageProfile, imageMyProfle, imageSetting,
+      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides } = state;
+    mutate({ vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageProfile, imageMyProfle, imageSetting,
+      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides });
   };
 
   const onAddSlide = () => {
@@ -97,14 +168,194 @@ export const UpdateScreens = ({ screenData }) => {
               <Textarea label="Description" formik={formik} name={`slides[${index}].description`} />
             </div>
           ))}
-          <Dropzone
-            label="Thumbnail"
-            name="thumbnail"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
+
+          <div className="mt-5">
+            <label className="fieldLabel">Login Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageLogin}
+              onDrop={(img) => formik.setFieldValue('imageLogin', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageLogin: '', deleteImageLogin: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Signup Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageSignup}
+              onDrop={(img) => formik.setFieldValue('imageSignup', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageSignup: '', deleteImageSignup: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Forgot Password Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageForgot}
+              onDrop={(img) => formik.setFieldValue('imageForgot', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageForgot: '', deleteImageForgot: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Email confirmation Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageEmailConfirm}
+              onDrop={(img) => formik.setFieldValue('imageEmailConfirm', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageEmailConfirm: '', deleteImageEmailConfirm: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Dashboard Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageDashboard}
+              onDrop={(img) => formik.setFieldValue('imageDashboard', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageDashboard: '', deleteImageDashboard: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Streak calendar Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageStreakCalendar}
+              onDrop={(img) => formik.setFieldValue('imageStreakCalendar', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageStreakCalendar: '', deleteImageStreakCalendar: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Month view Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageMonthView}
+              onDrop={(img) => formik.setFieldValue('imageMonthView', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageMonthView: '', deleteImageMonthView: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Today Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageToday}
+              onDrop={(img) => formik.setFieldValue('imageToday', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageToday: '', deleteImageToday: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Tools Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageTools}
+              onDrop={(img) => formik.setFieldValue('imageTools', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageTools: '', deleteImageTools: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Exercise Library Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageExerciseLibrary}
+              onDrop={(img) => formik.setFieldValue('imageExerciseLibrary', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageExerciseLibrary: '', deleteImageExerciseLibrary: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Graphs & Reports Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageGraphs}
+              onDrop={(img) => formik.setFieldValue('imageGraphs', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageGraphs: '', deleteImageGraphs: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Achievement Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageAchievement}
+              onDrop={(img) => formik.setFieldValue('imageAchievement', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageAchievement: '', deleteImageAchievement: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Apparel & Equipment Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageApparel}
+              onDrop={(img) => formik.setFieldValue('imageApparel', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageApparel: '', deleteImageApparel: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">FAQs Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageFAQs}
+              onDrop={(img) => formik.setFieldValue('imageFAQs', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageFAQs: '', deleteImageFAQs: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Profile Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageProfile}
+              onDrop={(img) => formik.setFieldValue('imageProfile', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageProfile: '', deleteImageProfile: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">My Profile Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageMyProfle}
+              onDrop={(img) => formik.setFieldValue('imageMyProfle', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageMyProfle: '', deleteImageMyProfile: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Setting Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageSetting}
+              onDrop={(img) => formik.setFieldValue('imageSetting', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageSetting: '', deleteImageSetting: true })}
+            />
+          </div>
         </form>
       </FormDrawer>
     </Authorization>
