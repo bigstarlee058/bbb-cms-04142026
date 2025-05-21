@@ -86,6 +86,19 @@ export interface TagsResponse {
   tags: Tags[];
 }
 
+export interface Achievement extends BaseEntity {
+  title: string;
+  image: string;
+  type: string;
+  value: string;
+  description: string;
+}
+
+export interface AchievementsResponse {
+  count: number;
+  achievementsIndividuals: Achievement[];
+}
+
 export interface Equipment extends BaseEntity {
   title: string;
   thumbnail: string;

@@ -10,6 +10,7 @@ import {
   XIcon,
   TagIcon,
   QuestionMarkCircleIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/outline';
 
 import { LuDumbbell  } from "react-icons/lu";
@@ -73,6 +74,14 @@ const SideNavigation = () => {
     { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
     { title: 'Tags', path: './tags', icon: TagIcon },
+    {
+      title: 'Achievements',
+      icon: CheckCircleIcon,
+      submenu: [
+        { title: 'Group', path: './achievements-group', icon: MenuAlt1Icon },
+        { title: 'Individual', path: './achievements-individual', icon: MenuAlt1Icon },
+      ]
+    },
     { title: 'People', path: './staffs', icon: MenuAlt4Icon },
     { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
