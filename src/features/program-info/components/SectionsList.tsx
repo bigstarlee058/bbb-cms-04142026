@@ -71,18 +71,7 @@ export const SectionsList = () => {
           {
             title: 'Vimeo Id',
             field: 'vimeoId',
-          },
-          {
-            title: '',
-            field: '_id',
-            width: 70,
-            Cell({ entry: { _id } }) {
-              return (
-                <Link to={`./${_id}`}>
-                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
-                </Link>
-              );
-            },
+            minwidth: 100,
           },
           {
             title: '',
