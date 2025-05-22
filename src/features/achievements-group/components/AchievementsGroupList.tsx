@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
 import { fetchAchievements } from '../api';
-import { Achievement, Filters } from '@/types';
+import { Achievement, AchievementIndividual, AchievementsGroup, Filters } from '@/types';
 import { DeleteAchievementsGroup } from './DeleteAchievementsGroup';
 import { UpdateAchievementsGroup } from './UpdateAchievementsGroup';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const AchievementsGroupList = () => {
+export const AchievementsGroupList = ({titles}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -20,7 +20,7 @@ export const AchievementsGroupList = () => {
     data: achievementsData,
     isLoading,
     refetch,
-  } = useQuery(['get-achievements'], () => fetchAchievements(filters));
+  } = useQuery(['get-achievementsgroups'], () => fetchAchievements(filters));
 
   useEffect(() => {
     refetch();
@@ -56,30 +56,12 @@ export const AchievementsGroupList = () => {
 
   return (
     <>
-      <Table<Achievement>
-        data={achievementsData.achievementsIndividuals}
+      <Table<AchievementsGroup>
+        data={achievementsData.achievementsGroups}
         columns={[
           {
             title: 'Title',
             field: 'title',
-          },
-          {
-            title: 'Thumbnail',
-            field: 'image',
-            Cell({ entry: { image } }) {
-              return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={image} />
-              </div>);
-            },
-          },
-          {
-            title: 'Target',
-            field: 'target',
-          },
-          {
-            title: 'Value',
-            field: 'value',
           },
           {
             title: 'Description',
@@ -90,7 +72,7 @@ export const AchievementsGroupList = () => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateAchievementsGroup achievementId={_id} achievements={achievementsData} />;
+              return <UpdateAchievementsGroup achievementId={_id} achievements={achievementsData} titles = {titles} />;
             },
           },
           {

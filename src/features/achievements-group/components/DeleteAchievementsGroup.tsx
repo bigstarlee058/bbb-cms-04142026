@@ -18,7 +18,7 @@ export const DeleteAchievementsGroup = ({ achievementId }: DeleteAchievementsGro
         type: 'success',
         title: message,
       });
-      queryClient.invalidateQueries('get-achievements');
+      queryClient.invalidateQueries('get-achievementsgroups');
     },
   });
 
@@ -26,8 +26,8 @@ export const DeleteAchievementsGroup = ({ achievementId }: DeleteAchievementsGro
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <ConfirmationDialog
         icon="danger"
-        title="Delete Achievement"
-        body="Are you sure you want to delete this Achievement?"
+        title="Delete Achievements Group"
+        body="Are you sure you want to delete this Achievements group?"
         isDone={isSuccess}
         triggerButton={
           <Button variant="danger" startIcon={<TrashIcon className="h-4 w-4" />}></Button>
@@ -41,7 +41,7 @@ export const DeleteAchievementsGroup = ({ achievementId }: DeleteAchievementsGro
               await mutate(achievementId);
             }}
           >
-            Delete Achievement
+            Delete Achievements Group
           </Button>
         }
       />

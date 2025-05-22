@@ -94,7 +94,7 @@ export interface TargetsResponse {
   achievementsTargets: Target[];
 }
 
-export interface Achievement extends BaseEntity {
+export interface AchievementIndividual extends BaseEntity {
   title: string;
   image: string;
   target: string;
@@ -102,9 +102,25 @@ export interface Achievement extends BaseEntity {
   description: string;
 }
 
-export interface AchievementsResponse {
+export interface AchievementsIndividualResponse {
   count: number;
-  achievementsIndividuals: Achievement[];
+  achievementsIndividuals: AchievementIndividual[];
+}
+
+export interface Achievement {
+  index?: number;
+  achievementId: string;
+}
+
+export interface AchievementsGroup extends BaseEntity {
+  title: string;
+  description: string;
+  achievements: Achievement[]
+}
+
+export interface AchievementsGroupResponse {
+  count: number;
+  achievementsGroups: AchievementsGroup[];
 }
 
 export interface Equipment extends BaseEntity {

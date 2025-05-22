@@ -1,4 +1,5 @@
 import { PencilIcon } from '@heroicons/react/solid';
+import { PlusIcon, TrashIcon } from '@heroicons/react/outline';
 import { Button } from '@/components/Elements';
 import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
@@ -6,18 +7,16 @@ import { useMutation } from 'react-query';
 import { updateAchievement } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
-import { createCategorySchema } from '@/utils/yup';
+import { createTagSchema } from '@/utils/yup';
+import { Achievement, SelectOption } from '@/types';
 
 interface FormikState {
   title: string;
-  deleteImage: boolean;
-  image: any;
-  type: string;
-  value: string;
   description: string;
+  achievements: Achievement[];
 }
 
-export const UpdateAchievementsGroup = ({ achievementId, achievements }) => {
+export const UpdateAchievementsGroup = ({ achievementId, achievements, titles }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(updateAchievement, {
     onSuccess: (message: string) => {
@@ -28,33 +27,52 @@ export const UpdateAchievementsGroup = ({ achievementId, achievements }) => {
     },
   });
 
-  const typeValue = ["Week", "Lift"];
+  const individualTitles = titles || [];
 
-  const achievementData = achievements.achievementsIndividuals.find(ex => ex._id === achievementId);
+  const achievementData = achievements.achievementsGroups.find(ex => ex._id === achievementId);
 
   const initialValues: FormikState = {
     title: achievementData?.title || '',
-    image: achievementData?.image || '',
-    deleteImage: false,
-    type: achievementData?.type || '',
-    value: achievementData?.value || '1',
     description: achievementData?.description || '',
+    achievements: achievementData?.achievements || [],
   };
   const formik = useFormik({
     initialValues,
-    validationSchema: createCategorySchema,
+    validationSchema: createTagSchema,
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, type , value, description,deleteImage} = state;
-    mutate({ achievementId, title, image, type, value, description, deleteImage });
+    const { title, description, achievements} = state;
+    mutate({ achievementId, title, description, achievements});
   };
+
+  const handleAddLevel = () => {
+    const newAchievements = [...formik.values.achievements, { achievementId: '' }];
+    const updatedAchievements = newAchievements.map((ach, i) => ({
+      ...ach,
+      index: i,
+    }));
+    formik.setFieldValue('achievements', updatedAchievements);
+  };
+
+  const handleRemoveLevel = (indexToRemove: number) => {
+    const updated = [...formik.values.achievements];
+    updated.splice(indexToRemove, 1);
+
+    const reIndexed = updated.map((ach, i) => ({
+      ...ach,
+      index: i,
+    }));
+
+    formik.setFieldValue('achievements', reIndexed);
+  };
+
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
         isDone={isSuccess}
         triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
-        title="Update Achievement Group"
+        title="Update Achievement"
         submitButton={
           <Button form="update-achievement" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit
@@ -63,24 +81,45 @@ export const UpdateAchievementsGroup = ({ achievementId, achievements }) => {
       >
         <form id="update-achievement" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Dropzone
-            label="Thumbnail"
-            name="thumbnail"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
-          <Select
-            formik={formik}
-            label="Type"
-            name="type"
-            options={typeValue?.map((value) => ({ label: value, value: value })) || []}
-            value= {{ label: formik.values.type, value: formik.values.type }}
-            onChange={(value: any) =>formik.setFieldValue('type', value.value)}
-          />
-          <Field label="Value" formik={formik} name="value" type ='number'/>
           <Textarea label="Description" formik={formik} name="description" />
+          {formik.values.achievements.map((achievements, achievementIndex) => (
+            <div key={achievementIndex} className="flex items-center gap-4 mb-2 bg-gray-100 p-3 rounded">
+              <div className="flex-1">
+                <div className="mb-1 font-semibold">Level {achievementIndex + 1}</div>
+                <Select
+                  formik={formik}
+                  label="Achievement"
+                  name="achievement"
+                  options={individualTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+                  value={
+                    individualTitles?.find((title) => title._id === achievements.achievementId)
+                      ? {
+                          label: individualTitles.find((title) => title._id === achievements.achievementId).title,
+                          value: achievements.achievementId,
+                        }
+                      : null
+                  }
+                  onChange={({ value }: SelectOption) =>
+                    formik.setFieldValue(`achievements[${achievementIndex}].achievementId`, value)
+                  }
+                />
+              </div>
+              <Button
+                variant="danger"
+                name="duplicate month"
+                startIcon={<TrashIcon className="h-4 w-4" />}
+                onClick={() => handleRemoveLevel(achievementIndex)}
+              />
+            </div>
+          ))}
+
+          {formik.values.achievements.length < 5 ? (
+            <Button variant="danger" onClick={handleAddLevel} startIcon={<PlusIcon className="h-4 w-4" />}>
+              Add Level
+            </Button>
+          ) : (
+            <span></span>
+          )}
         </form>
       </FormDrawer>
     </Authorization>
