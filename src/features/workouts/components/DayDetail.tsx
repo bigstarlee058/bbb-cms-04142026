@@ -113,7 +113,7 @@ export const DayDetail = ({
         <Field label="Vimeo Id One" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
         <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
         <Field label="Vimeo Id Three" name="vimeoIdThree" value={day.vimeoIdThree} onChange={handleChange} />
-        {!isPumpDay && (
+        {/* {!isPumpDay && (
           <Select
             label="Day Order"
             options={DAY_ORDERS}
@@ -125,7 +125,7 @@ export const DayDetail = ({
               }
             }}
           />
-        )}
+        )} */}
         {!isPumpDay && (
           <div className="flex mt-3">
             <div className="flex items-center">
