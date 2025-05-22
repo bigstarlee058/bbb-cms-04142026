@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
 import { fetchAchievements } from '../api';
-import { Achievement, Filters } from '@/types';
+import { AchievementIndividual, Filters } from '@/types';
 import { DeleteAchievementsIndividual } from './DeleteAchievementsIndividual';
 import { UpdateAchievementsIndividual } from './UpdateAchievementsIndividual';
 import { useFilteringStore } from '@/stores/filter';
@@ -56,7 +56,7 @@ export const AchievementsIndividualList = ({titles}) => {
 
   return (
     <>
-      <Table<Achievement>
+      <Table<AchievementIndividual>
         data={achievementsData.achievementsIndividuals}
         columns={[
           {

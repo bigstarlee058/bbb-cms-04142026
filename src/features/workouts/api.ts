@@ -7,6 +7,19 @@ interface UploadResponse {
   url: string[];
 }
 
+export const fetchAchievementsIndividualTitles = async (filters: TitleFilters) => {
+  try {
+    const result = (await axios.get(`/achievements-individual/admin/titlefilter`, { params: filters })) as TitleResponse[];
+    return result;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string
+    };
+    return Promise.reject(error);
+  }
+};
+
 export const fetchAchievementsTargetTitles = async (filters: TitleFilters) => {
   try {
     const result = (await axios.get(`/achievements-target/admin/titlefilter`, { params: filters })) as TitleResponse[];

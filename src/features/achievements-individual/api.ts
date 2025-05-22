@@ -1,4 +1,4 @@
-import { AchievementsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
+import { AchievementsIndividualResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
@@ -6,7 +6,7 @@ export const fetchAchievements = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/achievements-individual/admin/get`, {
       params: filters,
-    })) as AchievementsResponse;
+    })) as AchievementsIndividualResponse;
 
     console.log(result);
     return result;
