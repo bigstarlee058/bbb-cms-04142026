@@ -18,6 +18,7 @@ interface FormikState {
   bio: string;
   deleteImage: boolean;
   image: any;
+  link: string;
 }
 
 const COACH_TYPE_OPTIONS: SelectOption[] = [
@@ -48,6 +49,7 @@ export const CreateStaff = () => {
     image: '',
     type: 0,
     bio: '',
+    link: '',
     deleteImage: false
   };
   const formik = useFormik({
@@ -94,6 +96,7 @@ export const CreateStaff = () => {
             options={COACH_TYPE_OPTIONS}
             onChange={({ value }: SelectOption) => formik.setFieldValue('type', value)}
           />
+          <Field label="Link" formik={formik} name="link" />
         </form>
       </FormDrawer>
     </Authorization>
