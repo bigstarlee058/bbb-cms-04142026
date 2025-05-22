@@ -63,6 +63,7 @@ export const SectionsList = () => {
           {
             title: 'Title',
             field: 'title',
+            minwidth: 80,
           },
           {
             title: 'Description',
