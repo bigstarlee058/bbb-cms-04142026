@@ -80,6 +80,7 @@ const SideNavigation = () => {
       submenu: [
         { title: 'Group', path: './achievements-group', icon: MenuAlt1Icon },
         { title: 'Individual', path: './achievements-individual', icon: MenuAlt1Icon },
+        { title: 'Target', path: './achievements-target', icon: MenuAlt1Icon },
       ]
     },
     { title: 'People', path: './staffs', icon: MenuAlt4Icon },

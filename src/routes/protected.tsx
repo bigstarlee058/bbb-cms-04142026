@@ -29,6 +29,7 @@ const { CategoriesRoutes } = lazyImport(() => import('@/features/categories'), '
 const { TagsRoutes } = lazyImport(() => import('@/features/tags'), 'TagsRoutes');
 const { AchievementsGroupRoutes } = lazyImport(() => import('@/features/achievements-group'), 'AchievementsGroupRoutes');
 const { AchievementsIndividualRoutes } = lazyImport(() => import('@/features/achievements-individual'), 'AchievementsIndividualRoutes');
+const { AchievementsTargetRoutes } = lazyImport(() => import('@/features/achievements-target'), 'AchievementsTargetRoutes');
 const { StaffsRoutes } = lazyImport(() => import('@/features/staffs'), 'StaffsRoutes');
 const { ChallengesRoutes } = lazyImport(() => import('@/features/challenges'), 'ChallengesRoutes');
 const { CollectionsRoutes } = lazyImport(() => import('@/features/collections'), 'CollectionsRoutes');
@@ -96,6 +97,7 @@ export const protectedRoutes = [
       { path: 'tags/*', element: <TagsRoutes /> },
       { path: 'achievements-group/*', element: <AchievementsGroupRoutes /> },
       { path: 'achievements-individual/*', element: <AchievementsIndividualRoutes /> },
+      { path: 'achievements-target/*', element: <AchievementsTargetRoutes /> },
       { path: 'staffs/*', element: <StaffsRoutes /> },
       { path: 'challenges/*', element: <ChallengesRoutes /> },
       { path: 'collections/*', element: <CollectionsRoutes /> },
