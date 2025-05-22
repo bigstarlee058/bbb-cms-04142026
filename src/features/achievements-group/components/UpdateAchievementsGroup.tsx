@@ -72,7 +72,7 @@ export const UpdateAchievementsGroup = ({ achievementId, achievements, titles })
       <FormDrawer
         isDone={isSuccess}
         triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
-        title="Update Achievement"
+        title="Update Achievement Group"
         submitButton={
           <Button form="update-achievement" variant='danger' type="submit" size="sm" isLoading={isLoading}>
             Submit

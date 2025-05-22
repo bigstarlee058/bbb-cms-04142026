@@ -68,6 +68,29 @@ export const AchievementsGroupList = ({titles}) => {
             field: 'description',
           },
           {
+            title: 'Achievements',
+            field: 'achievements',
+            minwidth: 150,
+            Cell({ entry: { achievements } }) {
+              console.log("achievements:::", achievements)
+              if (!titles) return null; // Check if titles is defined
+              const sortedAchievements = achievements.sort((a, b) => a.index - b.index);
+              return (
+                <span>
+                  {sortedAchievements.map((achievement, idx) => {
+                    const matchedTitle = titles.find((title) => title.id === achievement.achievementId);
+                    if (!matchedTitle) return null;
+                    return (
+                      <div key={idx} className='p-1'>
+                        <strong>Level {achievement.index + 1}: </strong>  {matchedTitle.title}
+                      </div>
+                    );
+                  })}
+                </span>
+              );
+            }
+          },
+          {
             title: '',
             field: '_id',
             width: 70,
