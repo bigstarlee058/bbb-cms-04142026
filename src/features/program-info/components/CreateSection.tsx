@@ -47,7 +47,7 @@ export const CreateSection = () => {
       <FormDrawer
         isDone={isSuccess}
         triggerButton={
-          <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4 mr-1" />}>
             Create Section
           </Button>
         }
