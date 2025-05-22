@@ -316,7 +316,7 @@ export const DayPlan = ({
             states={checkedStates}
             updateStates={setCheckedStates}
             updateDay={updateDay}
-            isPumpDay
+            isPumpDay={false}
             days={days}
           />
           {day.warmups.length < 1 ? (
