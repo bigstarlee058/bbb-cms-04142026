@@ -321,6 +321,10 @@ export interface Staff extends BaseEntity {
   type: number;
   bio: string;
   link: string;
+  linkedin:string;
+  tiktok:string;
+  facebook:string;
+  twitter:string;
 }
 export interface StaffsResponse {
   count: number;
