@@ -15,6 +15,7 @@ interface FormikState {
   type: number;
   bio: string;
   image?: any;
+  link: string;
   deleteImage: boolean;
 }
 
@@ -48,6 +49,7 @@ export const UpdateStaff = ({ staffId, staffs }) => {
     location: staffData?.location || '',
     type: staffData?.type || 0,
     bio: staffData?.bio || '',
+    link: staffData?.link || '',
     image: staffData?.photo || '',
     deleteImage: false
   };
@@ -57,9 +59,9 @@ export const UpdateStaff = ({ staffId, staffs }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, location, image, type, bio, deleteImage } = state;
+    const { title, location, image, type, bio,link, deleteImage} = state;
     console.log("sumit")
-    mutate({ staffId, title, location, image, type, bio, deleteImage });
+    mutate({ staffId, title, location, image, type, bio, link, deleteImage });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -97,6 +99,7 @@ export const UpdateStaff = ({ staffId, staffs }) => {
             }
             onChange={({ value }: SelectOption) => formik.setFieldValue('type', value)}
           />
+          <Field label="Link" formik={formik} name="link" />
         </form>
       </FormDrawer>
     </Authorization>

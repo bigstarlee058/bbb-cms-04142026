@@ -93,6 +93,10 @@ export const StaffsList = () => {
             }
           },
           {
+            title: 'Link',
+            field: 'link',
+          },
+          {
             title: '',
             field: '_id',
             width: 70,

@@ -320,7 +320,7 @@ export interface Staff extends BaseEntity {
   photo: string;
   type: number;
   bio: string;
-
+  link: string;
 }
 export interface StaffsResponse {
   count: number;
