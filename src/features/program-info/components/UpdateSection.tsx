@@ -12,6 +12,8 @@ interface FormikState {
   title: string;
   description: string;
   vimeoId: string;
+  variations: string[];
+  formats: string[];
 }
 
 export const UpdateSection = ({ sectionId, sections }) => {
@@ -31,6 +33,8 @@ export const UpdateSection = ({ sectionId, sections }) => {
     title: sectionData?.title || '',
     description: sectionData?.description || '',
     vimeoId: sectionData?.vimeoId || '',
+    variations: sectionData?.variations || [],
+    formats: sectionData?.formats || [],
   };
   const formik = useFormik({
     initialValues,
@@ -38,9 +42,43 @@ export const UpdateSection = ({ sectionId, sections }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, description, vimeoId } = state;
+    const { title, description, vimeoId, variations, formats } = state;
     console.log("sumit")
-    mutate({ sectionId, title, description, vimeoId });
+    mutate({ sectionId, title, description, vimeoId, variations, formats });
+  };
+  const handleVariationCheckboxClick = (label: string, index:number) => {
+    const currentValues = formik.values.variations;
+    let newValues;
+
+    if (currentValues.includes(label)) {
+      // Remove the label
+      newValues = currentValues.filter((item) => item !== label);
+    } else {
+      // Add the label
+      newValues = [...currentValues, label];
+    }
+
+    // Sort the newValues array in ascending numerical order
+    newValues.sort((a, b) => Number(a) - Number(b));
+    console.log("newValues", newValues);
+    formik.setFieldValue('variations', newValues);
+  };
+  const handleFormatCheckboxClick = (label: string, index:number) => {
+    const currentFormats = formik.values.formats;
+    let newFormats;
+
+    if (currentFormats.includes(label)) {
+      // Remove the label
+      newFormats = currentFormats.filter((item) => item !== label);
+    } else {
+      // Add the label
+      newFormats = [...currentFormats, label];
+    }
+
+    // Sort the newValues array in ascending numerical order
+    newFormats.sort();
+    console.log("newValues", newFormats);
+    formik.setFieldValue('formats', newFormats);
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -58,6 +96,40 @@ export const UpdateSection = ({ sectionId, sections }) => {
           <Field label="Name" formik={formik} name="title" />
           <Textarea label="Description" formik={formik} name="description" />
           <Field label="Vimeo Id" formik={formik} name="vimeoId" />
+          <div className="flex mt-3">
+            <div className="flex items-center">
+              <label className="block mb-1 mr-4">Available in variations:</label>
+            </div>
+            <div className="flex gap-3">
+              {['3', '4', '5'].map((label, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleVariationCheckboxClick(label, index)}
+                  className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors`}
+                  style={formik.values.variations.includes(label) ? { backgroundColor: '#00A89E' } : { backgroundColor: '#FFFFFF' }}
+                >
+                  <span className={`text-md font-medium ${formik.values.variations.includes(label) ? 'text-white' : 'text-gray-800'}`}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex mt-3">
+            <div className="flex items-center">
+              <label className="block mb-1 mr-4">Available in formats:</label>
+            </div>
+            <div className="flex gap-3">
+              {['A', 'B', 'C'].map((label, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleFormatCheckboxClick(label, index)}
+                  className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors`}
+                  style={formik.values.formats.includes(label) ? { backgroundColor: '#00A89E' } : { backgroundColor: '#FFFFFF' }}
+                >
+                  <span className={`text-md font-medium ${formik.values.formats.includes(label) ? 'text-white' : 'text-gray-800'}`}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </form>
       </FormDrawer>
     </Authorization>
