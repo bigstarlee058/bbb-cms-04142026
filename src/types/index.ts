@@ -355,6 +355,8 @@ export interface Section extends BaseEntity {
   title: string;
   description: string;
   vimeoId: string;
+  variations: string[];
+  formats: string[];
 }
 export interface SectionsResponse {
   count: number;
