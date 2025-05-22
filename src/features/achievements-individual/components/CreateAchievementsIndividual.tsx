@@ -9,17 +9,18 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createCategorySchema } from '@/utils/yup';
 
 import { createAchievement } from '../api';
+import { SelectOption } from '@/types';
 
 interface FormikState {
   title: string;
   deleteImage: boolean;
   image: any;
-  type: string;
+  target: string;
   value: string;
   description: string;
 }
 
-export const CreateAchievementsIndividual = () => {
+export const CreateAchievementsIndividual = ({titles}) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(createAchievement, {
     onSuccess: () => {
@@ -34,11 +35,11 @@ export const CreateAchievementsIndividual = () => {
     title: '',
     image: '',
     deleteImage: false,
-    type: 'Week',
+    target: '',
     value: '1',
     description: '',
   };
-  const typeValue = ["Week", "Lift"];
+  const targetTitles = titles || [];
   const formik = useFormik({
     initialValues,
     validationSchema: createCategorySchema,
@@ -76,11 +77,10 @@ export const CreateAchievementsIndividual = () => {
           />
           <Select
             formik={formik}
-            label="Type"
-            name="type"
-            options={typeValue?.map((value) => ({ label: value, value: value })) || []}
-            value= {{ label: formik.values.type, value: formik.values.type }}
-            onChange={(value: any) =>formik.setFieldValue('type', value.value)}
+            label="Target"
+            name="target"
+            options={targetTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            onChange={({ value }: SelectOption) => formik.setFieldValue('target', value)}
           />
           <Field label="Value" formik={formik} name="value" type ='number'/>
           <Textarea label="Description" formik={formik} name="description" />

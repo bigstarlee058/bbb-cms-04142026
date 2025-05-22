@@ -22,7 +22,7 @@ export const fetchAchievements = async (filters: Filters) => {
 export const createAchievement = async (payload: {
   title: string;
   image?: File;
-  type: string;
+  target: string;
   value: string;
   description: string;  // Assuming the image comes as a File object from the client
 }) => {
@@ -30,7 +30,7 @@ export const createAchievement = async (payload: {
     const formData = new FormData();
     formData.append('title', payload.title);
     formData.append('image', payload.image);
-    formData.append('type', payload.type);
+    formData.append('target', payload.target);
     formData.append('value', payload.value);
     formData.append('description', payload.description);
     const result = (await axios.post('/achievements-individual/admin', formData)) as any;
@@ -55,7 +55,7 @@ export const updateAchievement = async (payload: {
   achievementId: string 
   title: string;
   image?: File;
-  type: string;
+  target: string;
   value: string;
   description: string;
   deleteImage: Boolean
@@ -65,7 +65,7 @@ export const updateAchievement = async (payload: {
     formData.append('_id', payload.achievementId);
     formData.append('title', payload.title);
     formData.append('image', payload.image);
-    formData.append('type', payload.type);
+    formData.append('target', payload.target);
     formData.append('value', payload.value);
     formData.append('description', payload.description);
     formData.append('deleteImage', String(payload.deleteImage));

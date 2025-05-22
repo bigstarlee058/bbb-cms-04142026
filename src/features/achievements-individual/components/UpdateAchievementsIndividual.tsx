@@ -7,17 +7,18 @@ import { updateAchievement } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createCategorySchema } from '@/utils/yup';
+import { SelectOption } from '@/types';
 
 interface FormikState {
   title: string;
   deleteImage: boolean;
   image: any;
-  type: string;
+  target: string;
   value: string;
   description: string;
 }
 
-export const UpdateAchievementsIndividual = ({ achievementId, achievements }) => {
+export const UpdateAchievementsIndividual = ({ achievementId, achievements, titles }) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(updateAchievement, {
     onSuccess: (message: string) => {
@@ -28,7 +29,7 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements }) =>
     },
   });
 
-  const typeValue = ["Week", "Lift"];
+  const targetTitles = titles || [];
 
   const achievementData = achievements.achievementsIndividuals.find(ex => ex._id === achievementId);
 
@@ -36,7 +37,7 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements }) =>
     title: achievementData?.title || '',
     image: achievementData?.image || '',
     deleteImage: false,
-    type: achievementData?.type || '',
+    target: achievementData?.target || '',
     value: achievementData?.value || '1',
     description: achievementData?.description || '',
   };
@@ -46,8 +47,8 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements }) =>
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, type , value, description,deleteImage} = state;
-    mutate({ achievementId, title, image, type, value, description, deleteImage });
+    const { title, image, target , value, description,deleteImage} = state;
+    mutate({ achievementId, title, image, target, value, description, deleteImage });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -73,11 +74,19 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements }) =>
           />
           <Select
             formik={formik}
-            label="Type"
-            name="type"
-            options={typeValue?.map((value) => ({ label: value, value: value })) || []}
-            value= {{ label: formik.values.type, value: formik.values.type }}
-            onChange={(value: any) =>formik.setFieldValue('type', value.value)}
+            label="Target"
+            name="target"
+            options={targetTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            value={
+              targetTitles?.find((title) => title._id === formik.values.target)
+                ? {
+                    label: targetTitles.find((title) => title._id === formik.values.target).title,
+                    value: formik.values.target,
+                  }
+                : null
+            }
+            // value= {{ label: formik.values.type, value: formik.values.type }}
+            onChange={({ value }: SelectOption) => formik.setFieldValue('target', value)}
           />
           <Field label="Value" formik={formik} name="value" type ='number'/>
           <Textarea label="Description" formik={formik} name="description" />
