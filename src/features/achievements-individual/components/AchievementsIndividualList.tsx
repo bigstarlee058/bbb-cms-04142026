@@ -8,7 +8,7 @@ import { UpdateAchievementsIndividual } from './UpdateAchievementsIndividual';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const AchievementsIndividualList = () => {
+export const AchievementsIndividualList = ({titles}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -74,8 +74,16 @@ export const AchievementsIndividualList = () => {
             },
           },
           {
-            title: 'Type',
-            field: 'type',
+            title: 'Target',
+            field: 'target',
+            Cell({ entry: { target } }) {
+              if (!titles) return null; // Check if titles is defined
+              const filteredTitles = titles
+                .filter((title) => target.includes(title.id))
+                .map((title) => title.title)
+                .join(', ');
+              return <span>{filteredTitles}</span>;
+            }
           },
           {
             title: 'Value',
@@ -90,7 +98,7 @@ export const AchievementsIndividualList = () => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateAchievementsIndividual achievementId={_id} achievements={achievementsData} />;
+              return <UpdateAchievementsIndividual achievementId={_id} achievements={achievementsData} titles = {titles}/>;
             },
           },
           {

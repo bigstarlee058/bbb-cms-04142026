@@ -97,7 +97,7 @@ export interface TargetsResponse {
 export interface Achievement extends BaseEntity {
   title: string;
   image: string;
-  type: string;
+  target: string;
   value: string;
   description: string;
 }

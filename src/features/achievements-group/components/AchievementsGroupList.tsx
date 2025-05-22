@@ -74,8 +74,8 @@ export const AchievementsGroupList = () => {
             },
           },
           {
-            title: 'Type',
-            field: 'type',
+            title: 'Target',
+            field: 'target',
           },
           {
             title: 'Value',
