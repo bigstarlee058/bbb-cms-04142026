@@ -32,7 +32,7 @@ export const fetchSections = async (filters: Filters) => {
 
 export const fetchSection = async (sectionId: string) => {
   try {
-    const result = (await axios.get(`/program-info/admin/get/${sectionId}`)) as Section;
+    const result = (await axios.get(`/phases/admin/get/${sectionId}`)) as Section;
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
