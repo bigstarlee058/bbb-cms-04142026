@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
-import { fetchStaffs } from '../api';
-import { Staff, Filters } from '@/types';
-import { EyeIcon } from '@heroicons/react/outline';
-import { DeleteStaff } from './DeleteStaff';
-import { UpdateStaff } from './UpdateStaff';
+import { fetchAchievements } from '../api';
+import { AchievementIndividual, Filters } from '@/types';
+import { DeleteAchievementsIndividual } from './DeleteAchievementsIndividual';
+import { UpdateAchievementsIndividual } from './UpdateAchievementsIndividual';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const StaffsList = () => {
+export const AchievementsIndividualList = ({titles}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -18,10 +17,10 @@ export const StaffsList = () => {
   });
 
   const {
-    data: staffData,
+    data: achievementsData,
     isLoading,
     refetch,
-  } = useQuery(['get-staffs'], () => fetchStaffs(filters));
+  } = useQuery(['get-achievements'], () => fetchAchievements(filters));
 
   useEffect(() => {
     refetch();
@@ -53,59 +52,53 @@ export const StaffsList = () => {
     );
   }
 
-  if (!staffData) return null;
+  if (!achievementsData) return null;
 
   return (
     <>
-      <Table<Staff>
-        data={staffData.staffs}
+      <Table<AchievementIndividual>
+        data={achievementsData.achievementsIndividuals}
         columns={[
           {
             title: 'Title',
             field: 'title',
           },
           {
-            title: 'Location',
-            field: 'location',
-          },
-          {
-            title: 'Photo',
-            field: 'photo',
-            Cell({ entry: { photo } }) {
+            title: 'Thumbnail',
+            field: 'image',
+            Cell({ entry: { image } }) {
               return (
               <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={photo} />
+                <img className="h-24 object-contain" src={image} />
               </div>);
             },
           },
           {
-            title: 'Type',
-            field: 'type',
-            Cell({ entry: { type } }) {
-              return (<>{type == 1 ? 'Staff' : 'Athlete'}</>);
-            },
-          },
-          {
-            title: 'Bio',
-            field: 'bio',
-            Cell({ entry: { bio } }) {
-              return <p>{bio.length > 100 ? `${bio.slice(0, 100)}...` : bio}</p>;
+            title: 'Target',
+            field: 'target',
+            Cell({ entry: { target } }) {
+              if (!titles) return null; // Check if titles is defined
+              const filteredTitles = titles
+                .filter((title) => target.includes(title.id))
+                .map((title) => title.title)
+                .join(', ');
+              return <span>{filteredTitles}</span>;
             }
           },
           {
-            title: 'Link',
-            field: 'link',
+            title: 'Value',
+            field: 'value',
+          },
+          {
+            title: 'Description',
+            field: 'description',
           },
           {
             title: '',
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return (
-                <Link to={`./${_id}`}>
-                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
-                </Link>
-              );
+              return <UpdateAchievementsIndividual achievementId={_id} achievements={achievementsData} titles = {titles}/>;
             },
           },
           {
@@ -113,15 +106,7 @@ export const StaffsList = () => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateStaff staffId={_id} staffs={staffData} />;
-            },
-          },
-          {
-            title: '',
-            field: '_id',
-            width: 70,
-            Cell({ entry: { _id } }) {
-              return <DeleteStaff staffId={_id} />;
+              return <DeleteAchievementsIndividual achievementId={_id} />;
             },
           },
         ]}
@@ -129,7 +114,7 @@ export const StaffsList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(staffData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(achievementsData.count / (filters?.perPage || 10))}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

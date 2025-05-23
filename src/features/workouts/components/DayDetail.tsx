@@ -113,7 +113,7 @@ export const DayDetail = ({
         <Field label="Vimeo Id One" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
         <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
         <Field label="Vimeo Id Three" name="vimeoIdThree" value={day.vimeoIdThree} onChange={handleChange} />
-        {!isPumpDay && (
+        {/* {!isPumpDay && (
           <Select
             label="Day Order"
             options={DAY_ORDERS}
@@ -125,25 +125,27 @@ export const DayDetail = ({
               }
             }}
           />
+        )} */}
+        {!isPumpDay && (
+          <div className="flex mt-3">
+            <div className="flex items-center">
+              <label className="block mb-1 mr-4">Available in variations:</label>
+            </div>
+            <div className="flex gap-3">
+              {['3', '4', '5'].map((label, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleCheckboxClick(index)}
+                  className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors`}
+                  style={states[index] ? { backgroundColor: '#00A89E' } : { backgroundColor: '#FFFFFF' }}
+                >
+                  <span className={`text-md font-medium ${states[index] ? 'text-white' : 'text-gray-800'}`}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
-
-        <div className="flex mt-3">
-          <div className="flex items-center">
-            <label className="block mb-1 mr-4">Available in variations:</label>
-          </div>
-          <div className="flex gap-3">
-            {['3', '4', '5'].map((label, index) => (
-              <div
-                key={index}
-                onClick={() => handleCheckboxClick(index)}
-                className={`flex items-center justify-center w-10 h-10 border cursor-pointer transition-colors`}
-                style={states[index] ? { backgroundColor: '#00A89E' } : { backgroundColor: '#FFFFFF' }}
-              >
-                <span className={`text-md font-medium ${states[index] ? 'text-white' : 'text-gray-800'}`}>{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        
       </div>
     </div>
   );

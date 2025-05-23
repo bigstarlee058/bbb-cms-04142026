@@ -10,6 +10,7 @@ import {
   XIcon,
   TagIcon,
   QuestionMarkCircleIcon,
+  CheckCircleIcon,
 } from '@heroicons/react/outline';
 
 import { LuDumbbell  } from "react-icons/lu";
@@ -57,7 +58,7 @@ const SideNavigation = () => {
       title: 'Modals',
       icon: MenuAlt1Icon,
       submenu: [
-        { title: 'Login Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
+        { title: 'Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
         { title: 'Tutorial Video', path: './backgroundTutorials', icon: MenuAlt1Icon },
         { title: 'Version Manage', path: './versionManage', icon: MenuAlt1Icon },
         { title: 'Workout day split', path: './popupWorkout', icon: MenuAlt1Icon },
@@ -73,6 +74,15 @@ const SideNavigation = () => {
     { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
     { title: 'Tags', path: './tags', icon: TagIcon },
+    {
+      title: 'Achievements',
+      icon: CheckCircleIcon,
+      submenu: [
+        { title: 'Group', path: './achievements-group', icon: MenuAlt1Icon },
+        { title: 'Individual', path: './achievements-individual', icon: MenuAlt1Icon },
+        { title: 'Target', path: './achievements-target', icon: MenuAlt1Icon },
+      ]
+    },
     { title: 'People', path: './staffs', icon: MenuAlt4Icon },
     { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
     { title: 'Phases', path: './phases', icon: MenuAlt4Icon },

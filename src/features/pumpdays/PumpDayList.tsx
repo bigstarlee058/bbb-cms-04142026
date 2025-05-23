@@ -74,7 +74,7 @@ export const PumpDayList = () => {
           updateMonths={() => {}}
           isSevenDays
           isWeekCollapsed={false}
-          isPumpDay
+          isPumpDay = {true}
           updateDays={(val) => {
             onSetDays(val);
             setDays(val);

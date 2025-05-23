@@ -18,6 +18,11 @@ interface FormikState {
   bio: string;
   deleteImage: boolean;
   image: any;
+  link: string;
+  linkedin:string;
+  tiktok:string;
+  facebook:string;
+  twitter:string;
 }
 
 const COACH_TYPE_OPTIONS: SelectOption[] = [
@@ -48,6 +53,11 @@ export const CreateStaff = () => {
     image: '',
     type: 0,
     bio: '',
+    link: '',
+    linkedin:'',
+    tiktok:'',
+    facebook:'',
+    twitter:'',
     deleteImage: false
   };
   const formik = useFormik({
@@ -94,6 +104,11 @@ export const CreateStaff = () => {
             options={COACH_TYPE_OPTIONS}
             onChange={({ value }: SelectOption) => formik.setFieldValue('type', value)}
           />
+          <Field label="Button Link" formik={formik} name="link" />
+          <Field label="Linkedin" formik={formik} name="linkedin" />
+          <Field label="Tiktok" formik={formik} name="tiktok" />
+          <Field label="Facebook" formik={formik} name="facebook" />
+          <Field label="Twitter" formik={formik} name="twitter" />
         </form>
       </FormDrawer>
     </Authorization>

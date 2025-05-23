@@ -35,7 +35,12 @@ export const createStaff = async (payload: {
   location: string;
   image: File;  // Assuming the image comes as a File object from the client
   type: number;
-  bio: string
+  bio: string;
+  link: string;
+  linkedin:string;
+  tiktok:string;
+  facebook:string;
+  twitter:string;
 }) => {
   try {
     const formData = new FormData();
@@ -44,6 +49,12 @@ export const createStaff = async (payload: {
     formData.append('image', payload.image);
     formData.append('type', payload.type.toString());
     formData.append('bio', payload.bio);
+    formData.append('link', payload.link);
+    formData.append('linkedin', payload.linkedin);
+    formData.append('tiktok', payload.tiktok);
+    formData.append('facebook', payload.facebook);
+    formData.append('twitter', payload.twitter);
+    
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/staffs/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
@@ -70,6 +81,11 @@ export const updateStaff = async (payload: {
   image: File;  // Assuming the image comes as a File object from the client
   type: number;
   bio: string;
+  link: string;
+  linkedin:string;
+  tiktok:string;
+  facebook:string;
+  twitter:string;
   deleteImage: Boolean
 }) => {
   try {
@@ -80,6 +96,11 @@ export const updateStaff = async (payload: {
     formData.append('image', payload.image);
     formData.append('type', payload.type.toString());
     formData.append('bio', payload.bio);
+    formData.append('link', payload.link);
+    formData.append('linkedin', payload.linkedin);
+    formData.append('tiktok', payload.tiktok);
+    formData.append('facebook', payload.facebook);
+    formData.append('twitter', payload.twitter);
     formData.append('deleteImage', String(payload.deleteImage));
     const result = (await axios.put('/staffs/admin', formData)) as ResponseMessage;
     if (result.result === true) {

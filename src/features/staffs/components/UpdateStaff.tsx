@@ -15,6 +15,11 @@ interface FormikState {
   type: number;
   bio: string;
   image?: any;
+  link: string;
+  linkedin:string;
+  tiktok:string;
+  facebook:string;
+  twitter:string;
   deleteImage: boolean;
 }
 
@@ -48,6 +53,11 @@ export const UpdateStaff = ({ staffId, staffs }) => {
     location: staffData?.location || '',
     type: staffData?.type || 0,
     bio: staffData?.bio || '',
+    link: staffData?.link || '',
+    linkedin: staffData?.linkedin || '',
+    tiktok: staffData?.tiktok || '',
+    facebook: staffData?.facebook || '',
+    twitter: staffData?.twitter || '',
     image: staffData?.photo || '',
     deleteImage: false
   };
@@ -57,9 +67,9 @@ export const UpdateStaff = ({ staffId, staffs }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, location, image, type, bio, deleteImage } = state;
+    const { title, location, image, type, bio,link, linkedin, tiktok, facebook, twitter, deleteImage} = state;
     console.log("sumit")
-    mutate({ staffId, title, location, image, type, bio, deleteImage });
+    mutate({ staffId, title, location, image, type, bio, link, linkedin, tiktok, facebook, twitter,deleteImage });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -97,6 +107,11 @@ export const UpdateStaff = ({ staffId, staffs }) => {
             }
             onChange={({ value }: SelectOption) => formik.setFieldValue('type', value)}
           />
+          <Field label="Button Link" formik={formik} name="link" />
+          <Field label="Linkedin" formik={formik} name="linkedin" />
+          <Field label="Tiktok" formik={formik} name="tiktok" />
+          <Field label="Facebook" formik={formik} name="facebook" />
+          <Field label="Twitter" formik={formik} name="twitter" />
         </form>
       </FormDrawer>
     </Authorization>

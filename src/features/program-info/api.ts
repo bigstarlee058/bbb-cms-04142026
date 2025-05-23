@@ -62,6 +62,8 @@ export const updateSection = async (payload: {
   title: string;
   description: string;
   vimeoId: string;
+  variations: string[];
+  formats: string[];
 }) => {
   try {
     const formData = new FormData();
@@ -69,6 +71,8 @@ export const updateSection = async (payload: {
     formData.append('title', payload.title);
     formData.append('description', payload.description);
     formData.append('vimeoId', payload.vimeoId);
+    formData.append('variations', JSON.stringify(payload.variations));
+    formData.append('formats', JSON.stringify(payload.formats));
     const result = (await axios.put('/program-info/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-sections');

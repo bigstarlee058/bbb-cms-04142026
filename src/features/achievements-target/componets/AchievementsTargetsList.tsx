@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
-import { fetchSections } from '../api';
-import { Section, Filters } from '@/types';
-import { EyeIcon } from '@heroicons/react/outline';
-import { DeleteSection } from './DeleteSection';
-import { UpdateSection } from './UpdateSection';
+import { fetchTargets } from '../api';
+import { Filters, Target } from '@/types';
+import { DeleteAchievementsTarget } from './DeleteAchievementsTarget';
+import { UpdateAchievementsTarget } from './UpdateAchievementsTarget';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const SectionsList = () => {
+export const AchievementsTargetsList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -18,10 +17,10 @@ export const SectionsList = () => {
   });
 
   const {
-    data: sectionData,
+    data: targetData,
     isLoading,
     refetch,
-  } = useQuery(['get-sections'], () => fetchSections(filters));
+  } = useQuery(['get-targets'], () => fetchTargets(filters));
 
   useEffect(() => {
     refetch();
@@ -53,33 +52,23 @@ export const SectionsList = () => {
     );
   }
 
-  if (!sectionData) return null;
+  if (!targetData) return null;
 
   return (
     <>
-      <Table<Section>
-        data={sectionData.sections}
+      <Table<Target>
+        data={targetData.achievementsTargets}
         columns={[
           {
             title: 'Title',
             field: 'title',
-            minwidth: 80,
-          },
-          {
-            title: 'Description',
-            field: 'description',
-          },
-          {
-            title: 'Vimeo Id',
-            field: 'vimeoId',
-            minwidth: 100,
           },
           {
             title: '',
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateSection sectionId={_id} sections={sectionData} />;
+              return <UpdateAchievementsTarget targetId={_id} targets={targetData} />;
             },
           },
           {
@@ -87,7 +76,7 @@ export const SectionsList = () => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <DeleteSection sectionId={_id} />;
+              return <DeleteAchievementsTarget targetId={_id} />;
             },
           },
         ]}
@@ -95,7 +84,7 @@ export const SectionsList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(sectionData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(targetData.count / (filters?.perPage || 10))}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

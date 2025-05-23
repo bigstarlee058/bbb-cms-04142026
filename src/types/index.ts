@@ -86,6 +86,43 @@ export interface TagsResponse {
   tags: Tags[];
 }
 
+export interface Target extends BaseEntity {
+  title: string;
+}
+export interface TargetsResponse {
+  count: number;
+  achievementsTargets: Target[];
+}
+
+export interface AchievementIndividual extends BaseEntity {
+  title: string;
+  image: string;
+  target: string;
+  value: string;
+  description: string;
+}
+
+export interface AchievementsIndividualResponse {
+  count: number;
+  achievementsIndividuals: AchievementIndividual[];
+}
+
+export interface Achievement {
+  index?: number;
+  achievementId: string;
+}
+
+export interface AchievementsGroup extends BaseEntity {
+  title: string;
+  description: string;
+  achievements: Achievement[]
+}
+
+export interface AchievementsGroupResponse {
+  count: number;
+  achievementsGroups: AchievementsGroup[];
+}
+
 export interface Equipment extends BaseEntity {
   title: string;
   thumbnail: string;
@@ -152,6 +189,23 @@ export interface Screen extends BaseEntity {
 export interface ScreensResponse {
   vimeoId: string;
   imgUrl: string;
+  imageLogin: string,
+  imageSignup: string,
+  imageForgot: string,
+  imageEmailConfirm: string,
+  imageDashboard: string,
+  imageStreakCalendar: string,
+  imageMonthView: string,
+  imageToday: string,
+  imageTools: string,
+  imageExerciseLibrary: string,
+  imageGraphs: string,
+  imageAchievement: string,
+  imageApparel: string,
+  imageFAQs: string,
+  imageProfile: string,
+  imageMyProfle: string,
+  imageSetting: string,
   slides: {title: string, description: string}[];
 }
 
@@ -266,7 +320,11 @@ export interface Staff extends BaseEntity {
   photo: string;
   type: number;
   bio: string;
-
+  link: string;
+  linkedin:string;
+  tiktok:string;
+  facebook:string;
+  twitter:string;
 }
 export interface StaffsResponse {
   count: number;
@@ -297,6 +355,8 @@ export interface Section extends BaseEntity {
   title: string;
   description: string;
   vimeoId: string;
+  variations: string[];
+  formats: string[];
 }
 export interface SectionsResponse {
   count: number;

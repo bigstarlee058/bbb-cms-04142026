@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
-import { fetchSections } from '../api';
-import { Section, Filters } from '@/types';
-import { EyeIcon } from '@heroicons/react/outline';
-import { DeleteSection } from './DeleteSection';
-import { UpdateSection } from './UpdateSection';
+import { fetchAchievements } from '../api';
+import { Achievement, AchievementIndividual, AchievementsGroup, Filters } from '@/types';
+import { DeleteAchievementsGroup } from './DeleteAchievementsGroup';
+import { UpdateAchievementsGroup } from './UpdateAchievementsGroup';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const SectionsList = () => {
+export const AchievementsGroupList = ({titles}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -18,10 +17,10 @@ export const SectionsList = () => {
   });
 
   const {
-    data: sectionData,
+    data: achievementsData,
     isLoading,
     refetch,
-  } = useQuery(['get-sections'], () => fetchSections(filters));
+  } = useQuery(['get-achievementsgroups'], () => fetchAchievements(filters));
 
   useEffect(() => {
     refetch();
@@ -53,33 +52,50 @@ export const SectionsList = () => {
     );
   }
 
-  if (!sectionData) return null;
+  if (!achievementsData) return null;
 
   return (
     <>
-      <Table<Section>
-        data={sectionData.sections}
+      <Table<AchievementsGroup>
+        data={achievementsData.achievementsGroups}
         columns={[
           {
             title: 'Title',
             field: 'title',
-            minwidth: 80,
           },
           {
             title: 'Description',
             field: 'description',
           },
           {
-            title: 'Vimeo Id',
-            field: 'vimeoId',
-            minwidth: 100,
+            title: 'Achievements',
+            field: 'achievements',
+            minwidth: 150,
+            Cell({ entry: { achievements } }) {
+              console.log("achievements:::", achievements)
+              if (!titles) return null; // Check if titles is defined
+              const sortedAchievements = achievements.sort((a, b) => a.index - b.index);
+              return (
+                <span>
+                  {sortedAchievements.map((achievement, idx) => {
+                    const matchedTitle = titles.find((title) => title.id === achievement.achievementId);
+                    if (!matchedTitle) return null;
+                    return (
+                      <div key={idx} className='p-1'>
+                        <strong>Level {achievement.index + 1}: </strong>  {matchedTitle.title}
+                      </div>
+                    );
+                  })}
+                </span>
+              );
+            }
           },
           {
             title: '',
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateSection sectionId={_id} sections={sectionData} />;
+              return <UpdateAchievementsGroup achievementId={_id} achievements={achievementsData} titles = {titles} />;
             },
           },
           {
@@ -87,7 +103,7 @@ export const SectionsList = () => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <DeleteSection sectionId={_id} />;
+              return <DeleteAchievementsGroup achievementId={_id} />;
             },
           },
         ]}
@@ -95,7 +111,7 @@ export const SectionsList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(sectionData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(achievementsData.count / (filters?.perPage || 10))}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

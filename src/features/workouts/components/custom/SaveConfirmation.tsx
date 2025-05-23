@@ -23,7 +23,31 @@ export const SaveConfirmation = ({allMonths}) => {
   });
 
   const handleSaveWorkouts = () => {
-    mutate(allMonths);
+    let monthId = 0;
+    let weekId = 0;
+    let isComplete = true;
+    allMonths.forEach((month) => {
+      month.weeks.forEach((week) => {
+        const countDaysWithFormat3 = week.days.filter(day => day.formats.includes('3')).length;
+        const countDaysWithFormat4 = week.days.filter(day => day.formats.includes('4')).length;
+        const countDaysWithFormat5 = week.days.filter(day => day.formats.includes('5')).length;
+        
+        if(countDaysWithFormat3 != 3 || countDaysWithFormat4 != 4 || countDaysWithFormat5 != 5) {
+          monthId = month.index;
+          weekId = week.index;
+          isComplete = false;
+          console.log(countDaysWithFormat3, countDaysWithFormat4, countDaysWithFormat5);
+        }
+      });
+    });
+    if(!isComplete) {
+      addNotification({
+        type: 'error',
+        title: `Month ${monthId} Week ${weekId}'s Splite select is not correct `,
+      });
+    } else {
+      mutate(allMonths);
+    }
   };
 
   return (
