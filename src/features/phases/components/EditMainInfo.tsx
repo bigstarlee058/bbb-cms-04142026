@@ -6,45 +6,50 @@ import { Button } from '@/components/Elements';
 import { FormDrawer, Field, Dropzone, Textarea, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
-import { createSectionSchema } from '@/utils/yup';
+import { updatePhasesMainInfoSchema } from '@/utils/yup';
 
-import { createSection } from '../api';
+import { updateMainInfo } from '../api';
 
 interface FormikState {
   title: string;
+  contenttitle: string;
   description: string;
-  vimeoId: string;
-  image: any; 
+  image?: any; 
   deleteImage: boolean;
 }
 
-export const EditMainInfo = () => {
+export const EditMainInfo = ({maininfoData}) => {
   const { addNotification } = useNotificationStore();
-  const { mutate, isLoading, isSuccess } = useMutation(createSection, {
-    onSuccess: (message: string) => {
-      formik.resetForm();
-      addNotification({
-        type: 'success',
-        title: message
-      });
-    }
-  });
-  const initialValues: FormikState = {
-    title: '',
-    description:'',
-    vimeoId: '',
-    image: '',
-    deleteImage: false,
-  };
-  const formik = useFormik({
-    initialValues,
-    validationSchema: createSectionSchema,
-    onSubmit: (v) => onSubmit(v)
-  });
-  const onSubmit = (value: any) => {
-    console.log("submit", value)
-    mutate(value);
-  };
+  
+    const initialValues: FormikState = {
+      title: maininfoData?.phasesmaininfo.title || '',
+      contenttitle: maininfoData?.phasesmaininfo.contenttitle || '',
+      description: maininfoData?.phasesmaininfo.description || '',
+      deleteImage: false,
+      image: maininfoData?.phasesmaininfo.thumbnail || '',
+      
+    };
+
+    console.log("maininfoData", maininfoData)
+   const formik = useFormik({
+      initialValues,
+      validationSchema: updatePhasesMainInfoSchema,
+      onSubmit: (v) => onSubmit(v)
+    });
+  
+    const { mutate, isLoading, isSuccess } = useMutation(updateMainInfo, {
+      onSuccess: (message: string) => {
+        addNotification({
+          type: 'success',
+          title: message
+        });
+      }
+    });
+  
+    const onSubmit = (state: FormikState) => {
+      const { title, contenttitle, description, image, deleteImage,} = state;
+      mutate({ title, contenttitle, description, image, deleteImage });
+    };
 
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -64,17 +69,17 @@ export const EditMainInfo = () => {
       >
         <form id="create-section" onSubmit={formik.handleSubmit}>
           <Field label="Main Title" formik={formik} name="title" />
+
           <Dropzone
             label="Thumbnail"
-            name="image"
+            name="thumbnail"
             formik={formik}
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
-          <Field label="Content Title" formik={formik} name="title" />
+          <Field label="Content Title" formik={formik} name="contenttitle" />
           <Textarea label="Content Description" formik={formik} name="description" />
-          <Field label="vimeoId" formik={formik} name="vimeoId" />
         </form>
       </FormDrawer>
     </Authorization>

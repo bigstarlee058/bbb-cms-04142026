@@ -11,7 +11,8 @@ import { createSectionSchema } from '@/utils/yup';
 interface FormikState {
   title: string;
   description: string;
-  vimeoId: string;
+  image: any;
+  deleteImage: boolean;
 }
 
 export const UpdateSection = ({ sectionId, sections }) => {
@@ -25,12 +26,13 @@ export const UpdateSection = ({ sectionId, sections }) => {
     }
   });
 
-  const sectionData = sections.sections.find((ex) => ex._id === sectionId);
+  const sectionData = sections.phases.find((ex) => ex._id === sectionId);
 
   const initialValues: FormikState = {
     title: sectionData?.title || '',
     description: sectionData?.description || '',
-    vimeoId: sectionData?.vimeoId || '',
+    image: sectionData?.thumbnail || '',
+    deleteImage: false,
   };
   const formik = useFormik({
     initialValues,
@@ -38,9 +40,9 @@ export const UpdateSection = ({ sectionId, sections }) => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (state: FormikState) => {
-    const { title, description, vimeoId } = state;
+    const { title, description, image, deleteImage } = state;
     console.log("sumit")
-    mutate({ sectionId, title, description, vimeoId });
+    mutate({ sectionId, title, description, image , deleteImage});
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -56,8 +58,15 @@ export const UpdateSection = ({ sectionId, sections }) => {
       >
         <form id="update-section" onSubmit={formik.handleSubmit}>
           <Field label="Name" formik={formik} name="title" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
           <Textarea label="Description" formik={formik} name="description" />
-          <Field label="Vimeo Id" formik={formik} name="vimeoId" />
         </form>
       </FormDrawer>
     </Authorization>

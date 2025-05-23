@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Table, Spinner, Link, Button } from '@/components/Elements';
 import { useQuery } from 'react-query';
 import { fetchSections } from '../api';
-import { Section, Filters } from '@/types';
+import { Section, Filters, Phases } from '@/types';
 import { EyeIcon } from '@heroicons/react/outline';
 import { DeleteSection } from './DeleteSection';
 import { UpdateSection } from './UpdateSection';
@@ -21,7 +21,7 @@ export const SectionsList = () => {
     data: sectionData,
     isLoading,
     refetch,
-  } = useQuery(['get-sections'], () => fetchSections(filters));
+  } = useQuery(['get-phases'], () => fetchSections(filters));
 
   useEffect(() => {
     refetch();
@@ -57,32 +57,26 @@ export const SectionsList = () => {
 
   return (
     <>
-      <Table<Section>
-        data={sectionData.sections}
+      <Table<Phases>
+        data={sectionData.phases}
         columns={[
           {
             title: 'Title',
             field: 'title',
           },
           {
+            title: 'Thumbnail',
+            field: 'thumbnail',
+            Cell({ entry: { thumbnail } }) {
+              return (
+              <div className="justify-center items-center">
+                <img className="h-24 object-contain" src={thumbnail} />
+              </div>);
+            },
+          },
+          {
             title: 'Description',
             field: 'description',
-          },
-          {
-            title: 'Vimeo Id',
-            field: 'vimeoId',
-          },
-          {
-            title: '',
-            field: '_id',
-            width: 70,
-            Cell({ entry: { _id } }) {
-              return (
-                <Link to={`./${_id}`}>
-                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
-                </Link>
-              );
-            },
           },
           {
             title: '',

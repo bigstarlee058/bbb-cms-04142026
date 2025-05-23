@@ -134,3 +134,14 @@ export const createFaqsSchema = Yup.object().shape({
 export const createCircuitSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
 });
+
+export const updatePhasesMainInfoSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Thumbnail is required'),
+  contenttitle: Yup.string().max(255).required(),
+});
+
+export const createPhasesSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Thumbnail is required'),
+});
