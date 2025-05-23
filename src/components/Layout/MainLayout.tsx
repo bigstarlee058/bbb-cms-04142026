@@ -85,6 +85,7 @@ const SideNavigation = () => {
     },
     { title: 'People', path: './staffs', icon: MenuAlt4Icon },
     { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
+    { title: 'Phases', path: './phases', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
     { title: 'Bonuses', path: './bonuses', icon: MenuAlt4Icon },
     { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon },

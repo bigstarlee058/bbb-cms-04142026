@@ -375,3 +375,20 @@ export interface FaqsResponse {
   count: number;
   faqs: Faq[];
 }
+
+export interface PhasesMainInfoResponse {
+  title: string;
+  description: string;
+  contenttitle: string;
+  thumbnail: string;
+}
+
+export interface Phases extends BaseEntity {
+  title: string;
+  description: string;
+  thumbnail: string;
+}
+export interface PhasesResponse {
+  count: number;
+  phases: Phases[];
+}
