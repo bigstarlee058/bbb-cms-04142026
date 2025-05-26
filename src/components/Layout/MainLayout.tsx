@@ -59,13 +59,13 @@ const SideNavigation = () => {
       icon: MenuAlt1Icon,
       submenu: [
         { title: 'Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
-        { title: 'Tutorial Video', path: './backgroundTutorials', icon: MenuAlt1Icon },
         { title: 'Version Manage', path: './versionManage', icon: MenuAlt1Icon },
         { title: 'Workout day split', path: './popupWorkout', icon: MenuAlt1Icon },
         { title: 'Equipment availability', path: './popupEquipment', icon: MenuAlt1Icon },
       ]
     },
-
+    // { title: 'Intro Tutorial', path: './backgroundTutorials', icon: MenuAlt1Icon },
+    { title: 'Intro Tutorial', path: './tutorials', icon: MenuAlt1Icon },
     { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
     { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
     { title: 'Warmups', path: './warmups', icon: MenuAlt3Icon },

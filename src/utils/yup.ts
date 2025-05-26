@@ -145,3 +145,9 @@ export const createPhasesSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
+
+export const createTutorialSchema = Yup.object().shape({
+  title: Yup.string().max(255).required(),
+  vimeoId: Yup.string().max(255).required(),
+  image: Yup.mixed().required('Thumbnail is required'),
+});

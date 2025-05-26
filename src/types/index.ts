@@ -209,11 +209,16 @@ export interface ScreensResponse {
   slides: {title: string, description: string}[];
 }
 
-export interface TutorialResponse {
+export interface Tutorial extends BaseEntity{
   vimeoId: string;
-  imgUrl: string;
+  thumbnail: string;
   title: string;
   description: string;
+}
+
+export interface TutorialResponse {
+  count: number;
+  tutorials: Tutorial[];
 }
 
 export interface VersionResponse {
