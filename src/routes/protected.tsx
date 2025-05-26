@@ -4,7 +4,7 @@ import { MainLayout } from '@/components/Layout';
 import { lazyImport } from '@/utils/lazyImport';
 import { Navigate, Outlet } from 'react-router-dom';
 import { BackgroundScreens } from '@/features/screens/BackgroundScreens';
-import { BackgroundTutorials } from '@/features/tutorial/BackgroundTutorials';
+// import { BackgroundTutorials } from '@/features/tutorial/BackgroundTutorials';
 import { VersionManage } from '@/features/version/VersionManage';
 import { PopupWorkout } from '@/features/popup-workout/PopupWorkout';
 import { PopupEquipment } from '@/features/popup-equipment/PopupEquipment';
@@ -15,11 +15,11 @@ import { PumpDaysContextProvider } from '@/features/pumpdays/PumpDaysContext';
 const { Dashboard } = lazyImport(() => import('@/features/misc'), 'Dashboard');
 const { Profile } = lazyImport(() => import('@/features/users'), 'Profile');
 const { ScreensRoutes } = lazyImport(() => import('@/features/screens'), 'ScreensRoutes');
-const { TutorialsRoutes } = lazyImport(() => import('@/features/tutorial'), 'TutorialsRoutes');
 const { VersionRoutes } = lazyImport(() => import('@/features/version'), 'VersionRoutes');
 const { PopupEquipmentRoutes } = lazyImport(() => import('@/features/popup-equipment'), 'PopupEquipmentRoutes');
 const { PopupWorkoutRoutes } = lazyImport(() => import('@/features/popup-workout/'), 'PopupWorkoutRoutes');
 const { UsersRoutes } = lazyImport(() => import('@/features/users'), 'UsersRoutes');
+const { TutorialsRoutes } = lazyImport(() => import('@/features/tutorial'), 'TutorialsRoutes');
 const { WorkoutsRoutes } = lazyImport(() => import('@/features/workouts'), 'WorkoutsRoutes');
 const { WarmupRoutes } = lazyImport(() => import('@/features/warmups'), 'WarmupRoutes');
 const { ExercisesRoutes } = lazyImport(() => import('@/features/exercises'), 'ExercisesRoutes');
@@ -72,10 +72,10 @@ export const protectedRoutes = [
         element: <ScreensRoutes />,
         children: [{ path: 'backgroundScreens', element: <BackgroundScreens /> }]
       },
-      {
-        element: <TutorialsRoutes />,
-        children: [{ path: 'backgroundTutorials', element: <BackgroundTutorials /> }]
-      },
+      // {
+      //   element: <TutorialsRoutes />,
+      //   children: [{ path: 'backgroundTutorials', element: <BackgroundTutorials /> }]
+      // },
       {
         element: <VersionRoutes />,
         children: [{ path: 'versionManage', element: <VersionManage /> }]
@@ -89,6 +89,7 @@ export const protectedRoutes = [
         children: [{ path: 'popupEquipment', element: <PopupEquipment /> }]
       },
       { path: 'users/*', element: <UsersRoutes /> },
+      { path: 'tutorials/*', element: <TutorialsRoutes /> },
       { path: 'workouts/*', element: <WorkoutsRoutes /> },
       { path: 'exercises/*', element: <ExercisesRoutes /> },
       { path: 'warmups/*', element: <WarmupRoutes /> },
