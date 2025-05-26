@@ -97,7 +97,7 @@ export const DayDetail = ({
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" name="description" value={day.description} onChange={handleChange} hasHeight = {true} />
+        <Textarea label="Description" name="description" value={day.description} onChange={handleChange} hasHeight = {isPumpDay? false: true} />
       </div>
       <div className="w-1/2 ml-4 mr-4 mt-6">
         <Dropzone
@@ -111,8 +111,48 @@ export const DayDetail = ({
           file={day.thumbnail}
         />
         <Field label="Vimeo Id One" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
-        <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
-        <Field label="Vimeo Id Three" name="vimeoIdThree" value={day.vimeoIdThree} onChange={handleChange} />
+        {!isPumpDay && (
+            <Dropzone
+            defaultImg={day.thumbnailOne}
+            onDrop={(img) => {
+              handleChange('thumbnailOne', img);
+            }}
+            onDelete={() => {
+              handleChange('thumbnailOne', null);
+            }}
+            file={day.thumbnailOne}
+          />
+        )}
+        {!isPumpDay && (
+          <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
+        )}
+        {!isPumpDay && (
+          <Dropzone
+            defaultImg={day.thumbnailTwo}
+            onDrop={(img) => {
+              handleChange('thumbnailTwo', img);
+            }}
+            onDelete={() => {
+              handleChange('thumbnailTwo', null);
+            }}
+            file={day.thumbnailTwo}
+          />
+        )}
+        {!isPumpDay && (
+          <Field label="Vimeo Id Three" name="vimeoIdThree" value={day.vimeoIdThree} onChange={handleChange} />
+        )}
+        {!isPumpDay && (
+          <Dropzone
+            defaultImg={day.thumbnailThree}
+            onDrop={(img) => {
+              handleChange('thumbnailThree', img);
+            }}
+            onDelete={() => {
+              handleChange('thumbnailThree', null);
+            }}
+            file={day.thumbnailThree}
+          />
+        )}
         {/* {!isPumpDay && (
           <Select
             label="Day Order"

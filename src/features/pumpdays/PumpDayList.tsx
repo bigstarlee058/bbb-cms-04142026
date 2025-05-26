@@ -35,6 +35,9 @@ export const PumpDayList = () => {
       vimeoIdTwo: '',
       vimeoIdThree: '',
       thumbnail: null,
+      thumbnailOne: null,
+      thumbnailTwo: null,
+      thumbnailThree: null,
       formats: newFormats,
 
       warmups: [],

@@ -285,6 +285,9 @@ export interface Day extends WorkoutsBaseEntity {
   vimeoIdTwo: string;
   vimeoIdThree: string;
   thumbnail: any;
+  thumbnailOne: any;
+  thumbnailTwo: any;
+  thumbnailThree: any;
   formats: string[];
   
   warmups: DayWarmup[];

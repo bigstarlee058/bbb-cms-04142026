@@ -8,7 +8,7 @@ export const Textarea = ({ label, name, value, onChange, hasHeight }) => {
       <textarea
         placeholder={label}
         name={name}
-        className={`rounded-lg ${hasHeight ? 'h-[350px]' : 'h-[210px]'}`}
+        className={`rounded-lg ${hasHeight ? 'h-[600px]' : 'h-[210px]'}`}
         value={value}
         onChange={(e) => onChange(name, e.target.value)}
       />
