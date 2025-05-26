@@ -32,6 +32,9 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
       vimeoIdTwo: '',
       vimeoIdThree: '',
       thumbnail: null,
+      thumbnailOne: null,
+      thumbnailTwo: null,
+      thumbnailThree: null,
       formats: newFormats,
 
       warmups: [],

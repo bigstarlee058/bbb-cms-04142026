@@ -250,6 +250,21 @@ export const updateWorkouts = async (months: Month[]) => {
           } else {
             thumbnails.push(null);
           }
+          if (day.thumbnailOne instanceof File || typeof day.thumbnailOne === 'string') {
+            thumbnails.push(day.thumbnailOne);
+          } else {
+            thumbnails.push(null);
+          }
+          if (day.thumbnailTwo instanceof File || typeof day.thumbnailTwo === 'string') {
+            thumbnails.push(day.thumbnailTwo);
+          } else {
+            thumbnails.push(null);
+          }
+          if (day.thumbnailThree instanceof File || typeof day.thumbnailThree === 'string') {
+            thumbnails.push(day.thumbnailThree);
+          } else {
+            thumbnails.push(null);
+          }
         });
       });
 
@@ -278,7 +293,26 @@ export const updateWorkouts = async (months: Month[]) => {
         item.weeks.forEach((week) => updateThumbnails(week));
       }
       if (item.days) {
-        item.days.forEach((day) => updateThumbnails(day));
+        item.days.forEach((day) => {
+          if (urlIndex < thumbnailURLs.length) {
+            day.thumbnail = thumbnailURLs[urlIndex];
+            urlIndex++;
+          }
+          if (urlIndex < thumbnailURLs.length) {
+            day.thumbnailOne = thumbnailURLs[urlIndex];
+            urlIndex++;
+          }
+          if (urlIndex < thumbnailURLs.length) {
+            day.thumbnailTwo = thumbnailURLs[urlIndex];
+            urlIndex++;
+          }
+          if (urlIndex < thumbnailURLs.length) {
+            day.thumbnailThree = thumbnailURLs[urlIndex];
+            urlIndex++;
+          }
+        })
+        // item.days.forEach((day) => updateThumbnails(day));
+        
       }
     };
 
