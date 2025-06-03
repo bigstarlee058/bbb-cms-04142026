@@ -5,7 +5,7 @@ import * as React from 'react';
 import { Button } from '@/components/Elements/Button';
 import { Dialog, DialogTitle } from '@/components/Elements/Dialog';
 import { useDisclosure } from '@/hooks/useDisclosure';
-import { DayExercise, UserWorkout } from '@/types';
+import { User, UserWorkoutHistory } from '@/types';
 
 export type PopupDialogProps = {
   triggerButton: React.ReactElement;
@@ -14,107 +14,9 @@ export type PopupDialogProps = {
   icon?: 'danger' | 'info';
   role?: number;
   isDone?: boolean;
-  workoutsHistory: UserWorkout[];
+  workoutsHistory: UserWorkoutHistory[];
+  userData: User;
 };
-
-const workouts = [
-  {
-    monthTitle: 'Glute Squad Special',
-    weekTitle: 'Week 2',
-    dayTitle: 'Workout Day 2',
-    day: '10/09/2024',
-    exercises: [
-      {
-        exerciseTitle: 'Pull up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Skipped'
-      },
-      {
-        exerciseTitle: 'Push up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Completed'
-      },
-      {
-        exerciseTitle: 'Pull up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Skipped'
-      },
-      {
-        exerciseTitle: 'Push up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Completed'
-      },
-      {
-        exerciseTitle: 'Pull up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Skipped'
-      },
-      {
-        exerciseTitle: 'Push up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Completed'
-      },
-      {
-        exerciseTitle: 'Pull & Push up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Completed'
-      }
-    ]
-  },
-  {
-    monthTitle: 'Glute Squad Special',
-    weekTitle: 'Week 3',
-    dayTitle: 'Workout Day 1',
-    day: '10/19/2024',
-    exercises: [
-      {
-        exerciseTitle: 'Pull up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Skipped'
-      },
-      {
-        exerciseTitle: 'Push up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Completed'
-      },
-      {
-        exerciseTitle: 'Pull & Push up',
-        sets: 5,
-        reps: 6,
-        weight: 7,
-        rest: 8,
-        status: 'Completed'
-      }
-    ]
-  }
-];
 
 export const PopupDialog = ({
   name,
@@ -123,7 +25,8 @@ export const PopupDialog = ({
   icon = 'info',
   isDone = false,
   triggerButton,
-  workoutsHistory
+  workoutsHistory = [],
+  userData
 }: PopupDialogProps) => {
   const { close, open, isOpen } = useDisclosure();
   const [activeTab, setActiveTab] = React.useState(0); // New state for active tab
@@ -136,56 +39,83 @@ export const PopupDialog = ({
   const trigger = React.cloneElement(triggerButton, {
     onClick: open
   });
+
+  const formatDateToLocal = (dateInput: string | Date): string => {
+    const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+
+    const formatted = date.toLocaleString(undefined, {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour12: false
+    });
+
+    return formatted.replace(",", "");
+  };
   // Tab content
   const tabContents = [
-    <div>Summary</div>,
+    <div className="space-y-6 max-h-[500px] overflow-auto px-2">
+      <h3 className="text-md font-bold text-gray-900">Role: {userData.role == 0 ? "User" : "Admin"}</h3>
+      <p >Register Date: {userData.createdAt}</p>
+    </div>,
 
     <div className="space-y-6 max-h-[500px] overflow-auto px-2">
-      {workouts.map(({ monthTitle, weekTitle, dayTitle, day, exercises }, index) => (
-        <div key={day} className='border-t'>
-          <div className="flex flex-col md:flex-row justify-between items-center py-4 border-b">
-            <div>
-              <h3 className="text-md font-bold text-gray-900">{monthTitle}</h3>
-              <div className="flex items-center space-x-6">
-                <h4 className="text-sm font-semibold text-gray-700">{weekTitle}</h4>
-                <p className="text-sm text-gray-500">{dayTitle}</p>
+      {workoutsHistory.sort((a: UserWorkoutHistory, b: UserWorkoutHistory) => new Date(a.date).getTime() - new Date(b.date).getTime()).reduce((acc, workout, index, arr) => {
+        const isFirstOfDate = 
+          index === 0 || 
+          formatDateToLocal(workout.date) !== formatDateToLocal(arr[index - 1].date) || 
+          workout.monthIndex !== arr[index - 1].monthIndex ||
+          workout.weekIndex !== arr[index - 1].weekIndex ||
+          workout.dayIndex !== arr[index - 1].dayIndex;
+
+        if (isFirstOfDate) {
+          const sameDateWorkouts = arr.filter(w => 
+            formatDateToLocal(w.date) === formatDateToLocal(workout.date) &&
+            w.monthIndex == workout.monthIndex &&
+            w.weekIndex == workout.weekIndex &&
+            w.dayIndex == workout.dayIndex
+          );
+
+          acc.push(
+            <div key={workout.date} className='border-t'>
+              <div className="flex flex-col md:flex-row justify-between items-center py-4 border-b">
+                <div>
+                  <h3 className="text-md font-bold text-gray-900">Month {workout.monthIndex} : {workout.monthTitle}</h3>
+                  <div className="flex items-center space-x-6">
+                    <h4 className="text-sm font-semibold text-gray-700">Week {workout.weekIndex} : {workout.weekTitle}</h4>
+                    <p className="text-sm text-gray-500">Day {workout.dayIndex}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 italic">{formatDateToLocal(workout.date)}</p>
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {sameDateWorkouts.map((ex, exIndex) => (
+                  <div
+                    key={ex.date + exIndex}
+                    className={`p-4 rounded-lg border ${
+                      ex.status === 'Completed' ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
+                    }`}
+                  >
+                    <h5 className="text-md font-medium text-gray-800">{ex.exerciseTitle}</h5>
+                    <ul className="mt-2 text-sm text-gray-600 space-y-1">
+                      <li><span className="font-semibold">Sets:</span> {ex.sets}</li>
+                      <li><span className="font-semibold">Reps:</span> {ex.reps}</li>
+                      <li><span className="font-semibold">Weight:</span> {ex.weight} kg</li>
+                      <li><span className="font-semibold">Rest:</span> {ex.rest} sec</li>
+                    </ul>
+                    <p className={`mt-3 text-sm font-semibold ${ex.status === 'Completed' ? 'text-green-600' : 'text-red-600'}`}>
+                      {ex.status}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
-            <p className="text-sm text-gray-600 italic">{day}</p>
-          </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {exercises.map(({ exerciseTitle, sets, reps, weight, rest, status }, index) => (
-              <div
-                key={index}
-                className={`p-4 rounded-lg border ${
-                  status === 'Completed' ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
-                }`}
-              >
-                <h5 className="text-md font-medium text-gray-800">{exerciseTitle}</h5>
-                <ul className="mt-2 text-sm text-gray-600 space-y-1">
-                  <li>
-                    <span className="font-semibold">Sets:</span> {sets}
-                  </li>
-                  <li>
-                    <span className="font-semibold">Reps:</span> {reps}
-                  </li>
-                  <li>
-                    <span className="font-semibold">Weight:</span> {weight} kg
-                  </li>
-                  <li>
-                    <span className="font-semibold">Rest:</span> {rest} sec
-                  </li>
-                </ul>
-                <p
-                  className={`mt-3 text-sm font-semibold ${status === 'Completed' ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {status}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+          );
+        }
+
+        return acc;
+      }, [])}
     </div>,
     <div>Analysis</div>
   ];

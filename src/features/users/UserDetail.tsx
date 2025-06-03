@@ -7,7 +7,7 @@ import { useMutation } from 'react-query';
 import { deleteUser } from './api';
 import { queryClient } from '@/lib/react-query';
 import { useQuery } from 'react-query';
-import { fetchUser } from './api';
+import { fetchUser , fetchUserWorkout} from './api';
 import { ErrorMessage } from '@/types';
 import { UserWorkout } from '@/types';
 import { Table } from '@/components/Elements';
@@ -26,7 +26,7 @@ export const UserDetail = ({ id }: UserDetailProps) => {
   const navigate = useNavigate();
   const { addNotification } = useNotificationStore();
 
-  const { data, isLoading } = useQuery(['get-user', id], () => fetchUser(id), {
+  const { data: userData} = useQuery(['get-user', id], () => fetchUser(id), {
     onError: (err: ErrorMessage) => {
       addNotification({
         type: 'error',
@@ -36,16 +36,27 @@ export const UserDetail = ({ id }: UserDetailProps) => {
     },
   });
 
-  if (isLoading || !data) {
+  const { data: userWorkoutHistory, isLoading } = useQuery(['get-user-history', id], () => fetchUserWorkout(id), {
+    onError: (err: ErrorMessage) => {
+      addNotification({
+        type: 'error',
+        title: err.message,
+      });
+      navigate('/app/users');
+    },
+  });
+
+  if (isLoading || !userData) {
     return <div>Loading...</div>;
   }
   if (user?.uid === id) return null;
   return (
     <PopupDialog
       icon="info"
-      name={data.name}
-      email={data.email}
-      workoutsHistory={data.workoutsHistory}
+      name={userData.name}
+      email={userData.email}
+      userData = {userData}
+      workoutsHistory={userWorkoutHistory}
       triggerButton={
         <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />}></Button>
       }

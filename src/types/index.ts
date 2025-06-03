@@ -65,7 +65,27 @@ export interface User extends BaseEntity {
 export interface UsersResponse {
   count: number;
   users: User[];
+
 }
+export interface UserWorkoutHistory {
+  monthTitle: string;
+  monthIndex: number;
+  weekTitle: string;
+  weekIndex: number;
+  dayIndex: number;
+  exerciseTitle: string;
+  split: string;
+  date: string;
+  status: string;
+  sets: string;
+  reps: string;
+  weight: string;
+  rest: string;
+  load: string;
+  effort: string;
+  totalSet: string;
+}
+
 export interface Category extends BaseEntity {
   title: string;
   thumbnail: string;
