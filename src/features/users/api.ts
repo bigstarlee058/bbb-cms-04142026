@@ -1,4 +1,4 @@
-import { ErrorMessage, User, ResponseMessage, Filters, UsersResponse } from '@/types';
+import { ErrorMessage, User, ResponseMessage, Filters, UsersResponse, UserWorkoutHistory } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
 
@@ -77,6 +77,19 @@ export const deleteUser = async (userId: string) => {
 export const fetchUser = async (userId: string) => {
   try {
     const result = (await axios.get(`/users/admin/${userId}`)) as User;
+    return result;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string,
+    };
+    return Promise.reject(error);
+  }
+};
+
+export const fetchUserWorkout = async (userId: string) => {
+  try {
+    const result = (await axios.get(`/users/workouts_history/${userId}`)) as UserWorkoutHistory[];
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
