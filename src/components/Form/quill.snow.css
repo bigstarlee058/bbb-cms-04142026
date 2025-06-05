@@ -944,7 +944,7 @@
   border: 1px solid #ccc;
 }
 
-.form-group svg {
+.form-group .ql-formats svg {
   position: static;
 }
 .quill.rounded-lg {

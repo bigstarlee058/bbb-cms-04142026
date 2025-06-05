@@ -112,7 +112,7 @@ export const updateVersionSchema = Yup.object().shape({
 });
 
 export const updatePopupInfoSchema = Yup.object().shape({
-  vimeo: Yup.string().max(255).required(),
+  
 });
 
 export const createSettingsSchema = Yup.object().shape({

@@ -9,6 +9,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { updatePopupInfoSchema } from '@/utils/yup';
 import { updatePopupInfo } from './api';
 import { Textarea } from '@/components/Form';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   vimeo: string;
@@ -66,7 +67,7 @@ export const UpdatePopupEquipment = ({screenData}) => {
         <form id="update-information" onSubmit={formik.handleSubmit}>
           <Field label="Vimeo" formik={formik} name="vimeo" />
           <Field label="Title" formik={formik} name={"title"} />
-          <Textarea label="Description" formik={formik} name="description" />
+          <TextareaWithFormatting label="Description" formik={formik} name="description" />
         </form>
       </FormDrawer>
     </Authorization>
