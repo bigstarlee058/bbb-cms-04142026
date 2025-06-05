@@ -10,6 +10,7 @@ import { createStaffSchema } from '@/utils/yup';
 
 import { createStaff } from '../api';
 import { SelectOption } from '@/types';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -88,7 +89,7 @@ export const CreateStaff = () => {
         <form id="create-staff" onSubmit={formik.handleSubmit}>
           <Field label="Name" formik={formik} name="title" />
           <Field label="Location" formik={formik} name="location" />
-          <Textarea label="Bio" formik={formik} name="bio" />
+          <TextareaWithFormatting label="Bio" formik={formik} name="bio" />
           <Dropzone
             label="Photo"
             name="image"

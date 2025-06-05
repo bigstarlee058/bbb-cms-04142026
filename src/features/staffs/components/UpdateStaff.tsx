@@ -8,6 +8,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createStaffSchema } from '@/utils/yup';
 import { SelectOption } from '@/types';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -86,7 +87,7 @@ export const UpdateStaff = ({ staffId, staffs }) => {
         <form id="update-staff" onSubmit={formik.handleSubmit}>
           <Field label="Name" formik={formik} name="title" />
           <Field label="Location" formik={formik} name="location" />
-          <Textarea label="Bio" formik={formik} name="bio" />
+          <TextareaWithFormatting label="Bio" formik={formik} name="bio" />
           <Dropzone
             label="Photo"
             name="image"
