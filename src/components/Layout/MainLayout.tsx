@@ -58,14 +58,14 @@ const SideNavigation = () => {
       title: 'Modals',
       icon: MenuAlt1Icon,
       submenu: [
-        { title: 'Screen Background', path: './backgroundScreens', icon: MenuAlt1Icon },
-        { title: 'Version Manage', path: './versionManage', icon: MenuAlt1Icon },
-        { title: 'Workout day split', path: './popupWorkout', icon: MenuAlt1Icon },
-        { title: 'Equipment availability', path: './popupEquipment', icon: MenuAlt1Icon },
+        { title: 'Page Backgrounds', path: './backgroundScreens', icon: MenuAlt1Icon },
+        { title: 'New Version', path: './versionManage', icon: MenuAlt1Icon },
+        { title: 'Workout Frequency', path: './popupWorkout', icon: MenuAlt1Icon },
+        { title: 'Equipment Availability', path: './popupEquipment', icon: MenuAlt1Icon },
       ]
     },
     // { title: 'Intro Tutorial', path: './backgroundTutorials', icon: MenuAlt1Icon },
-    { title: 'Intro Tutorial', path: './tutorials', icon: MenuAlt1Icon },
+    { title: 'Video Tutorials', path: './tutorials', icon: MenuAlt1Icon },
     { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
     { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
     { title: 'Warmups', path: './warmups', icon: MenuAlt3Icon },
@@ -83,7 +83,7 @@ const SideNavigation = () => {
         { title: 'Target', path: './achievements-target', icon: MenuAlt1Icon },
       ]
     },
-    { title: 'People', path: './staffs', icon: MenuAlt4Icon },
+    { title: 'Spotlights', path: './staffs', icon: MenuAlt4Icon },
     { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
     { title: 'Phases', path: './phases', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
