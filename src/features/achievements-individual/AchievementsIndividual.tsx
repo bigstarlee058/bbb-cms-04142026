@@ -1,15 +1,19 @@
 import { ContentLayout } from '@/components/Layout';
 import { CreateAchievementsIndividual } from './components/CreateAchievementsIndividual';
 import { AchievementsIndividualList } from './components/AchievementsIndividualList';
-import { fetchAchievementsTargetTitles } from '../workouts/api';
+import { fetchAchievementsTargetTitles, fetchTagTitles } from '../workouts/api';
 import { useQuery } from 'react-query';
 import { useUserStore } from '@/stores/user';
 import { useEffect } from 'react';
 
 export const AchievementsIndividual = () => {
   const { setCurrentPage } = useUserStore();
-  const { data: titles } = useQuery('get-collection-titles', () =>
+  const { data: othertitles } = useQuery('get-other-titles', () =>
     fetchAchievementsTargetTitles({ filterString: '' })
+  );
+
+  const { data: tagtitles } = useQuery('get-tags-titles', () =>
+    fetchTagTitles({ filterString: '' })
   );
 
   useEffect(() => {
@@ -19,10 +23,10 @@ export const AchievementsIndividual = () => {
   return (
     <ContentLayout title="">
       <div className="flex justify-end">
-        <CreateAchievementsIndividual titles={titles}/>
+        <CreateAchievementsIndividual tagtitles = {tagtitles} othertitles={othertitles}/>
       </div>
       <div className="mt-4">
-        <AchievementsIndividualList titles={titles}/>
+        <AchievementsIndividualList tagtitles = {tagtitles} othertitles={othertitles}/>
       </div>
     </ContentLayout>
   );

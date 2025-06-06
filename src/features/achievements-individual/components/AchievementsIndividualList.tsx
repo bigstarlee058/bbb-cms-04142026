@@ -8,7 +8,7 @@ import { UpdateAchievementsIndividual } from './UpdateAchievementsIndividual';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const AchievementsIndividualList = ({titles}) => {
+export const AchievementsIndividualList = ({tagtitles, othertitles}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -74,14 +74,27 @@ export const AchievementsIndividualList = ({titles}) => {
             },
           },
           {
+            title: 'Target Type',
+            field: 'targettype',
+          },
+          {
             title: 'Target',
             field: 'target',
-            Cell({ entry: { target } }) {
-              if (!titles) return null; // Check if titles is defined
-              const filteredTitles = titles
-                .filter((title) => target.includes(title.id))
-                .map((title) => title.title)
-                .join(', ');
+            Cell({ entry: { target, targettype } }) {
+              let filteredTitles = "";
+              if (targettype == "Tags") {
+                if (!tagtitles) return null; // Check if titles is defined
+                filteredTitles = tagtitles
+                  .filter((title) => target.includes(title.id))
+                  .map((title) => title.title)
+                  .join(', ');
+              } else if (targettype == "Others"){
+                if (!othertitles) return null; // Check if titles is defined
+                filteredTitles = othertitles
+                  .filter((title) => target.includes(title.id))
+                  .map((title) => title.title)
+                  .join(', ');
+              }
               return <span>{filteredTitles}</span>;
             }
           },
@@ -98,7 +111,7 @@ export const AchievementsIndividualList = ({titles}) => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateAchievementsIndividual achievementId={_id} achievements={achievementsData} titles = {titles}/>;
+              return <UpdateAchievementsIndividual achievementId={_id} achievements={achievementsData} tagtitles = {tagtitles} othertitles={othertitles}/>;
             },
           },
           {

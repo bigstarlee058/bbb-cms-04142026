@@ -10,18 +10,21 @@ import { createCategorySchema } from '@/utils/yup';
 
 import { createAchievement } from '../api';
 import { SelectOption } from '@/types';
+import { useState } from 'react';
 
 interface FormikState {
   title: string;
   deleteImage: boolean;
   image: any;
+  targettype: string;
   target: string;
   value: string;
   description: string;
 }
 
-export const CreateAchievementsIndividual = ({titles}) => {
+export const CreateAchievementsIndividual = ({tagtitles, othertitles}) => {
   const { addNotification } = useNotificationStore();
+  const [targetTitles, setTargetTitles] = useState(tagtitles);
   const { mutate, isLoading, isSuccess } = useMutation(createAchievement, {
     onSuccess: () => {
       formik.resetForm();
@@ -35,11 +38,12 @@ export const CreateAchievementsIndividual = ({titles}) => {
     title: '',
     image: '',
     deleteImage: false,
+    targettype: '',
     target: '',
     value: '1',
     description: '',
   };
-  const targetTitles = titles || [];
+  const optionTitles = ["Tags", "Others"];
   const formik = useFormik({
     initialValues,
     validationSchema: createCategorySchema,
@@ -48,6 +52,14 @@ export const CreateAchievementsIndividual = ({titles}) => {
   const onSubmit = (value: any) => {
     mutate(value);
   };
+
+  const onChangeSelect = (value: String) => {
+    if(value == "Tags") {
+      setTargetTitles(tagtitles);
+    } else if (value == "Others") {
+      setTargetTitles(othertitles);
+    }
+  }
 
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -74,6 +86,16 @@ export const CreateAchievementsIndividual = ({titles}) => {
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Select
+            formik={formik}
+            label="Target type"
+            name="targettype"
+            options={optionTitles?.map((value) => ({ label: value, value: value })) || []}
+            onChange={({ value }: SelectOption) => {
+              formik.setFieldValue('targettype', value);
+              onChangeSelect(value);
+            }}
           />
           <Select
             formik={formik}
