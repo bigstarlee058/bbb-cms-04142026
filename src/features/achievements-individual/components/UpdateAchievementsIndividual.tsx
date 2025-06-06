@@ -50,8 +50,8 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagt
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
-    const { title, image, target , value, description,deleteImage} = state;
-    mutate({ achievementId, title, image, target, value, description, deleteImage });
+    const { title, image, targettype, target , value, description,deleteImage} = state;
+    mutate({ achievementId, title, image, targettype, target, value, description, deleteImage });
   };
 
   const onChangeSelect = (value: String) => {
