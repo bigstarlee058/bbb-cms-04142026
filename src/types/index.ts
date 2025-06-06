@@ -117,6 +117,7 @@ export interface TargetsResponse {
 export interface AchievementIndividual extends BaseEntity {
   title: string;
   image: string;
+  targettype: string;
   target: string;
   value: string;
   description: string;

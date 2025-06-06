@@ -8,17 +8,20 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createCategorySchema } from '@/utils/yup';
 import { SelectOption } from '@/types';
+import { useState } from 'react';
 
 interface FormikState {
   title: string;
   deleteImage: boolean;
   image: any;
+  targettype: string;
   target: string;
   value: string;
   description: string;
 }
 
-export const UpdateAchievementsIndividual = ({ achievementId, achievements, titles }) => {
+export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagtitles, othertitles }) => {
+  const [isSetTitles, setIsSetTitles] = useState(false);
   const { addNotification } = useNotificationStore();
   const { mutate, isLoading, isSuccess } = useMutation(updateAchievement, {
     onSuccess: (message: string) => {
@@ -28,15 +31,15 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, titl
       });
     },
   });
-
-  const targetTitles = titles || [];
+  const optionTitles = ["Tags", "Others"];
 
   const achievementData = achievements.achievementsIndividuals.find(ex => ex._id === achievementId);
-
+  const [targetTitles, setTargetTitles] = useState(achievementData?.targettype == "Tags"? tagtitles : othertitles);
   const initialValues: FormikState = {
     title: achievementData?.title || '',
     image: achievementData?.image || '',
     deleteImage: false,
+    targettype: achievementData?.targettype || '',
     target: achievementData?.target || '',
     value: achievementData?.value || '1',
     description: achievementData?.description || '',
@@ -50,6 +53,14 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, titl
     const { title, image, target , value, description,deleteImage} = state;
     mutate({ achievementId, title, image, target, value, description, deleteImage });
   };
+
+  const onChangeSelect = (value: String) => {
+    if(value == "Tags") {
+      setTargetTitles(tagtitles);
+    } else if (value == "Others") {
+      setTargetTitles(othertitles);
+    }
+  }
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
@@ -71,6 +82,25 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, titl
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Select
+            formik={formik}
+            label="Target type"
+            name="targettype"
+            options={optionTitles?.map((value) => ({ label: value, value: value })) || []}
+            value={
+              optionTitles?.find((title) => title === formik.values.targettype)
+                ? {
+                    label: formik.values.targettype,
+                    value: formik.values.targettype,
+                  }
+                : null
+            }
+            // value= {{ label: formik.values.type, value: formik.values.type }}
+            onChange={({ value }: SelectOption) => {
+              formik.setFieldValue('targettype', value);
+              onChangeSelect(value);
+            }}
           />
           <Select
             formik={formik}
