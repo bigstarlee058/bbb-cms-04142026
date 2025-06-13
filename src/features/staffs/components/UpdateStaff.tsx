@@ -47,8 +47,6 @@ export const UpdateStaff = ({ staffId, staffs }) => {
   });
 
   const staffData = staffs.staffs.find((ex) => ex._id === staffId);
-  console.log("staffData", staffData)
-
   const initialValues: FormikState = {
     title: staffData?.title || '',
     location: staffData?.location || '',

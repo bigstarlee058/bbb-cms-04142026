@@ -29,8 +29,6 @@ export const EditMainInfo = ({maininfoData}) => {
       image: maininfoData?.phasesmaininfo.thumbnail || '',
       
     };
-
-    console.log("maininfoData", maininfoData)
    const formik = useFormik({
       initialValues,
       validationSchema: updatePhasesMainInfoSchema,

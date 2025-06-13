@@ -60,7 +60,6 @@ export const UpdateSection = ({ sectionId, sections }) => {
 
     // Sort the newValues array in ascending numerical order
     newValues.sort((a, b) => Number(a) - Number(b));
-    console.log("newValues", newValues);
     formik.setFieldValue('variations', newValues);
   };
   const handleFormatCheckboxClick = (label: string, index:number) => {
@@ -77,7 +76,6 @@ export const UpdateSection = ({ sectionId, sections }) => {
 
     // Sort the newValues array in ascending numerical order
     newFormats.sort();
-    console.log("newValues", newFormats);
     formik.setFieldValue('formats', newFormats);
   };
   return (

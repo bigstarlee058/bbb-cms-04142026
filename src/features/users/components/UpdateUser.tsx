@@ -20,7 +20,6 @@ interface FormikState {
 export const UpdateUser = ({ userId }: UpdateUserProps) => {
   const { addNotification } = useNotificationStore();
   const { data, refetch } = useQuery('get-category', () => fetchUser(userId));
-  console.log(data);
   const { mutate, isLoading, isSuccess } = useMutation(updateUser, {
     onSuccess: (message: string) => {
       addNotification({

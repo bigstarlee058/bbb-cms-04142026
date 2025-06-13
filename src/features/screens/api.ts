@@ -5,7 +5,6 @@ import { queryClient } from '@/lib/react-query';
 export const fetchScreens = async () => {
   try {
     const result = (await axios.get(`/screens`)) as ScreensResponse;
-    console.log("screendata:::", result);
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {

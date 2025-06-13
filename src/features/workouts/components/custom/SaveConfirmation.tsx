@@ -36,7 +36,6 @@ export const SaveConfirmation = ({allMonths}) => {
           monthId = month.index;
           weekId = week.index;
           isComplete = false;
-          console.log(countDaysWithFormat3, countDaysWithFormat4, countDaysWithFormat5);
         }
       });
     });

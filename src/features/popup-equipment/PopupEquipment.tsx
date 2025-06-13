@@ -19,7 +19,6 @@ export const PopupEquipment = () => {
       });
     }
   });
-  console.log(data);
   if (isLoading || !data) {    
     return (
       <div className="w-full h-48 flex justify-center items-center">

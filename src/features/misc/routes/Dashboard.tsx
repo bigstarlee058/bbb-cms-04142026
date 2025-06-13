@@ -9,7 +9,6 @@ export const Dashboard = () => {
   const navigate = useNavigate();
   const { setCurrentPage } = useUserStore();
   useEffect(() => {
-    console.log("this is dashboard page", user.role);
     if (user.role != 1) {
       setIsLogged(false);
       setUser(null);

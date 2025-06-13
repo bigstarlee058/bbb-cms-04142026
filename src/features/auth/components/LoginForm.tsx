@@ -53,7 +53,6 @@ export const LoginForm = () => {
             const newUser = await fetchMe();
             if(newUser?.role == 1) {
               setIsLogged(true);
-              console.log("this is login page success", user);
               setUser(newUser);
               navigate('/app');
             } else {

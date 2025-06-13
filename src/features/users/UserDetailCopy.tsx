@@ -25,8 +25,6 @@ export const UserDetail = () => {
       navigate('/app/users');
     },
   });
-
-  console.log('data', data);
   if (isLoading || !data) {
     return (
       <div className="w-full h-48 flex justify-center items-center">

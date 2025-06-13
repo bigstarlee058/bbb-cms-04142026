@@ -7,7 +7,6 @@ export const fetchTags = async (filters: Filters) => {
     const result = (await axios.get(`/tags/admin/get`, {
       params: filters,
     })) as TagsResponse;
-    console.log("result:::", result);
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -47,7 +46,6 @@ export const createTutorial = async (payload: {
     const result = (await axios.post('/tutorials/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      console.log(result);
       queryClient.invalidateQueries('get-tutorials');
       return result.tutorials;
     }
@@ -78,7 +76,6 @@ export const updateTutorials = async (payload : {
       formData.append('image', payload.image);
     }
     const updatedScreens = formData;
-    console.log('updatedScreens', updatedScreens);
     const result = (await axios.put('/tutorials', updatedScreens)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-tutorials');

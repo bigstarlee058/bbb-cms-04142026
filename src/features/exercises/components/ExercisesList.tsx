@@ -96,7 +96,6 @@ export const ExercisesList = () => {
             field: 'categories',
             minwidth: 150,
             Cell({ entry: { categories } }) {
-              console.log("categories", categories);
               if (!categoryTitles) return null; // Check if titles is defined
               const filteredTitles = categoryTitles
                 .filter((title) => categories.includes(title.id))

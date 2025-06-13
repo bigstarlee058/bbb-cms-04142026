@@ -42,7 +42,6 @@ export const createCategory = async (payload: {
     const result = (await axios.post('/categories/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      console.log(result);
       queryClient.invalidateQueries('get-categories');
       return result.category;
     }

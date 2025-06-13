@@ -11,7 +11,6 @@ type DeleteUserProps = {
 };
 
 export const DeleteUser = ({ id }: DeleteUserProps) => {
-  console.log(id);
   const { user } = useAuthStore();
   const { addNotification } = useNotificationStore();
 

@@ -40,7 +40,6 @@ export const CreateSection = () => {
     onSubmit: (v) => onSubmit(v)
   });
   const onSubmit = (value: any) => {
-    console.log("submit", value)
     mutate(value);
   };
 

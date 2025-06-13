@@ -26,7 +26,6 @@ export const SavePumpDays = ({allDays}) => {
 
   const handleSavePumpDays = () => {
     // setIsSuccess(false);
-    console.log(allDays);
     let isExerciseId = true;
     allDays.forEach((workout) => {
       workout.circuits.forEach(circuit => {

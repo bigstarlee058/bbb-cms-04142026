@@ -7,7 +7,6 @@ export const fetchTargets = async (filters: Filters) => {
     const result = (await axios.get(`/achievements-target/admin/get`, {
       params: filters,
     })) as TargetsResponse;
-    console.log("result:::", result);
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -28,7 +27,6 @@ export const createTarget = async (payload: {
     const result = (await axios.post('/achievements-target/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      console.log(result);
       queryClient.invalidateQueries('get-targets');
       return result.achievementsTargets;
     }

@@ -7,7 +7,6 @@ export const fetchTags = async (filters: Filters) => {
     const result = (await axios.get(`/tags/admin/get`, {
       params: filters,
     })) as TagsResponse;
-    console.log("result:::", result);
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -43,7 +42,6 @@ export const createTag = async (payload: {
     const result = (await axios.post('/tags/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      console.log(result);
       queryClient.invalidateQueries('get-tags');
       return result.tag;
     }

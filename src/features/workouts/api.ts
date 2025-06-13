@@ -193,11 +193,8 @@ const uploadImagesAndGetURLs = async (images: (File | string | null)[]): Promise
     });
 
     // Log the full response to inspect its structure
-    console.log('Full Axios Response:', response);
-
     // Safely access response.data.url, and ensure the response has the correct structure
     const uploadedURLs: string[] = response.data.url; // Safely handle undefined response.data
-    console.log('Uploaded URLs:', uploadedURLs);
 
     if (!uploadedURLs.length) {
       throw new Error('No URLs returned from the server');
@@ -213,8 +210,6 @@ const uploadImagesAndGetURLs = async (images: (File | string | null)[]): Promise
         return null; // Handle null cases or provide a placeholder
       }
     });
-
-    console.log('Final Download URLs:', downloadURLs);
     return downloadURLs;
   } catch (err: any) {
     console.error('Error uploading images:', err);
@@ -319,7 +314,6 @@ export const updateWorkouts = async (months: Month[]) => {
     months.forEach((month) => updateThumbnails(month));
 
     // Submit the updated months with new thumbnail URLs
-    console.log('Updated Months:', months);
     const response = (await axios.put('/workouts/update', { months })) as ResponseMessage;
     return response.message;
   } catch (err: any) {
@@ -383,7 +377,6 @@ export const updatePumpDays = async (days: Day[]) => {
     days.forEach((day) => updateThumbnails(day));
 
     // Submit the updated days with new thumbnail URLs
-    console.log('Updated Days:', days);
     const response = (await axios.put('/pump-days/admin/update', { days })) as ResponseMessage;
     return response.message;
   } catch (err: any) {

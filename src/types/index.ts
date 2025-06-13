@@ -56,8 +56,17 @@ export interface QuizPayload {
   level: number;
 }
 ////////////////////useless////////////////////
+export interface UserSubscription {
+  end_date: string;
+  price: string;
+  purchase_date: string;
+  subscription_type: string;
+  user_subscription_status: string;
+}
+
 export interface User extends BaseEntity {
   workoutsHistory: UserWorkout[];
+  subscription: UserSubscription;
   name: string;
   email: string;
   role: number;

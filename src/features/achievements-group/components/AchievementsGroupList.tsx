@@ -72,7 +72,6 @@ export const AchievementsGroupList = ({titles}) => {
             field: 'achievements',
             minwidth: 150,
             Cell({ entry: { achievements } }) {
-              console.log("achievements:::", achievements)
               if (!titles) return null; // Check if titles is defined
               const sortedAchievements = achievements.sort((a, b) => a.index - b.index);
               return (

@@ -7,8 +7,6 @@ export const fetchAchievements = async (filters: Filters) => {
     const result = (await axios.get(`/achievements-group/admin/get`, {
       params: filters,
     })) as AchievementsGroupResponse;
-
-    console.log(result);
     return result;
   } catch (err: any) {
     const error: ErrorMessage = {
@@ -33,7 +31,6 @@ export const createAchievement = async (payload: {
     const result = (await axios.post('/achievements-group/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      console.log(result);
       queryClient.invalidateQueries('get-achievementsgroups');
       // return result.achievementsIndividuals;
     }

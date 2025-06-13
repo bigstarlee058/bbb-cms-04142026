@@ -31,7 +31,6 @@ export const updatePopupInfo = async (payload : {
       formData.append('image', payload.image);
     }
     const updatedScreens = formData;
-    console.log('updatedScreens', updatedScreens);
     const result = (await axios.put('/popupworkout', updatedScreens)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-popupworkout');

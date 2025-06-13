@@ -70,6 +70,17 @@ export const UsersList = () => {
             field: 'email',
           },
           {
+            title: 'Tier',
+            field: 'subscription',
+            Cell({ entry: { subscription } }) {
+              return <span>
+                {(subscription?.user_subscription_status && subscription.user_subscription_status) == "free_user" ? 'Free'
+                : new Date(subscription?.end_date) > new Date() ? 'Paid' : 'Free'
+                }
+              </span>;
+            },
+          },
+          {
             title: 'Role',
             field: 'role',
             Cell({ entry: { role } }) {

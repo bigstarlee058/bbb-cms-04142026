@@ -41,7 +41,6 @@ export const CreateAchievementsGroup = ({titles}) => {
   });
 
   const onSubmit = (value: any) => {
-    console.log("value", value);
     mutate(value);
   };
 

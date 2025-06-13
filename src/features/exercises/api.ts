@@ -52,7 +52,6 @@ export const createExercise = async (payload: {
       const result = (await axios.post('/exercises/admin', formData)) as ResponseMessage;
       // Invalidate cache or update your frontend state if needed
       if (result.result === true) {
-        console.log(result);
         queryClient.invalidateQueries('get-exercises');
         return 'Exercise successfully created.';
       }
