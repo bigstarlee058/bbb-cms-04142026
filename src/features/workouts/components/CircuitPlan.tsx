@@ -167,7 +167,7 @@ export const CircuitPlan = ({ circuit, dayIndex, circuitIndex, days, updateDays,
           </div>
           <Button variant="danger" startIcon={<TrashIcon className="h-4 w-4" />} onClick={onDeleteCircuit}></Button>
         </div>
-        <Field label="Round" type="number" name="round" value={circuit.round} onChange={handleChange} />
+        <Field label="Rounds" type="number" name="round" value={circuit.round} onChange={handleChange} />
         {circuit.circuitExercises.map((exercise, exerciseIndex) => (
           <ExercisePlan
             key={exerciseIndex}
