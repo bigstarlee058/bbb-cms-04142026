@@ -101,6 +101,9 @@ export const AchievementsIndividualList = ({tagtitles, othertitles}) => {
           {
             title: 'Value',
             field: 'value',
+            Cell({entry: { value }}) {
+              return <span>{Number(value).toLocaleString()}</span>;
+            }
           },
           {
             title: 'Description',

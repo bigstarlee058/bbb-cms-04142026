@@ -19,12 +19,14 @@ export const fetchAchievements = async (filters: Filters) => {
 
 export const createAchievement = async (payload: {
   title: string;
+  type: string;
   description: string;
   achievements: Achievement[];  // Assuming the image comes as a File object from the client
 }) => {
   try {
     const formData = new FormData();
     formData.append('title', payload.title);
+    formData.append('type', payload.type);
     formData.append('description', payload.description);
     formData.append('achievements', JSON.stringify(payload.achievements));
 
@@ -48,6 +50,7 @@ export const createAchievement = async (payload: {
 export const updateAchievement = async (payload: {
   achievementId: string 
   title: string;
+  type: string;
   description: string;
   achievements: Achievement[];
 }) => {
@@ -55,6 +58,7 @@ export const updateAchievement = async (payload: {
     const formData = new FormData();
     formData.append('_id', payload.achievementId);
     formData.append('title', payload.title);
+    formData.append('type', payload.type);
     formData.append('description', payload.description);
     formData.append('achievements', JSON.stringify(payload.achievements));
     const result = (await axios.put('/achievements-group/admin', formData)) as ResponseMessage;

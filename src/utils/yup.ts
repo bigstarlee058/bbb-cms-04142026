@@ -82,6 +82,7 @@ export const createCategorySchema = Yup.object().shape({
 });
 export const createTagSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
+  type: Yup.string().max(255).required(),
 });
 
 export const createStaffSchema = Yup.object().shape({

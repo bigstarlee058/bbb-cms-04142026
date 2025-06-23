@@ -13,6 +13,7 @@ import { Achievement, SelectOption } from '@/types';
 
 interface FormikState {
   title: string;
+  type: string;
   description: string;
   achievements: Achievement[]
 }
@@ -30,6 +31,7 @@ export const CreateAchievementsGroup = ({titles}) => {
   });
   const initialValues: FormikState = {
     title: '',
+    type: '',
     description: '',
     achievements: []
   };
@@ -83,6 +85,7 @@ export const CreateAchievementsGroup = ({titles}) => {
       >
         <form id="create-achievement" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
+          <Field label="Type" formik={formik} name="type" />
           <Textarea label="Description" formik={formik} name="description" />
           {formik.values.achievements.map((achievements, achievementIndex) => (
             <div key={achievementIndex} className="flex items-center gap-4 mb-2 bg-gray-100 p-3 rounded">

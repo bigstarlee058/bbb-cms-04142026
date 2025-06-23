@@ -64,6 +64,10 @@ export const AchievementsGroupList = ({titles}) => {
             field: 'title',
           },
           {
+            title: 'Type',
+            field: 'type',
+          },
+          {
             title: 'Description',
             field: 'description',
           },
