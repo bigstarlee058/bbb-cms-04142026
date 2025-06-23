@@ -63,7 +63,7 @@ export const BackgroundScreens = () => {
         <div className="mt-6 flex flex-col space-y-16">
           <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-x-auto sm:rounded-lg">
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Login Screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Signin Screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageLogin} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>

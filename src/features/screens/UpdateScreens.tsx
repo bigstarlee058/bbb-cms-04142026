@@ -170,7 +170,7 @@ export const UpdateScreens = ({ screenData }) => {
           ))}
 
           <div className="mt-5">
-            <label className="fieldLabel">Login Screen Background</label>
+            <label className="fieldLabel">Signin Screen Background</label>
             <Dropzone
               label="Thumbnail"
               name="thumbnail"

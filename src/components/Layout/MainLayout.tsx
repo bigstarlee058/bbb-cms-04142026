@@ -11,7 +11,15 @@ import {
   TagIcon,
   QuestionMarkCircleIcon,
   CheckCircleIcon,
+  VideoCameraIcon,
+  ShoppingCartIcon,
+  ClockIcon,
+  LightBulbIcon,
+  GiftIcon,
+  InformationCircleIcon,
+  ChartSquareBarIcon,
 } from '@heroicons/react/outline';
+import { CiDumbbell, CiTrophy, CiSquareInfo,   } from "react-icons/ci";
 
 import { LuDumbbell  } from "react-icons/lu";
 
@@ -56,7 +64,7 @@ const SideNavigation = () => {
     },
     {
       title: 'Modals',
-      icon: MenuAlt1Icon,
+      icon: CiSquareInfo,
       submenu: [
         { title: 'Page Backgrounds', path: './backgroundScreens', icon: MenuAlt1Icon },
         { title: 'New Version', path: './versionManage', icon: MenuAlt1Icon },
@@ -65,13 +73,13 @@ const SideNavigation = () => {
       ]
     },
     // { title: 'Intro Tutorial', path: './backgroundTutorials', icon: MenuAlt1Icon },
-    { title: 'Video Tutorials', path: './tutorials', icon: MenuAlt1Icon },
+    { title: 'Video Tutorials', path: './tutorials', icon: VideoCameraIcon },
     { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
-    { title: 'Exercises', path: './exercises', icon: MenuAlt2Icon },
+    { title: 'Exercises', path: './exercises', icon: CiDumbbell },
     { title: 'Warmups', path: './warmups', icon: MenuAlt3Icon },
     { title: 'Pump Days', path: './pumpdays', icon: WeightClockIcon },
-    { title: 'Equipment', path: './equipments', icon: MenuAlt4Icon },
-    { title: 'Rest Days', path: './restdays', icon: MenuAlt4Icon },
+    { title: 'Equipment', path: './equipments', icon: ShoppingCartIcon },
+    { title: 'Rest Days', path: './restdays', icon: ClockIcon },
     { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
     { title: 'Tags', path: './tags', icon: TagIcon },
     {
@@ -83,12 +91,12 @@ const SideNavigation = () => {
         { title: 'Targets', path: './achievements-target', icon: MenuAlt1Icon },
       ]
     },
-    { title: 'Spotlights', path: './staffs', icon: MenuAlt4Icon },
-    { title: 'Challenges', path: './challenges', icon: MenuAlt4Icon },
+    { title: 'Spotlights', path: './staffs', icon: LightBulbIcon },
+    { title: 'Challenges', path: './challenges', icon: CiTrophy },
     { title: 'Phases', path: './phases', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
-    { title: 'Bonuses', path: './bonuses', icon: MenuAlt4Icon },
-    { title: 'Program Info', path: './program-info', icon: MenuAlt4Icon },
+    { title: 'Bonuses', path: './bonuses', icon: GiftIcon },
+    { title: 'Program Info', path: './program-info', icon: InformationCircleIcon },
     { title: 'FAQs', path: './faqs', icon: QuestionMarkCircleIcon },
   ].filter(Boolean) as SideNavigationItem[];
 
