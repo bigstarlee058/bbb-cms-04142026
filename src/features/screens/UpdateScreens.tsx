@@ -247,7 +247,7 @@ export const UpdateScreens = ({ screenData }) => {
             />
           </div>
           <div className="mt-5">
-            <label className="fieldLabel">Today Screen Background</label>
+            <label className="fieldLabel">Day Screen Background</label>
             <Dropzone
               label="Thumbnail"
               name="thumbnail"
@@ -291,7 +291,7 @@ export const UpdateScreens = ({ screenData }) => {
             />
           </div>
           <div className="mt-5">
-            <label className="fieldLabel">Achievement Screen Background</label>
+            <label className="fieldLabel">Achievements Screen Background</label>
             <Dropzone
               label="Thumbnail"
               name="thumbnail"
@@ -313,7 +313,7 @@ export const UpdateScreens = ({ screenData }) => {
             />
           </div>
           <div className="mt-5">
-            <label className="fieldLabel">FAQs Screen Background</label>
+            <label className="fieldLabel">FAQ Screen Background</label>
             <Dropzone
               label="Thumbnail"
               name="thumbnail"
@@ -324,7 +324,7 @@ export const UpdateScreens = ({ screenData }) => {
             />
           </div>
           <div className="mt-5">
-            <label className="fieldLabel">Profile Screen Background</label>
+            <label className="fieldLabel">Account Screen Background</label>
             <Dropzone
               label="Thumbnail"
               name="thumbnail"
@@ -346,7 +346,7 @@ export const UpdateScreens = ({ screenData }) => {
             />
           </div>
           <div className="mt-5">
-            <label className="fieldLabel">Setting Screen Background</label>
+            <label className="fieldLabel">Settings Screen Background</label>
             <Dropzone
               label="Thumbnail"
               name="thumbnail"

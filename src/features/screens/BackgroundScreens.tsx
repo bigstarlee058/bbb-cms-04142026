@@ -63,71 +63,71 @@ export const BackgroundScreens = () => {
         <div className="mt-6 flex flex-col space-y-16">
           <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-x-auto sm:rounded-lg">
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Login Screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Login Screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageLogin} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Signup Screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Signup Screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageSignup} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Forgot Password Screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Forgot Password Screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageForgot} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Email confirmation screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Email confirmation screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageEmailConfirm} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Dashboard screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Dashboard screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageDashboard} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Streak calendar screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Streak calendar screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageStreakCalendar} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Month view screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Month view screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageMonthView} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Today screen</div>
+              <div className='h-[50px] flex items-center justify-center'>Day screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageToday} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Tools screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Tools screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageTools} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Exercise Library screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Exercise Library screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageExerciseLibrary} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Graphs & Reports screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Graphs & Reports screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageGraphs} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Achievement screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Achievements screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageAchievement} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Apparel & Equipment screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Apparel & Equipment screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageApparel} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>FAQs screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>FAQ screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageFAQs} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Profile screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Account screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageProfile} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>My Profile screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>My Profile screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageMyProfle} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
-              <div className='h-[50px] flex items-center justify-center'>Setting screen</div>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Settings screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageSetting} alt="Thumbnail" />
             </div>
           </div>
