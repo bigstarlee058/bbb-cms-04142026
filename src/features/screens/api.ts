@@ -32,6 +32,8 @@ export const updateScreens = async (payload : {
   imageAchievement: File;
   imageApparel: File;
   imageFAQs: File;
+  imageTutorial: File;
+  imageSubscription: File;
   imageProfile: File;
   imageMyProfle: File;
   imageSetting: File;
@@ -103,6 +105,12 @@ export const updateScreens = async (payload : {
     }
     if (payload.imageFAQs) {
       formData.append('imageFAQs', payload.imageFAQs);
+    }
+    if (payload.imageTutorial) {
+      formData.append('imageTutorial', payload.imageTutorial);
+    }
+    if (payload.imageSubscription) {
+      formData.append('imageSubscription', payload.imageSubscription);
     }
     if (payload.imageProfile) {
       formData.append('imageProfile', payload.imageProfile);

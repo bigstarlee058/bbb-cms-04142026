@@ -119,6 +119,14 @@ export const BackgroundScreens = () => {
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageFAQs} alt="Thumbnail" />
             </div>
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Tutorial screen</div>
+              <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageTutorial} alt="Thumbnail" />
+            </div>
+            <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
+              <div className='h-[50px] flex items-center justify-center leading-[16px]'>Subscription screen</div>
+              <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageSubscription} alt="Thumbnail" />
+            </div>
+            <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
               <div className='h-[50px] flex items-center justify-center leading-[16px]'>Account screen</div>
               <img className="!bg-no-repeat bg-center h-[250px] w-auto" src={data.imageProfile} alt="Thumbnail" />
             </div>

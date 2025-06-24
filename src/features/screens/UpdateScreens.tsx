@@ -27,6 +27,8 @@ interface FormikState {
   imageAchievement?: any;
   imageApparel?: any;
   imageFAQs?: any;
+  imageTutorial?: any;
+  imageSubscription?: any;
   imageProfile?: any;
   imageMyProfle?: any;
   imageSetting?: any;
@@ -45,6 +47,8 @@ interface FormikState {
   deleteImageAchievement: boolean;
   deleteImageApparel: boolean;
   deleteImageFAQs: boolean;
+  deleteImageTutorial: boolean;
+  deleteImageSubscription: boolean;
   deleteImageProfile: boolean;
   deleteImageMyProfile: boolean;
   deleteImageSetting: boolean;
@@ -75,6 +79,8 @@ export const UpdateScreens = ({ screenData }) => {
     imageAchievement: screenData?.imageAchievement || '',
     imageApparel: screenData?.imageApparel || '',
     imageFAQs: screenData?.imageFAQs || '',
+    imageTutorial: screenData?.imageTutorial || '',
+    imageSubscription: screenData?.imageSubscription || '',
     imageProfile: screenData?.imageProfile || '',
     imageMyProfle: screenData?.imageMyProfle || '',
     imageSetting: screenData?.imageSetting || '',
@@ -93,6 +99,8 @@ export const UpdateScreens = ({ screenData }) => {
     deleteImageAchievement: false,
     deleteImageApparel: false,
     deleteImageFAQs: false,
+    deleteImageTutorial: false,
+    deleteImageSubscription: false,
     deleteImageProfile: false,
     deleteImageMyProfile: false,
     deleteImageSetting: false,
@@ -114,9 +122,9 @@ export const UpdateScreens = ({ screenData }) => {
   });
 
   const onSubmit = (state: FormikState) => {
-    const { vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageProfile, imageMyProfle, imageSetting,
-      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides } = state;
-    mutate({ vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageProfile, imageMyProfle, imageSetting,
+    const { vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageTutorial, imageSubscription, imageProfile, imageMyProfle, imageSetting,
+      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs,  deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides } = state;
+    mutate({ vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageTutorial, imageSubscription, imageProfile, imageMyProfle, imageSetting,
       deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides });
   };
 
@@ -321,6 +329,28 @@ export const UpdateScreens = ({ screenData }) => {
               defaultImg={formik.values.imageFAQs}
               onDrop={(img) => formik.setFieldValue('imageFAQs', img)}
               onDelete={() => formik.setValues({ ...formik.values, imageFAQs: '', deleteImageFAQs: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Tutorial Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageTutorial}
+              onDrop={(img) => formik.setFieldValue('imageTutorial', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageTutorial: '', deleteImageTutorial: true })}
+            />
+          </div>
+          <div className="mt-5">
+            <label className="fieldLabel">Subscription Screen Background</label>
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.imageSubscription}
+              onDrop={(img) => formik.setFieldValue('imageSubscription', img)}
+              onDelete={() => formik.setValues({ ...formik.values, imageSubscription: '', deleteImageSubscription: true })}
             />
           </div>
           <div className="mt-5">

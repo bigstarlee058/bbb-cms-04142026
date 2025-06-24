@@ -234,6 +234,8 @@ export interface ScreensResponse {
   imageAchievement: string,
   imageApparel: string,
   imageFAQs: string,
+  imageTutorial: string,
+  imageSubscription: string,
   imageProfile: string,
   imageMyProfle: string,
   imageSetting: string,
