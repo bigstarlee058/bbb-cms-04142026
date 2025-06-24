@@ -4,7 +4,6 @@ import {
   HomeIcon,
   MenuAlt1Icon,
   MenuAlt2Icon,
-  MenuAlt3Icon,
   MenuAlt4Icon,
   UsersIcon,
   XIcon,
@@ -12,16 +11,17 @@ import {
   QuestionMarkCircleIcon,
   CheckCircleIcon,
   VideoCameraIcon,
-  ShoppingCartIcon,
+  ShoppingBagIcon,
   ClockIcon,
   LightBulbIcon,
   GiftIcon,
   InformationCircleIcon,
-  ChartSquareBarIcon,
+  CubeIcon
 } from '@heroicons/react/outline';
-import { CiDumbbell, CiTrophy, CiSquareInfo,   } from "react-icons/ci";
+import { CiDumbbell, CiTrophy, CiSquareInfo,} from "react-icons/ci";
+import { IoMdFitness, } from "react-icons/io";
 
-import { LuDumbbell  } from "react-icons/lu";
+import { LiaDumbbellSolid } from "react-icons/lia";
 
 import clsx from 'clsx';
 import * as React from 'react';
@@ -74,13 +74,13 @@ const SideNavigation = () => {
     },
     // { title: 'Intro Tutorial', path: './backgroundTutorials', icon: MenuAlt1Icon },
     { title: 'Video Tutorials', path: './tutorials', icon: VideoCameraIcon },
-    { title: 'Workouts', path: './workouts', icon: MenuAlt1Icon },
+    { title: 'Workouts', path: './workouts', icon: IoMdFitness },
     { title: 'Exercises', path: './exercises', icon: CiDumbbell },
-    { title: 'Warmups', path: './warmups', icon: MenuAlt3Icon },
+    { title: 'Warmups', path: './warmups', icon: LiaDumbbellSolid },
     { title: 'Pump Days', path: './pumpdays', icon: WeightClockIcon },
-    { title: 'Equipment', path: './equipments', icon: ShoppingCartIcon },
+    { title: 'Equipment', path: './equipments', icon: ShoppingBagIcon },
     { title: 'Rest Days', path: './restdays', icon: ClockIcon },
-    { title: 'Categories', path: './categories', icon: MenuAlt4Icon },
+    { title: 'Categories', path: './categories', icon: CubeIcon },
     { title: 'Tags', path: './tags', icon: TagIcon },
     {
       title: 'Achievements',
@@ -111,14 +111,14 @@ const SideNavigation = () => {
               to={item.path}
               className={({ isActive }) =>
                 clsx(
-                  'text-gray-300 hover:bg-[#333] hover:text-white',
+                  'text-gray-300 hover:bg-[#9a354e] hover:text-white',
                   'group flex items-center px-2 py-2 text-base font-medium rounded-md',
-                  { 'bg-[#333] text-white': isActive }
+                  { 'bg-[#9a354e] text-white': isActive }
                 )
               }
             >
               <item.icon
-                className={clsx('text-gray-400 group-hover:text-gray-300', 'mr-4 flex-shrink-0 h-6 w-6')}
+                className={clsx('text-white group-hover:text-white', 'mr-4 flex-shrink-0 h-6 w-6')}
                 aria-hidden="true"
               />
               {item.title}
@@ -128,12 +128,12 @@ const SideNavigation = () => {
               <div
                 onClick={() => setActiveSubmenu((prev) => (prev === item.title ? '' : item.title))}
                 className={clsx(
-                  'text-gray-300 hover:bg-[#333] hover:text-white cursor-pointer',
+                  'text-gray-300 hover:bg-[#9a354e] hover:text-white cursor-pointer',
                   'group flex items-center px-2 py-2 text-base font-medium rounded-md'
                 )}
               >
                 <item.icon
-                  className={clsx('text-gray-400 group-hover:text-gray-300', 'mr-4 flex-shrink-0 h-6 w-6')}
+                  className={clsx('text-white group-hover:text-white', 'mr-4 flex-shrink-0 h-6 w-6')}
                   aria-hidden="true"
                 />
                 {item.title}
@@ -302,12 +302,12 @@ const Sidebar = () => {
   return (
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
-        <div className="flex flex-col h-0 flex-1 p-5 bg-[#0d0d0d]">
-          <div className="flex items-center h-16 flex-shrink-0 px-4" style={{ backgroundColor: 'black' }}>
+        <div className="flex flex-col h-0 flex-1 p-5 bg-[#9a354e]">
+          <div className="flex items-center h-16 flex-shrink-0 px-4">
             <Logo />
           </div>
           <div className="flex-1 flex flex-col overflow-y-auto">
-            <nav className="flex-1 px-2 py-4 bg-[#0d0d0d] space-y-1">
+            <nav className="flex-1 px-2 py-4 bg-[#9a354e] space-y-1">
               <SideNavigation />
             </nav>
           </div>
