@@ -53,7 +53,12 @@ export const PopupWorkout = () => {
             {/* {data.description} */}
             <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
               <h3 className="text-md font-semibold text-gray-800 mb-2">{data.title}</h3>
-              <p className="text-gray-600">{data.description}</p>
+              {/* <p className="text-gray-600">{data.description}</p> */}
+              <span
+                  dangerouslySetInnerHTML={{
+                    __html: data.description,
+                  }}
+                />
             </div>
           </div>
         </div>
