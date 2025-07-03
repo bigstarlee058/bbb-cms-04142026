@@ -15,7 +15,9 @@ interface FormikState {
   title: string;
   type: string;
   description: string;
-  achievements: Achievement[]
+  image: any;
+  achievements: Achievement[];
+  deleteImage: boolean;
 }
 
 export const CreateAchievementsGroup = ({titles}) => {
@@ -33,7 +35,9 @@ export const CreateAchievementsGroup = ({titles}) => {
     title: '',
     type: '',
     description: '',
-    achievements: []
+    image: '',
+    achievements: [],
+    deleteImage: false
   };
   const individualTitles = titles || [];
   const formik = useFormik({
@@ -87,6 +91,14 @@ export const CreateAchievementsGroup = ({titles}) => {
           <Field label="Title" formik={formik} name="title" />
           <Field label="Type" formik={formik} name="type" />
           <Textarea label="Description" formik={formik} name="description" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
           {formik.values.achievements.map((achievements, achievementIndex) => (
             <div key={achievementIndex} className="flex items-center gap-4 mb-2 bg-gray-100 p-3 rounded">
               <div className="flex-1">

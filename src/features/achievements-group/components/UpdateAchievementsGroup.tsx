@@ -14,7 +14,9 @@ interface FormikState {
   title: string;
   type: string;
   description: string;
+  image: any;
   achievements: Achievement[];
+  deleteImage: boolean;
 }
 
 export const UpdateAchievementsGroup = ({ achievementId, achievements, titles }) => {
@@ -37,6 +39,8 @@ export const UpdateAchievementsGroup = ({ achievementId, achievements, titles })
     type: achievementData?.type || '',
     description: achievementData?.description || '',
     achievements: achievementData?.achievements || [],
+    image: achievementData?.thumbnail || '',
+    deleteImage: false,
   };
   const formik = useFormik({
     initialValues,
@@ -44,8 +48,8 @@ export const UpdateAchievementsGroup = ({ achievementId, achievements, titles })
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
-    const { title, type, description, achievements} = state;
-    mutate({ achievementId, title, type, description, achievements});
+    const { title, type, description, achievements, image, deleteImage} = state;
+    mutate({ achievementId, title, type, description, achievements, image, deleteImage});
   };
 
   const handleAddLevel = () => {
@@ -85,6 +89,14 @@ export const UpdateAchievementsGroup = ({ achievementId, achievements, titles })
           <Field label="Title" formik={formik} name="title" />
           <Field label="Type" formik={formik} name="type" />
           <Textarea label="Description" formik={formik} name="description" />
+          <Dropzone
+            label="Thumbnail"
+            name="thumbnail"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
           {formik.values.achievements.map((achievements, achievementIndex) => (
             <div key={achievementIndex} className="flex items-center gap-4 mb-2 bg-gray-100 p-3 rounded">
               <div className="flex-1">

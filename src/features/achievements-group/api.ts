@@ -21,6 +21,7 @@ export const createAchievement = async (payload: {
   title: string;
   type: string;
   description: string;
+  image: File;
   achievements: Achievement[];  // Assuming the image comes as a File object from the client
 }) => {
   try {
@@ -28,6 +29,7 @@ export const createAchievement = async (payload: {
     formData.append('title', payload.title);
     formData.append('type', payload.type);
     formData.append('description', payload.description);
+    formData.append('image', payload.image);
     formData.append('achievements', JSON.stringify(payload.achievements));
 
     const result = (await axios.post('/achievements-group/admin', formData)) as any;
@@ -53,6 +55,8 @@ export const updateAchievement = async (payload: {
   type: string;
   description: string;
   achievements: Achievement[];
+  image: File;  // Assuming the image comes as a File object from the client
+  deleteImage: boolean,
 }) => {
   try {
     const formData = new FormData();
@@ -60,6 +64,7 @@ export const updateAchievement = async (payload: {
     formData.append('title', payload.title);
     formData.append('type', payload.type);
     formData.append('description', payload.description);
+    formData.append('image', payload.image);
     formData.append('achievements', JSON.stringify(payload.achievements));
     const result = (await axios.put('/achievements-group/admin', formData)) as ResponseMessage;
     if (result.result === true) {

@@ -146,6 +146,7 @@ export interface AchievementsGroup extends BaseEntity {
   title: string;
   type: string;
   description: string;
+  thumbnail: string;
   achievements: Achievement[]
 }
 
