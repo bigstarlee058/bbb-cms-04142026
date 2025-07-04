@@ -203,6 +203,7 @@ export interface Exercise extends BaseEntity {
   description: string;
   vimeoId: string;
   thumbnail: string;
+  videoThumbnail: string;
   guide: string;
   categories: string[];
   tags: string[];

@@ -22,7 +22,9 @@ interface FormikState {
   usedEquipments: string[];
   relatedExercises: string[];
   image: any;
+  videoImage: any;
   deleteImage: boolean;
+  deleteVideoImage: boolean;
 }
 
 export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles, tagTitles, onCategoryCreate, onTagCreate }) => {
@@ -47,7 +49,9 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
     usedEquipments: [],
     relatedExercises: [],
     image: '',
-    deleteImage: false
+    videoImage: '',
+    deleteImage: false,
+    deleteVideoImage: false,
   };
 
   const formik = useFormik({
@@ -85,6 +89,14 @@ export const CreateExercise = ({ exerciseTitles, equipmentTitles, categoryTitles
             defaultImg={formik.values.image}
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Dropzone
+            label="Video Thumbnail"
+            name="videoImage"
+            formik={formik}
+            defaultImg={formik.values.videoImage}
+            onDrop={(img) => formik.setFieldValue('videoImage', img)}
+            onDelete={() => formik.setValues({ ...formik.values, videoImage: '', deleteVideoImage: true })}
           />
           <Select
             isMulti

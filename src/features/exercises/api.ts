@@ -33,6 +33,7 @@ export const createExercise = async (payload: {
   description: string;
   vimeoId: string;
   image: File;
+  videoImage: File;
   categories: [];
   tags: [];
   usedEquipments: [],
@@ -42,6 +43,7 @@ export const createExercise = async (payload: {
       const formData = new FormData();
       formData.append('title', payload.title);
       formData.append('image', payload.image);
+      formData.append('videoImage', payload.videoImage);
       formData.append('description', payload.description);
       formData.append('vimeoId', payload.vimeoId);
       formData.append('categories', JSON.stringify(payload.categories));
@@ -78,6 +80,7 @@ export const createExercise = async (payload: {
       description: string;
       vimeoId: string;
       image: File;
+      videoImage: File;
       categories: [];
       tags: [];
       usedEquipments: [],
@@ -89,6 +92,7 @@ export const createExercise = async (payload: {
       formData.append('_id', exerciseId);
       formData.append('title', payload.title);
       formData.append('image', payload.image);
+      formData.append('videoImage', payload.videoImage);
       formData.append('description', payload.description);
       formData.append('vimeoId', payload.vimeoId);
       formData.append('categories', JSON.stringify(payload.categories));

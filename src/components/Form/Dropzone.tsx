@@ -43,7 +43,7 @@ export const Dropzone = ({ defaultImg, label, formik, name, onDrop, onDelete, fi
   }, [file]);
   return (
     <div className="px-2 py-3">
-      {/* <label className="fieldLabel">{label}</label> */}
+      <label className="fieldLabel">{label}</label>
       <div className="w-full h-[80px] border-2 border-gray-400 border-tertiary border-dashed rounded-xl flex items-center justify-center relative cursor-pointer overflow-hidden">
         <input
           type="file"
