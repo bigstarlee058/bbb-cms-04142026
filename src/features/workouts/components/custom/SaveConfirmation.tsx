@@ -42,7 +42,7 @@ export const SaveConfirmation = ({allMonths}) => {
     if(!isComplete) {
       addNotification({
         type: 'error',
-        title: `Month ${monthId} Week ${weekId}'s Splite select is not correct `,
+        title: `Please select variation availability for Month ${monthId} Week ${weekId}`,
       });
     } else {
       mutate(allMonths);
