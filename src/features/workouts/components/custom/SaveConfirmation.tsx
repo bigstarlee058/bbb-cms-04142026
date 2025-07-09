@@ -23,30 +23,34 @@ export const SaveConfirmation = ({allMonths}) => {
   });
 
   const handleSaveWorkouts = () => {
-    // let monthId = 0;
-    // let weekId = 0;
-    // let isComplete = true;
-    // allMonths.forEach((month) => {
-    //   month.weeks.forEach((week) => {
-    //     const countDaysWithFormat3 = week.days.filter(day => day.formats.includes('3')).length;
-    //     const countDaysWithFormat4 = week.days.filter(day => day.formats.includes('4')).length;
-    //     const countDaysWithFormat5 = week.days.filter(day => day.formats.includes('5')).length;
+    mutate(allMonths);
+  };
+
+  const handlePublishWorkouts = () => {
+    let monthId = 0;
+    let weekId = 0;
+    let isComplete = true;
+    allMonths.forEach((month) => {
+      month.weeks.forEach((week) => {
+        const countDaysWithFormat3 = week.days.filter(day => day.formats.includes('3')).length;
+        const countDaysWithFormat4 = week.days.filter(day => day.formats.includes('4')).length;
+        const countDaysWithFormat5 = week.days.filter(day => day.formats.includes('5')).length;
         
-    //     if(countDaysWithFormat3 != 3 || countDaysWithFormat4 != 4 || countDaysWithFormat5 != 5) {
-    //       monthId = month.index;
-    //       weekId = week.index;
-    //       isComplete = false;
-    //     }
-    //   });
-    // });
-    // if(!isComplete) {
-    //   addNotification({
-    //     type: 'error',
-    //     title: `Please select variation availability for Month ${monthId} Week ${weekId}`,
-    //   });
-    // } else {
+        if(countDaysWithFormat3 != 3 || countDaysWithFormat4 != 4 || countDaysWithFormat5 != 5) {
+          monthId = month.index;
+          weekId = week.index !== undefined && week.index !== null ? week.index : month.weeks.length;
+          isComplete = false;
+        }
+      });
+    });
+    if(!isComplete) {
+      addNotification({
+        type: 'error',
+        title: `Please select variation availability for Month ${monthId} Week ${weekId}`,
+      });
+    } else {
       mutate(allMonths);
-    // }
+    }
   };
 
   return (
@@ -68,6 +72,26 @@ export const SaveConfirmation = ({allMonths}) => {
             disabled={isLoading}
           >
             Save
+          </Button>
+        }
+      />
+      <ConfirmationDialog
+        icon="danger"
+        title={`Publish Workouts`}
+        body={`Are you sure you want to publish these workouts?`}
+        isDone={isSuccess}
+        triggerButton={
+          <Button variant="danger" className="ml-2" startIcon={<SaveIcon className="mr-2" width="20" height="20" />}>Publish</Button>
+        }
+        confirmButton={
+          <Button
+            variant="danger"
+            type="button"
+            onClick={handlePublishWorkouts}
+            isLoading={isLoading}
+            disabled={isLoading}
+          >
+            Publish
           </Button>
         }
       />
