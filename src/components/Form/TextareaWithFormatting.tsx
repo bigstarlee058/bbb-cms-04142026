@@ -25,10 +25,9 @@ export const TextareaWithFormatting = ({ label, formik, name, placeholder }: Inp
       toolbar: [
         [{ 'header': [1, 2, 3, 4, false] }],
         ['bold', 'italic', 'underline', 'strike'],
-        [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
       ],
     },
-    formats: ['header', 'bold', 'italic', 'underline', 'strike', 'list', 'bullet', 'indent',],
+    formats: ['header', 'bold', 'italic', 'underline', 'strike', 'bullet', 'indent',],
   });
 
   const error = getFormikError({ formik, name });
