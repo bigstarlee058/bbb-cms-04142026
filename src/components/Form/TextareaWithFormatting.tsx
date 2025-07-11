@@ -15,6 +15,11 @@ interface Props {
 type InputT = Props & React.InputHTMLAttributes<HTMLInputElement>;
 
 export const TextareaWithFormatting = ({ label, formik, name, placeholder }: InputT) => {
+  const decodeHTML = (html: string): string => {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  };
   const { quill, quillRef } = useQuill({
     modules: {
       toolbar: [
@@ -34,7 +39,8 @@ export const TextareaWithFormatting = ({ label, formik, name, placeholder }: Inp
 
   useEffect(() => {
     if (quill) {
-      quill.clipboard.dangerouslyPasteHTML(fieldValue || '');
+      const decodedHTML = decodeHTML(fieldValue || '');
+      quill.clipboard.dangerouslyPasteHTML(decodedHTML);
       quill.on('text-change', (delta, oldDelta, source) => {
         formik.setFieldValue(name, quill.root.innerHTML);
       });

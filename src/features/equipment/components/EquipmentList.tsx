@@ -58,6 +58,12 @@ export const EquipmentList = () => {
     );
   }
 
+  const decodeHTML = (html) => {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+  };
+
   if (!equipmentData) return null;
   return (
     <>
@@ -86,7 +92,7 @@ export const EquipmentList = () => {
               return (
                 <span
                   dangerouslySetInnerHTML={{
-                    __html: description.length > 100 ? `${description.slice(0, 100)}...` : description,
+                    __html: decodeHTML(description),
                   }}
                 />
               );
