@@ -311,7 +311,7 @@ export const DayPlan = ({
             monthIndex={monthIndex}
             weekIndex={weekIndex}
             dayIndex={dayIndex}
-            week={monthIndex != null && weekIndex != null ? [...months][monthIndex].weeks[weekIndex] : null}
+            week={monthIndex != null && weekIndex != null ? [...months][monthIndex]?.weeks[weekIndex] : null}
             day={day}
             states={checkedStates}
             updateStates={setCheckedStates}
