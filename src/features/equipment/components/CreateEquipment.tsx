@@ -8,6 +8,7 @@ import { Button } from '@/components/Elements';
 import { FormDrawer, Select } from '@/components/Form';
 import { Field, Dropzone } from '@/components/Form';
 import { createEquipment } from '../api';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -66,7 +67,8 @@ export const CreateEquipment = ({titles}) => {
       >
         <form id="create-equipment" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Field label="Description" formik={formik} name="description" />
+          <TextareaWithFormatting label="Description" formik={formik} name="description" />
+          {/* <Field label="Description" formik={formik} name="description" /> */}
           <Field label="Link" formik={formik} name="link" />
           <Dropzone
             label="Thumbnail"

@@ -7,6 +7,7 @@ import {  updateEquipment } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createEquipmentSchema } from '@/utils/yup';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -62,7 +63,8 @@ export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
       >
         <form id="update-equipment" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
-          <Field label="Description" formik={formik} name="description" />
+          <TextareaWithFormatting label="Description" formik={formik} name="description" />
+          {/* <Field label="Description" formik={formik} name="description" /> */}
           <Field label="Link" formik={formik} name="link" />
           <Dropzone
             label="Thumbnail"
