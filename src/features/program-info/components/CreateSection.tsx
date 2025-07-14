@@ -9,6 +9,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createSectionSchema } from '@/utils/yup';
 
 import { createSection } from '../api';
+import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
@@ -59,7 +60,8 @@ export const CreateSection = () => {
       >
         <form id="create-section" onSubmit={formik.handleSubmit}>
           <Field label="Name" formik={formik} name="title" />
-          <Textarea label="Description" formik={formik} name="description" />
+          {/* <Textarea label="Description" formik={formik} name="description" /> */}
+          <TextareaWithFormatting label="Description" formik={formik} name="description" />
           <Field label="vimeoId" formik={formik} name="vimeoId" />
         </form>
       </FormDrawer>

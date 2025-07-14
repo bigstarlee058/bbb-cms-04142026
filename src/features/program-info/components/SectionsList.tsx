@@ -68,6 +68,15 @@ export const SectionsList = () => {
           {
             title: 'Description',
             field: 'description',
+            Cell({ entry: { description } }) {
+              return (
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: description.length > 100 ? `${description.slice(0, 100)}...` : description,
+                  }}
+                />
+              );
+            }
           },
           {
             title: 'Vimeo Id',
