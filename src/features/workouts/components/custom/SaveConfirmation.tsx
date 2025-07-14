@@ -4,6 +4,7 @@ import { updateWorkouts } from '@/features/workouts/api';
 import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
 import SaveIcon from "@/lib/icons/SaveIcon";
+import { ArrowNarrowUpIcon } from "@heroicons/react/solid";
 
 export const SaveConfirmation = ({allMonths}) => {
   // Access the client
@@ -81,7 +82,7 @@ export const SaveConfirmation = ({allMonths}) => {
         body={`Are you sure you want to publish these workouts?`}
         isDone={isSuccess}
         triggerButton={
-          <Button variant="danger" className="ml-2" startIcon={<SaveIcon className="mr-2" width="20" height="20" />}>Publish</Button>
+          <Button variant="danger" className="ml-2" startIcon={<ArrowNarrowUpIcon className="mr-2" width="20" height="20" />}>Publish</Button>
         }
         confirmButton={
           <Button
