@@ -6,7 +6,7 @@ import { Button } from '@/components/Elements';
 import { FormDrawer, Field, Dropzone } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
-import { createTagSchema } from '@/utils/yup';
+import { createTagsSchema } from '@/utils/yup';
 
 import { createTag } from '../api';
 
@@ -34,7 +34,7 @@ export const CreateTag = () => {
   };
   const formik = useFormik({
     initialValues,
-    validationSchema: createTagSchema,
+    validationSchema: createTagsSchema,
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (value: any) => {

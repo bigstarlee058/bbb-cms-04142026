@@ -6,7 +6,7 @@ import { useMutation } from 'react-query';
 import { updateTag } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
-import { createTagSchema } from '@/utils/yup';
+import { createTagsSchema } from '@/utils/yup';
 
 interface FormikState {
   title: string;
@@ -34,7 +34,7 @@ export const UpdateTag = ({ tagId, tags }) => {
   };
   const formik = useFormik({
     initialValues,
-    validationSchema: createTagSchema,
+    validationSchema: createTagsSchema,
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
