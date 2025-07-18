@@ -351,6 +351,12 @@ export const updatePumpDays = async (days: Day[]) => {
         thumbnails.push(null);
       }
 
+      if (day.thumbnailOne instanceof File || typeof day.thumbnailOne === 'string') {
+        thumbnails.push(day.thumbnailOne);
+      } else {
+        thumbnails.push(null);
+      }
+
       return thumbnails;
     };
 
@@ -370,6 +376,10 @@ export const updatePumpDays = async (days: Day[]) => {
     const updateThumbnails = (item: any) => {
       if (urlIndex < thumbnailURLs.length) {
         item.thumbnail = thumbnailURLs[urlIndex];
+        urlIndex++;
+      }
+      if (urlIndex < thumbnailURLs.length) {
+        item.thumbnailOne = thumbnailURLs[urlIndex];
         urlIndex++;
       }
     };

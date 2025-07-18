@@ -111,18 +111,17 @@ export const DayDetail = ({
           file={day.thumbnail}
         />
         <Field label="Vimeo Id One" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
-        {!isPumpDay && (
-            <Dropzone
-            defaultImg={day.thumbnailOne}
-            onDrop={(img) => {
-              handleChange('thumbnailOne', img);
-            }}
-            onDelete={() => {
-              handleChange('thumbnailOne', null);
-            }}
-            file={day.thumbnailOne}
-          />
-        )}
+        <Dropzone
+          defaultImg={day.thumbnailOne}
+          onDrop={(img) => {
+            handleChange('thumbnailOne', img);
+          }}
+          onDelete={() => {
+            handleChange('thumbnailOne', null);
+          }}
+          file={day.thumbnailOne}
+        />
+        
         {!isPumpDay && (
           <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
         )}
