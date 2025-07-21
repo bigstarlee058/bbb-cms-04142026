@@ -16,7 +16,9 @@ interface FormikState {
   equipments: string[];
   length: number;
   image: any;
+  videoImage: any;
   deleteImage: boolean;
+  deleteVideoImage: boolean;
 }
 
 export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
@@ -40,7 +42,9 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
     equipments: warmupData?.equipments || [],
     length: warmupData?.length || 0,
     image: warmupData?.thumbnail,
+    videoImage: warmupData?.videoThumbnail,
     deleteImage: false,
+    deleteVideoImage: false
   };
   const formik = useFormik({
     initialValues,
@@ -66,7 +70,23 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
       >
         <form id="update-warmup" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
+          <Dropzone
+            label="Video Thumbnail"
+            name="videoImage"
+            formik={formik}
+            defaultImg={formik.values.videoImage}
+            onDrop={(img) => formik.setFieldValue('videoImage', img)}
+            onDelete={() => formik.setValues({ ...formik.values, videoImage: '', deleteVideoImage: true })}
+          />
           <Textarea label="Description" formik={formik} name="description" />
           <Select
             isMulti
@@ -86,14 +106,6 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
             }
           />
           <Field label="Length (min)" formik={formik} name="length" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
         </form>
       </FormDrawer>
     </Authorization>

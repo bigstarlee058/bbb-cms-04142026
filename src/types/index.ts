@@ -171,6 +171,7 @@ export interface Warmup extends BaseEntity {
   description: string;
   equipments: string[];
   thumbnail: string;
+  videoThumbnail: string;
   length: number;
 }
 export interface UserWorkout extends BaseEntity {

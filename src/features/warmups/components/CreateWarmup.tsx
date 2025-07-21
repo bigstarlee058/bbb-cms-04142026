@@ -17,7 +17,9 @@ interface FormikState {
   equipments: string[];
   length: number;
   image: any;
+  videoImage: any;
   deleteImage: boolean;
+  deleteVideoImage: boolean;
 }
 
 export const CreateWarmUp = ({titles}) => {
@@ -41,8 +43,9 @@ export const CreateWarmUp = ({titles}) => {
     equipments: [],
     length: 0,
     image: '',
+    videoImage: '',
     deleteImage: false,
-
+    deleteVideoImage: false,
   };
   const formik = useFormik({
     initialValues,
@@ -70,7 +73,23 @@ export const CreateWarmUp = ({titles}) => {
       >
         <form id="create-warmup" onSubmit={formik.handleSubmit}>
           <Field label="Title" formik={formik} name="title" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
           <Field label="Vimeo" formik={formik} name="vimeoId" />
+          <Dropzone
+            label="Video Thumbnail"
+            name="videoImage"
+            formik={formik}
+            defaultImg={formik.values.videoImage}
+            onDrop={(img) => formik.setFieldValue('videoImage', img)}
+            onDelete={() => formik.setValues({ ...formik.values, videoImage: '', deleteVideoImage: true })}
+          />
           <Textarea label="Description" formik={formik} name="description" />
           <Select
             isMulti
@@ -90,14 +109,6 @@ export const CreateWarmUp = ({titles}) => {
             }
           />
           <Field label="Length (min)" formik={formik} name="length" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
         </form>
       </FormDrawer>
     </Authorization>

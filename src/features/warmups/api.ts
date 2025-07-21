@@ -33,6 +33,7 @@ export const createWarmup = async (payload) => {
     const formData = new FormData();
     formData.append('title', payload.title);
     formData.append('image', payload.image);
+    formData.append('videoImage', payload.videoImage);
     formData.append('description', payload.description);
     formData.append('vimeoId', payload.vimeoId);
     formData.append('equipments', JSON.stringify(payload.equipments));
@@ -59,6 +60,7 @@ export const updateWarmup = async ({ warmupId, payload }) => {
       formData.append('_id', warmupId);
       formData.append('title', payload.title);
       formData.append('image', payload.image);
+      formData.append('videoImage', payload.videoImage);
       formData.append('description', payload.description);
       formData.append('vimeoId', payload.vimeoId);
       formData.append('length', payload.length);
