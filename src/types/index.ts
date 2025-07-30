@@ -258,9 +258,24 @@ export interface TutorialResponse {
 }
 
 export interface VersionResponse {
+  android: {
+    forceUpdate: boolean;
+    version: string;
+  };
+  ios: {
+    forceUpdate: boolean;
+    version: string;
+  };
+  _id: string;
+  id: string;
+  __v: number;
+  createdAt: string;
+  updatedAt: string;
   latest_version: string;
+  update_title: string;
   update_message: string;
 }
+
 
 export interface PopupinfoResponse {
   vimeoId: string;
