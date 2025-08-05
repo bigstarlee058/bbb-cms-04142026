@@ -91,6 +91,7 @@ export const AchievementsGroupList = ({titles}) => {
               return (
                 <span>
                   {sortedAchievements.map((achievement, idx) => {
+                    console.log('this is the title',titles)
                     const matchedTitle = titles.find((title) => title.id === achievement.achievementId);
                     if (!matchedTitle) return null;
                     return (

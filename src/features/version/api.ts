@@ -16,16 +16,29 @@ export const fetchVersion = async () => {
 };
 
 export const updateVersion = async (payload : {
-    version: string,
-    description: string,
+    android: {
+      version: string;
+      forceUpdate: boolean;
+    };
+    ios: {
+      version: string;
+      forceUpdate: boolean;
+    };
+    update_title: string;
+    update_message: string;
 }) => {
   try {
-    const formData = new FormData();
-    formData.append('version', payload.version);
-    formData.append('description', payload.description);
+    // Flatten the data structure to match backend expectations
+    const jsonData = {
+      androidVersion: payload.android.version,
+      androidForceUpdate: payload.android.forceUpdate,
+      iosVersion: payload.ios.version,
+      iosForceUpdate: payload.ios.forceUpdate,
+      updateTitle: payload.update_title,
+      description: payload.update_message
+    };
     
-    const updatedVersion = formData;
-    const result = (await axios.put('/version', updatedVersion)) as ResponseMessage;
+    const result = (await axios.put('/version', jsonData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-version');
       return 'Version successfully updated.';

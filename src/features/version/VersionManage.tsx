@@ -39,13 +39,79 @@ export const VersionManage = () => {
         </div>
       </div>
       
-      <ContentLayout title="New Version Update Detail">
-        <div className="mt-6 flex flex-col space-y-16">
-          <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-hidden sm:rounded-lg">
-            {/* {data.description} */}
-            <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-              <h3 className="text-md font-semibold text-gray-800 mb-2">Updated Version : {data.latest_version}</h3>
-              <p className="text-gray-600">{data.update_message}</p>
+      <ContentLayout title="Version Management">
+        <div className="mt-6 space-y-6">
+          {/* General Version Info */}
+          <div className="bg-white shadow rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">General Information</h3>
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-500 mb-1">Update Title</h4>
+                <p className="text-xl font-semibold text-gray-900">{data.update_title}</p>
+              </div>
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-700 mb-2">Update Message</h4>
+                <p className="text-blue-900">{data.update_message}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Platform Specific Versions */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Android Version */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a2 2 0 114 0 2 2 0 01-4 0z"/>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">Android</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">Version</span>
+                  <span className="text-xl font-semibold text-gray-900">{data.android.version}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">Force Update</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    data.android.forceUpdate 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {data.android.forceUpdate ? 'Required' : 'Optional'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* iOS Version */}
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a2 2 0 114 0 2 2 0 01-4 0z"/>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">iOS</h3>
+              </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">Version</span>
+                  <span className="text-xl font-semibold text-gray-900">{data.ios.version}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">Force Update</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    data.ios.forceUpdate 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {data.ios.forceUpdate ? 'Required' : 'Optional'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -114,7 +114,12 @@ export const updateScreensSchema = Yup.object().shape({
 });
 
 export const updateVersionSchema = Yup.object().shape({
-  version: Yup.string().max(255).required(),
+  androidVersion: Yup.string().max(255).required(),
+  iosVersion: Yup.string().max(255).required(),
+  androidForceUpdate: Yup.boolean(),
+  iosForceUpdate: Yup.boolean(),
+  updateTitle: Yup.string().max(255).required(),
+  updateMessage: Yup.string().max(1000).required(),
 });
 
 export const updatePopupInfoSchema = Yup.object().shape({

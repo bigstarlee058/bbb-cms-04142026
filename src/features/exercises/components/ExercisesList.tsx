@@ -70,6 +70,7 @@ export const ExercisesList = () => {
             title: 'Thumbnail',
             field: 'thumbnail',
             Cell({ entry: { thumbnail } }) {
+              console.log('this is the thumbnial',thumbnail)
               return (
                 <div className="justify-center items-center">
                   <img className="h-24 object-contain" src={thumbnail} />
