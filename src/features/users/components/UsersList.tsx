@@ -1,7 +1,7 @@
 import { Table, Spinner, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { User, Filters } from '@/types';
-import { fetchUsers } from '../api';
+import { fetchUsers, fetchAllUsers } from '../api';
 import { useQuery } from 'react-query';
 import { DeleteUser } from './DeleteUser';
 import Pagination from '@/components/Elements/Pagination';

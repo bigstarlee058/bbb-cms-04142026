@@ -43,6 +43,7 @@ import { ErrorMessage, ResponseMessage } from '@/types';
 import { SavePumpDays } from '@/features/pumpdays/SavePumpDays';
 import { usePumpDaysContext } from '@/features/pumpdays/PumpDaysContext';
 import WeightClockIcon from '../Elements/Icon/WeightClockIcon';
+import { ExportData } from '@/features/users/components/custom/ExportData';
 
 type SideNavigationItem = {
   title: string;
@@ -437,6 +438,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               </div>
             )}
             <div className="ml-4 flex items-center md:ml-6">
+              {pathname.includes('users') && (
+                <>
+                  <ExportData/>
+                </>
+              )}
               {pathname.includes('workouts') && (
                 <>
                   <MonthCover initialMonthCover={monthCover} onSetMonthCover={onSetMonthCover} />
