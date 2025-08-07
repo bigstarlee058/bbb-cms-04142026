@@ -36,6 +36,19 @@ export const fetchUsers = async (filters: Filters): Promise<UsersResponse> => {
   }
 };
 
+export const fetchAllUsers = async (): Promise<User[]> => {
+  try {
+    const users = (await axios.get('/users/getAllUsers')) as UsersResponse;
+    return users.users;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string,
+    };
+    return Promise.reject(error);
+  }
+};
+
 export const updateUser = async ({ userId, payload }: { userId: string, payload }) => {
   try {
     const updatedUser = {
