@@ -70,6 +70,13 @@ export const UsersList = () => {
             field: 'email',
           },
           {
+            title: 'Register Type',
+            field: 'uid',
+            Cell({ entry: { uid } }) {
+              return <span>{uid === "-1" ? 'Mobile' : 'Wordpress'}</span>;
+            },
+          },
+          {
             title: 'Tier',
             field: 'subscription',
             Cell({ entry: { subscription } }) {

@@ -70,6 +70,7 @@ export interface User extends BaseEntity {
   name: string;
   email: string;
   role: number;
+  uid: string;
 }
 export interface UsersResponse {
   count: number;
