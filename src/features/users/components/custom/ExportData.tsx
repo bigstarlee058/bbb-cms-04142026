@@ -32,11 +32,15 @@ export const ExportData = () => {
 
     const exportToCSV = (users: User[]) => {
         const csvData = users.map(user => ({
-            uid: user.uid,
-            email: user.email,
             name: user.name,
+            email: user.email,
+            uid: user.uid,
             registerType: user.uid === "-1" ? "Mobile" : "Wordpress",
-            subscription: user.subscription?.user_subscription_status || ''
+            createAt: user.createdAt,
+            subscription: user.subscription?.user_subscription_status || '',
+            paydate: user.subscription?.purchase_date || '',
+            subscriptionType: user.subscription?.subscription_type || '',
+            price: user.subscription?.price || '',
         }));
 
         const csv = Papa.unparse(csvData);
