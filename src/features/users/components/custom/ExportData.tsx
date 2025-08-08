@@ -35,7 +35,7 @@ export const ExportData = () => {
             name: user.name,
             email: user.email,
             uid: user.uid,
-            registerType: user.uid === "-1" ? "Mobile" : "Wordpress",
+            registerType: user.uid == "-1" ? "Mobile" : "Wordpress",
             createAt: user.createdAt,
             subscription: user.subscription?.user_subscription_status || '',
             paydate: user.subscription?.purchase_date || '',

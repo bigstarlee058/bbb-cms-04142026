@@ -73,7 +73,7 @@ export const UsersList = () => {
             title: 'Register Type',
             field: 'uid',
             Cell({ entry: { uid } }) {
-              return <span>{uid === "-1" ? 'Mobile' : 'Wordpress'}</span>;
+              return <span>{uid == "-1" ? 'Mobile' : 'Wordpress'}</span>;
             },
           },
           {
