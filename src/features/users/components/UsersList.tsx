@@ -1,7 +1,7 @@
-import { Table, Spinner, Button } from '@/components/Elements';
+import { Table, Spinner } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { User, Filters } from '@/types';
-import { fetchUsers, fetchAllUsers } from '../api';
+import { fetchUsers } from '../api';
 import { useQuery } from 'react-query';
 import { DeleteUser } from './DeleteUser';
 import Pagination from '@/components/Elements/Pagination';
@@ -10,38 +10,36 @@ import { useFilteringStore } from '@/stores/filter';
 import { UserDetail } from '../UserDetail';
 
 export const UsersList = () => {
-  const { data, isLoading, refetch } = useQuery('get-users', () => fetchUsers(filters));
-  const [currentPage, setCurrentPage] = useState(1);
-  
   const { search, sortBy } = useFilteringStore();
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
     page: 1,
     search: '',
     filter: {},
+    sortBy: undefined,
   });
 
-  useEffect(() => {
-    refetch();
-  }, [filters]);
+  const { data, isLoading, isFetching, refetch } = useQuery(
+    ['get-users', filters],
+    () => fetchUsers(filters),
+    { keepPreviousData: true }
+  );
+
 
   useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
+    setFilters((prev) => ({ ...prev, search, page: 1 }));
+    setCurrentPage(1);
   }, [search]);
 
   useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
+    setFilters((prev) => ({ ...prev, sortBy: sortBy?.value, page: 1 }));
+    setCurrentPage(1);
   }, [sortBy]);
+
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, page: currentPage }));
+  }, [currentPage]);
 
   if (isLoading) {
     return (
@@ -54,37 +52,38 @@ export const UsersList = () => {
   if (!data) return null;
 
   return (
-    <>
-      {/* <div className="flex gap-3 mb-3">
-        <SearchField setSearchQuery={(val) => setFilters((p) => ({ ...p, search: val }))} />
-      </div> */}
+    <div className="relative">
+      {isFetching && (
+        <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-50 z-10">
+          <Spinner size="lg" />
+        </div>
+      )}
+
       <Table<User>
         data={data.users}
         columns={[
-          {
-            title: 'Name',
-            field: 'name',
-          },
-          {
-            title: 'Email',
-            field: 'email',
-          },
+          { title: 'Name', field: 'name' },
+          { title: 'Email', field: 'email' },
           {
             title: 'Register Type',
             field: 'uid',
             Cell({ entry: { uid } }) {
-              return <span>{uid == "-1" ? 'Mobile' : 'Wordpress'}</span>;
+              return <span>{uid == '-1' ? 'Mobile' : 'Wordpress'}</span>;
             },
           },
           {
             title: 'Tier',
             field: 'subscription',
             Cell({ entry: { subscription } }) {
-              return <span>
-                {(subscription?.user_subscription_status && subscription.user_subscription_status) == "free_user" ? 'Free'
-                : new Date(subscription?.end_date) > new Date() ? 'Paid' : 'Free'
-                }
-              </span>;
+              return (
+                <span>
+                  {subscription?.user_subscription_status === 'free_user'
+                    ? 'Free'
+                    : new Date(subscription?.end_date) > new Date()
+                    ? 'Paid'
+                    : 'Free'}
+                </span>
+              );
             },
           },
           {
@@ -117,14 +116,15 @@ export const UsersList = () => {
           },
         ]}
       />
+
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(data.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(data.totalCount / (filters.perPage || 10))}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />
       </div>
-    </>
+    </div>
   );
 };

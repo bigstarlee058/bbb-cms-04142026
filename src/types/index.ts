@@ -73,10 +73,14 @@ export interface User extends BaseEntity {
   uid: string;
 }
 export interface UsersResponse {
-  count: number;
   users: User[];
-
+  totalCount?: number;   
+  totalPages?: number;   
+  currentPage?: number;  
+  hasMore?: boolean;
+  lastId?: string;
 }
+
 export interface UserWorkoutHistory {
   monthTitle: string;
   monthIndex: number;
@@ -183,6 +187,7 @@ export interface UserWorkout extends BaseEntity {
   dayIndex: number;
   day: string;
   daySplit: number;
+  name?:string;
   exercises: DayExercise[];
 }
 
@@ -243,10 +248,10 @@ export interface ScreensResponse {
   imageProfile: string,
   imageMyProfle: string,
   imageSetting: string,
-  slides: {title: string, description: string}[];
+  slides: { title: string, description: string }[];
 }
 
-export interface Tutorial extends BaseEntity{
+export interface Tutorial extends BaseEntity {
   vimeoId: string;
   thumbnail: string;
   title: string;
@@ -292,6 +297,8 @@ export interface Filters {
   sortBy?: string;
   sortOrder?: number;
   filter?: any;
+  lastId?: string;
+
 }
 
 export interface TitleFilters {

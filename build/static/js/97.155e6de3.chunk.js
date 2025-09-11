@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkbbb_cms=self.webpackChunkbbb_cms||[]).push([[97],{9097:(s,e,b)=>{b.r(e),b.d(e,{TutorialsRoutes:()=>a});var c=b(1030),t=b(1370),u=b(7929);const a=()=>(0,u.jsx)(c.BV,{children:(0,u.jsx)(c.qh,{path:"backgroundTutorials",element:(0,u.jsx)(t.Y,{})})})}}]);
-//# sourceMappingURL=97.155e6de3.chunk.js.map

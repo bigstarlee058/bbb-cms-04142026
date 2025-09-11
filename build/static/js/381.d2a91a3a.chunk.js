@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkbbb_cms=self.webpackChunkbbb_cms||[]).push([[381],{5381:(s,e,b)=>{b.r(e),b.d(e,{VersionRoutes:()=>h});var n=b(1030),c=b(5504),a=b(7929);const h=()=>(0,a.jsx)(n.BV,{children:(0,a.jsx)(n.qh,{path:"versionManage",element:(0,a.jsx)(c._,{})})})}}]);
+//# sourceMappingURL=381.d2a91a3a.chunk.js.map
