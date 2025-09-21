@@ -20,7 +20,7 @@ export const WorkoutList = () => {
 
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState({
-    perPage: 5,
+    perPage: 13,
     page: 1
   });
 
