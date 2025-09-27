@@ -1,23 +1,32 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Button } from '@/components/Elements';
 import { DuplicateIcon, PlusIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
 import { CustomTitle } from './CustomTitle';
 import { WeekDetail } from './WeekDetail';
 import { DayPlan } from './DayPlan';
-import { Day, Week } from '@/types';
+import { Day, Week, Month } from '@/types';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
 
 import _ from 'lodash';
+interface Props {
+  monthIndex: number;
+  weekIndex: number;
+  week: Week;
+  addWeek: (monthIndex: number) => void;
+  months: Month[];
+  updateMonths: (months: Month[]) => void;
+  isFourWeeksOrLess: boolean;
+}
 
 const showAddDay = (days) => {
   let count = 0;
-    days.forEach((day) => {
-      count = count + day.formats.length;
-    });
-    return count < 12; // 3 + 4 + 5 = 12 days split
+  days.forEach((day) => {
+    count = count + day.formats.length;
+  });
+  return count < 12; // 3 + 4 + 5 = 12 days split
 }
 
-export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateMonths, isFourWeeksOrLess }) => {
+const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updateMonths, isFourWeeksOrLess }: Props) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   if (!months[monthIndex]?.weeks[weekIndex]) return null;
@@ -129,7 +138,15 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
         </div>
       </div>
       <div className={`collapse-content ${isCollapsed ? 'collapsed' : 'expanded'}`}>
-        <WeekDetail monthIndex={monthIndex} weekIndex={weekIndex} week={week} updateWeek={updateWeek} />
+        {!isCollapsed && (
+          <WeekDetail
+            monthIndex={monthIndex}
+            weekIndex={weekIndex}
+            week={week}
+            updateWeek={updateWeek}
+          />
+        )}
+
         {week.days.length < 1 ? (
           <Button
             variant="danger"
@@ -158,3 +175,4 @@ export const WeekPlan = ({ monthIndex, weekIndex, week, addWeek, months, updateM
     </div>
   );
 };
+export const WeekPlan = React.memo(WeekPlanComponent);

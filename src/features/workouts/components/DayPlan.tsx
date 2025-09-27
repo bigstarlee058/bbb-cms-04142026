@@ -4,13 +4,27 @@ import { CustomTitle } from './CustomTitle';
 import { DayDetail } from './DayDetail';
 import { Day, DayExercise, DayWarmup } from '@/types';
 import { ExercisePlan } from './ExercisePlan';
-import { useEffect, useState } from 'react';
+import React, {  useEffect, useState } from 'react';
 import { WarmupPlan } from './WarmupPlan';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
 import { CircuitPlan } from './CircuitPlan';
-
-export const DayPlan = ({
+interface Props {
+  monthIndex: number;
+  weekIndex: number;
+  dayIndex: number;
+  day: Day;
+  addDay: (monthIndex: number, weekIndex: number, newTypeId: number, newFormats: string[]) => void;
+  reassignDayTypeIds: (deletedDayTypeId: number) => void;
+  months: any[];
+  updateMonths: (months: any[]) => void;
+  isSevenDays: boolean;
+  isWeekCollapsed: boolean;
+  isPumpDay?: boolean;
+  updateDays?: (days: any[]) => void;
+  days?: any[];
+}
+const DayPlanComponent = ({
   monthIndex,
   weekIndex,
   dayIndex,
@@ -22,7 +36,7 @@ export const DayPlan = ({
   isSevenDays,
   isWeekCollapsed,
   isPumpDay = false,
-  updateDays = (val) => {},
+  updateDays = (_val: Day[]) => {},
   days = []
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -306,102 +320,105 @@ export const DayPlan = ({
             />
           </div>
         </div>
-        <div className={`collapse-content ${isCollapsed ? 'collapsed' : 'expanded'}`}>
-          <DayDetail
-            monthIndex={monthIndex}
-            weekIndex={weekIndex}
-            dayIndex={dayIndex}
-            week={monthIndex != null && weekIndex != null ? [...months][monthIndex]?.weeks[weekIndex] : null}
-            day={day}
-            states={checkedStates}
-            updateStates={setCheckedStates}
-            updateDay={updateDay}
-            isPumpDay={isPumpDay}
-            days={days}
-          />
-          {day.warmups.length < 1 ? (
-            <Button
-              variant="danger"
-              onClick={() => addWarmup(monthIndex, weekIndex, dayIndex, 1, [])}
-              startIcon={<PlusIcon className="h-4 w-4" />}
-              className="mt-4"
-            >
-              Add Warmup
-            </Button>
-          ) : null}
-          {day.warmups.map((warmup, warmupIndex) => (
-            <WarmupPlan
-              key={warmupIndex}
+        {!isCollapsed && (
+          <div>
+            <DayDetail
               monthIndex={monthIndex}
               weekIndex={weekIndex}
               dayIndex={dayIndex}
-              warmupIndex={warmupIndex}
-              warmup={warmup}
-              addWarmup={addWarmup}
-              reassignWarmupTypeIds={reassignWarmupTypeIds}
-              months={months}
-              updateMonths={updateMonths}
+              week={monthIndex != null && weekIndex != null ? [...months][monthIndex]?.weeks[weekIndex] : null}
+              day={day}
+              states={checkedStates}
+              updateStates={setCheckedStates}
+              updateDay={updateDay}
               isPumpDay={isPumpDay}
               days={days}
-              updateDays={updateDays}
             />
-          ))}
-          <div className="flex gap-6">
-            <div className="flex-1">
-              {day.exercises.map((exercise, exerciseIndex) => (
-                <ExercisePlan
-                  key={exerciseIndex}
-                  monthIndex={monthIndex}
-                  weekIndex={weekIndex}
-                  dayIndex={dayIndex}
-                  exerciseIndex={exerciseIndex}
-                  exercise={exercise}
-                  addExercise={addExercise}
-                  reassignExerciseTypeIds={reassignExerciseTypeIds}
-                  months={months}
-                  updateMonths={updateMonths}
-                  isPumpDay={isPumpDay}
-                  days={days}
-                  updateDays={updateDays}
-                />
-              ))}
-              {day.exercises.length === 0 ? (
-                <Button
-                  variant="danger"
-                  onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
-                  className="mt-4"
-                >
-                  Add Exercise
-                </Button>
-              ) : null}
-            </div>
-            {day.circuits && (
+            {day.warmups.length < 1 ? (
+              <Button
+                variant="danger"
+                onClick={() => addWarmup(monthIndex, weekIndex, dayIndex, 1, [])}
+                startIcon={<PlusIcon className="h-4 w-4" />}
+                className="mt-4"
+              >
+                Add Warmup
+              </Button>
+            ) : null}
+            {day.warmups.map((warmup, warmupIndex) => (
+              <WarmupPlan
+                key={warmupIndex}
+                monthIndex={monthIndex}
+                weekIndex={weekIndex}
+                dayIndex={dayIndex}
+                warmupIndex={warmupIndex}
+                warmup={warmup}
+                addWarmup={addWarmup}
+                reassignWarmupTypeIds={reassignWarmupTypeIds}
+                months={months}
+                updateMonths={updateMonths}
+                isPumpDay={isPumpDay}
+                days={days}
+                updateDays={updateDays}
+              />
+            ))}
+            <div className="flex gap-6">
               <div className="flex-1">
-                {(day.circuits || []).map((circuit, circuitIndex) => (
-                  <CircuitPlan
-                    key={circuitIndex}
+                {day.exercises.map((exercise, exerciseIndex) => (
+                  <ExercisePlan
+                    key={exerciseIndex}
+                    monthIndex={monthIndex}
+                    weekIndex={weekIndex}
                     dayIndex={dayIndex}
-                    circuitIndex={circuitIndex}
-                    circuit={circuit}
+                    exerciseIndex={exerciseIndex}
+                    exercise={exercise}
+                    addExercise={addExercise}
+                    reassignExerciseTypeIds={reassignExerciseTypeIds}
+                    months={months}
+                    updateMonths={updateMonths}
+                    isPumpDay={isPumpDay}
                     days={days}
                     updateDays={updateDays}
-                    addCircuit={addCircuit}
                   />
                 ))}
-                {day.circuits && day.circuits.length === 0 && (
+                {day.exercises.length === 0 ? (
                   <Button
                     variant="danger"
-                    onClick={() => addCircuit(dayIndex, 1, [])}
-                    startIcon={<PlusIcon className="h-4 w-4" />}
+                    onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
                     className="mt-4"
                   >
-                    Add Circuit
+                    Add Exercise
                   </Button>
-                )}
+                ) : null}
               </div>
-            )}
+              {day.circuits && (
+                <div className="flex-1">
+                  {(day.circuits || []).map((circuit, circuitIndex) => (
+                    <CircuitPlan
+                      key={circuitIndex}
+                      dayIndex={dayIndex}
+                      circuitIndex={circuitIndex}
+                      circuit={circuit}
+                      days={days}
+                      updateDays={updateDays}
+                      addCircuit={addCircuit}
+                    />
+                  ))}
+                  {day.circuits && day.circuits.length === 0 && (
+                    <Button
+                      variant="danger"
+                      onClick={() => addCircuit(dayIndex, 1, [])}
+                      startIcon={<PlusIcon className="h-4 w-4" />}
+                      className="mt-4"
+                    >
+                      Add Circuit
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
       </div>
       {(!isPumpDay && dayIndex === months[monthIndex].weeks[weekIndex].days.length - 1 && isSevenDays) ? (
         <Button
@@ -416,3 +433,4 @@ export const DayPlan = ({
     </>
   );
 };
+export const DayPlan = React.memo(DayPlanComponent);
