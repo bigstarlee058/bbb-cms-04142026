@@ -32,21 +32,25 @@ export const WorkoutList = () => {
   });
 
   const { onSetMonths } = useWorkoutContext();
-  const { isLoading, isError  } = useQuery([
+  const { isLoading, isError } = useQuery(
     'get-workouts',
-    filters,
-  ], () => fetchWorkouts(filters), {
-    onSuccess: (data) => {
-      const months = data.months?.sort((a, b) => a.index - b.index) || [];
-      setAllMonths(months);
-      onSetMonths(months);
-      setLoadingMonths(false);
-    },
-    onError: (err) => {
-      console.error('Error fetching workouts:', err);
-      setLoadingMonths(false);
-    },
-  });
+    () => fetchWorkouts({ perPage: filters.perPage, page: 1 }),
+    {
+      onSuccess: (data) => {
+        if (allMonths.length === 0) {
+          const months = data.months?.sort((a, b) => a.index - b.index) || [];
+          setAllMonths(months);
+          onSetMonths(months);
+        }
+        setLoadingMonths(false);
+      },
+      onError: (err) => {
+        console.error(err);
+        setLoadingMonths(false);
+      }
+    }
+  );
+
 
   const startIndex = (currentPage - 1) * filters.perPage;
   const monthsForPage = allMonths.slice(startIndex, startIndex + filters.perPage);
@@ -72,7 +76,10 @@ export const WorkoutList = () => {
         rowVirtualizer.measure();
         scrollToMonth(newMonthIndex);
       });
-
+      requestAnimationFrame(() => {
+        rowVirtualizer.measure();
+        scrollToMonth(newMonthIndex);
+      });
       return updated;
     });
 
@@ -152,6 +159,8 @@ export const WorkoutList = () => {
               setAllMonths={(months) => {
                 setAllMonths(months);
                 onSetMonths(months);
+                const lastPage = Math.ceil(months.length / filters.perPage) || 1;
+                if (currentPage > lastPage) setCurrentPage(lastPage);
               }}
               startIndex={startIndex}
               onScrollToMonth={scrollToMonth}
@@ -195,7 +204,8 @@ export const WorkoutList = () => {
                         monthIndex={virtualRow.index}
                         month={month}
                         scrollToMonth={scrollToMonth}
-
+                        perPage={filters.perPage}
+                        currentPage={currentPage}
                         startIndex={startIndex}
                         months={allMonths}
                         isCollapsed={!expandedMonths[startIndex + virtualRow.index]}
@@ -212,6 +222,8 @@ export const WorkoutList = () => {
                         updateMonths={(months) => {
                           setAllMonths(months);
                           onSetMonths(months);
+                          const lastPage = Math.ceil(months.length / filters.perPage) || 1;
+                          if (currentPage > lastPage) setCurrentPage(lastPage);
                         }}
                       />
                     </div>

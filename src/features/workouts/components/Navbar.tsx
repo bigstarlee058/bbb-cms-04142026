@@ -99,7 +99,7 @@ export const Navbar = React.memo(({ currentPage, months, perPage, allMonths, sta
               {months.map((month, monthIndex) => {
                 const realMonthIndex = getRealIndex(monthIndex);
                 return (
-                  <Draggable key={realMonthIndex} draggableId={`month-${realMonthIndex}`} index={realMonthIndex}>
+                  <Draggable key={realMonthIndex} draggableId={`month-${realMonthIndex}`} index={monthIndex}>
                     {(provided) => (
                       <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 rounded bg-white shadow">
                         <div className="flex items-center justify-between">

@@ -26,11 +26,12 @@ interface Props {
   isCollapsed: boolean;
   startIndex: number;
   scrollToMonth?: (monthIndex: number) => void;
-
+  currentPage: number;
+  perPage: number;
 }
 
 export const MonthPlan = React.memo(
-  ({ monthIndex, month, months, setCurrentPage, startIndex, addMonth, scrollToMonth, updateMonths, measure, toggleCollapse, isCollapsed }: Props) => {
+  ({ monthIndex, month, months, setCurrentPage, startIndex, currentPage, perPage, addMonth, scrollToMonth, updateMonths, measure, toggleCollapse, isCollapsed }: Props) => {
     const realMonthIndex = startIndex + monthIndex;
 
     const addWeek = useCallback(() => {
@@ -71,15 +72,16 @@ export const MonthPlan = React.memo(
         scrollToMonth?.(newMonthIndex);
       });
     }, [months, realMonthIndex, updateMonths, setCurrentPage, measure]);
-
-
     const deleteMonth = useCallback(() => {
       const updatedMonths = [...months];
-      updatedMonths.splice(realMonthIndex, 1);
+      updatedMonths.splice(monthIndex, 1);
+
+      const lastPage = Math.ceil(updatedMonths.length / perPage) || 1;
+      const newPage = currentPage > lastPage ? lastPage : currentPage;
+
       updateMonths(updatedMonths);
-    }, [months, realMonthIndex, updateMonths]);
-
-
+      setCurrentPage(newPage);
+    }, [months, monthIndex, updateMonths, currentPage, setCurrentPage, perPage]);
     const updateMonth = useCallback((monthIndex: number, updatedMonth: Month) => {
       const updatedMonths = [...months];
       updatedMonths[monthIndex] = updatedMonth;
