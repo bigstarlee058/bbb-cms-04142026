@@ -323,7 +323,7 @@ export interface Month extends WorkoutsBaseEntity {
   thumbnail: any;
   startDate: Date;
   endDate: Date;
-
+  localId: string;
   weeks: Week[];
 }
 export interface Week extends WorkoutsBaseEntity {
@@ -333,7 +333,7 @@ export interface Week extends WorkoutsBaseEntity {
   vimeoId: string;
   thumbnail: any;
   restdayId: string;
-
+  localId: string;
   days: Day[];
 }
 export interface Day extends WorkoutsBaseEntity {
@@ -348,12 +348,13 @@ export interface Day extends WorkoutsBaseEntity {
   thumbnailTwo: any;
   thumbnailThree: any;
   formats: string[];
-  
+  localId: string;
   warmups: DayWarmup[];
   exercises: DayExercise[];
   circuits?: any[];
 }
 export interface ExtraExercise {
+  _id: string;
   sets: number;
   reps: number;
   weight: number;
@@ -372,6 +373,7 @@ export interface DayExercise extends WorkoutsBaseEntity {
   formats?: string[];
   status: string;
   extra: ExtraExercise[];
+  localId: string;
 }
 export interface DayWarmup extends WorkoutsBaseEntity {
   typeId: number;
@@ -379,6 +381,7 @@ export interface DayWarmup extends WorkoutsBaseEntity {
   title: string;
   guide: string;
   formats: string[];
+  localId: string;
 }
 
 export interface Staff extends BaseEntity {

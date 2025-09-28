@@ -9,6 +9,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import Pagination from '@/components/Elements/Pagination';
 import { Month } from '@/types';
 import { useWorkoutContext } from '../WorkoutContext';
+import { v4 as uuid } from 'uuid';
 
 export const WorkoutList = () => {
   const [allMonths, setAllMonths] = useState([]);
@@ -18,7 +19,9 @@ export const WorkoutList = () => {
 
   const filters = useMemo(() => ({ perPage: 6, page: currentPage }), [currentPage]);
   const parentRef = useRef<HTMLDivElement>(null);
-  const [expandedMonths, setExpandedMonths] = useState<{ [key: number]: boolean }>({});
+  const monthRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [expandedMonths, setExpandedMonths] = useState<{ [key: string]: boolean }>({});
+  const [expandedWeeks, setExpandedWeeks] = useState<{ [key: string]: boolean }>({});
   const paginatedMonths = useMemo(() => {
     const startIndex = (currentPage - 1) * filters.perPage;
     const endIndex = startIndex + filters.perPage;
@@ -28,7 +31,8 @@ export const WorkoutList = () => {
   const rowVirtualizer = useVirtualizer({
     count: paginatedMonths.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 500,
+    estimateSize: () => 500, 
+    measureElement: (el) => el.getBoundingClientRect().height,
   });
 
   const { onSetMonths } = useWorkoutContext();
@@ -38,7 +42,33 @@ export const WorkoutList = () => {
     {
       onSuccess: (data) => {
         if (allMonths.length === 0) {
-          const months = data.months?.sort((a, b) => a.index - b.index) || [];
+          const months = (data.months || [])
+            .sort((a, b) => a.index - b.index)
+            .map((month) => ({
+              ...month,
+              localId: month._id || uuid(),
+              weeks: (month.weeks || []).map((week) => ({
+                ...week,
+                localId: week._id || uuid(),
+                days: (week.days || []).map((day) => ({
+                  ...day,
+                  localId: day._id || uuid(),
+                  warmups: (day.warmups || []).map((w) => ({
+                    ...w,
+                    localId: w._id || uuid(),
+                  })),
+                  exercises: (day.exercises || []).map((ex) => ({
+                    ...ex,
+                    localId: ex._id || uuid(),
+                    extra: (ex.extra || []).map((e) => ({
+                      ...e,
+                      localId: e._id || uuid(),
+                    })),
+                  })),
+                })),
+              })),
+            }));
+
           setAllMonths(months);
           onSetMonths(months);
         }
@@ -47,11 +77,9 @@ export const WorkoutList = () => {
       onError: (err) => {
         console.error(err);
         setLoadingMonths(false);
-      }
+      },
     }
   );
-
-
   const startIndex = (currentPage - 1) * filters.perPage;
   const monthsForPage = allMonths.slice(startIndex, startIndex + filters.perPage);
 
@@ -64,6 +92,7 @@ export const WorkoutList = () => {
       startDate: null,
       endDate: null,
       weeks: [],
+      localId: uuid()
     };
 
     setAllMonths((prev) => {
@@ -75,23 +104,39 @@ export const WorkoutList = () => {
       requestAnimationFrame(() => {
         rowVirtualizer.measure();
         scrollToMonth(newMonthIndex);
-      });
-      requestAnimationFrame(() => {
-        rowVirtualizer.measure();
-        scrollToMonth(newMonthIndex);
+
       });
       return updated;
     });
 
   };
 
-  const scrollToMonth = useCallback((monthIndex) => {
+  const scrollToMonth = useCallback((monthIndex: number) => {
+    if (!parentRef.current) return;
+    monthRefs.current.forEach((el) => {
+      if (el) rowVirtualizer.measureElement(el);
+    });
     requestAnimationFrame(() => {
-      const item = rowVirtualizer.getVirtualItems().find((v) => v.index === monthIndex);
-      if (item && parentRef.current) {
-        parentRef.current.scrollTo({ top: item.start, behavior: 'smooth' });
-      } else if (parentRef.current) {
-        parentRef.current.scrollTo({ top: monthIndex * 500, behavior: 'smooth' });
+      const monthEl = monthRefs.current[monthIndex];
+
+      if (monthEl) {
+        parentRef.current.scrollTo({
+          top: monthEl.offsetTop,
+          behavior: 'smooth',
+        });
+      } else {
+        const item = rowVirtualizer.getVirtualItems().find(v => v.index === monthIndex);
+        if (item) {
+          parentRef.current.scrollTo({
+            top: item.start,
+            behavior: 'smooth',
+          });
+        } else {
+          parentRef.current.scrollTo({
+            top: monthIndex * 500,
+            behavior: 'smooth',
+          });
+        }
       }
     });
   }, [rowVirtualizer]);
@@ -101,6 +146,7 @@ export const WorkoutList = () => {
     if (item && parentRef.current) {
       parentRef.current.scrollTo({ top: item.start, behavior: 'smooth' });
       requestAnimationFrame(() => {
+        rowVirtualizer.measure();
         const weekElement = parentRef.current?.querySelector(`.month-${monthIndex} .week-${weekIndex}`);
         weekElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
@@ -108,12 +154,18 @@ export const WorkoutList = () => {
       parentRef.current.scrollTo({ top: monthIndex * 500, behavior: 'smooth' });
     }
   }, [rowVirtualizer]);
+  const handleCollapseChange = () => {
+    monthRefs.current.forEach((el) => {
+      if (el) rowVirtualizer.measureElement(el);
+    });
+  };
 
   const scrollToDay = useCallback((monthIndex, weekIndex, dayIndex) => {
     const item = rowVirtualizer.getVirtualItems().find((v) => v.index === monthIndex);
     if (item && parentRef.current) {
       parentRef.current.scrollTo({ top: item.start, behavior: 'smooth' });
       requestAnimationFrame(() => {
+        rowVirtualizer.measure();
         const dayElement = parentRef.current?.querySelector(`.month-${monthIndex} .week-${weekIndex} .day-${dayIndex}`);
         dayElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
@@ -148,14 +200,16 @@ export const WorkoutList = () => {
         )}
       </div>
 
-      <div className="flex">
-        <div className="w-1/5 overflow-y-auto mt-[160px] mb-[110px] h-[calc(100vh-270px)] fixed top-0 z-10">
+      <div className="flex gap-4 h-[calc(100vh)]">
+
+        <div className="w-1/4 max-h-full overflow-auto">
           {allMonths.length > 0 ? (
             <Navbar
               currentPage={currentPage}
               months={monthsForPage}
               perPage={filters.perPage}
               allMonths={allMonths}
+              onCollapseChange={handleCollapseChange}
               setAllMonths={(months) => {
                 setAllMonths(months);
                 onSetMonths(months);
@@ -170,8 +224,8 @@ export const WorkoutList = () => {
 
           ) : null}
         </div>
-        <div className="w-4/5 ml-[25%] mr-[3%]" >
-          <div className="h-[500px] w-full">
+        <div className="w-3/4 h-full overflow-auto">
+          <div className="h-full w-full">
             <div
               ref={parentRef}
               className="h-full overflow-auto w-full"
@@ -187,7 +241,7 @@ export const WorkoutList = () => {
                   const month = paginatedMonths[virtualRow.index];
                   return (
                     <div
-                      key={month?._id || virtualRow.index}
+                      key={month.localId}
                       data-index={virtualRow.index}
                       ref={(el) => {
                         if (el) rowVirtualizer.measureElement(el);
@@ -201,6 +255,7 @@ export const WorkoutList = () => {
                       }}
                     >
                       <MonthPlan
+                        ref={(el) => monthRefs.current[virtualRow.index] = el}
                         monthIndex={virtualRow.index}
                         month={month}
                         scrollToMonth={scrollToMonth}
@@ -208,14 +263,16 @@ export const WorkoutList = () => {
                         currentPage={currentPage}
                         startIndex={startIndex}
                         months={allMonths}
-                        isCollapsed={!expandedMonths[startIndex + virtualRow.index]}
-
+                        isCollapsed={!expandedMonths[month.localId]}
+                        expandedWeeks={expandedWeeks}
+                        setExpandedWeeks={setExpandedWeeks}
                         toggleCollapse={() =>
                           setExpandedMonths((prev) => ({
                             ...prev,
-                            [startIndex + virtualRow.index]: !prev[startIndex + virtualRow.index],
+                            [month.localId]: !prev[month.localId],
                           }))
                         }
+
                         measure={rowVirtualizer.measure}
                         setCurrentPage={setCurrentPage}
                         addMonth={handleAddMonth}

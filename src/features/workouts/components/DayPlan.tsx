@@ -9,6 +9,7 @@ import { WarmupPlan } from './WarmupPlan';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
 import { CircuitPlan } from './CircuitPlan';
+import { v4 as uuid } from 'uuid';
 interface Props {
   monthIndex: number;
   weekIndex: number;
@@ -67,7 +68,8 @@ const DayPlanComponent = ({
         rest: 0,
         formats: newFormats,
         status: '',
-        extra: []
+        extra: [],
+        localId:uuid(),
       };
       updatedDays[dayIndex].exercises.push(newExercise);
       updateDays(updatedDays);
@@ -83,7 +85,8 @@ const DayPlanComponent = ({
         rest: 0,
         formats: newFormats,
         status: '',
-        extra: []
+        extra: [],
+        localId:uuid(),
       };
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.push(newExercise);
       updateMonths(updatedMonths);
@@ -105,7 +108,8 @@ const DayPlanComponent = ({
           weight: 0,
           rest: 0,
           status: '',
-          extra: []
+          extra: [],
+          localId:uuid()
         }
       ]
     };
@@ -127,7 +131,8 @@ const DayPlanComponent = ({
         warmupId: '',
         title: '',
         guide: '',
-        formats: newFormats
+        formats: newFormats,
+        localId:uuid()
       };
       updatedDays[dayIndex].warmups.push(newWarmup);
       updateDays(updatedDays);
@@ -138,7 +143,8 @@ const DayPlanComponent = ({
         warmupId: '',
         title: '',
         guide: '',
-        formats: newFormats
+        formats: newFormats,
+        localId:uuid()
       };
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
       updateMonths(updatedMonths);

@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { Button } from '@/components/Elements';
 import { MonthDetail } from './MonthDetail';
 import { CustomTitle } from './CustomTitle';
+import { v4 as uuid } from 'uuid';
+
 import {
   DuplicateIcon,
   PlusIcon,
@@ -28,14 +30,19 @@ interface Props {
   scrollToMonth?: (monthIndex: number) => void;
   currentPage: number;
   perPage: number;
+  expandedWeeks: { [key: string]: boolean };
+  setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
 }
-
 export const MonthPlan = React.memo(
-  ({ monthIndex, month, months, setCurrentPage, startIndex, currentPage, perPage, addMonth, scrollToMonth, updateMonths, measure, toggleCollapse, isCollapsed }: Props) => {
+  React.forwardRef<HTMLDivElement, Props>(({
+    monthIndex, month, months, setCurrentPage, startIndex, currentPage,
+    perPage, addMonth, scrollToMonth, updateMonths, measure,
+    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks
+  }, ref) => {
     const realMonthIndex = startIndex + monthIndex;
 
     const addWeek = useCallback(() => {
-      const newWeek: Week = { title: '', description: '', vimeoId: '', thumbnail: '', restdayId: '', days: [] };
+      const newWeek: Week = { title: '', description: '', vimeoId: '', thumbnail: '', restdayId: '', days: [], localId: uuid(), };
       const updatedMonths = [...months];
       updatedMonths[realMonthIndex].weeks.push(newWeek);
       updateMonths(updatedMonths);
@@ -44,17 +51,30 @@ export const MonthPlan = React.memo(
     useEffect(() => {
       if (measure) measure();
     }, [isCollapsed, measure]);
+
     const duplicateMonth = useCallback(() => {
       const originMonth = months[realMonthIndex];
+      if (!originMonth) return;
       const newMonth = _.cloneDeep(originMonth);
       delete newMonth._id;
-
-      newMonth.weeks.forEach(week => {
+      newMonth.localId = uuid();
+      newMonth.weeks.forEach((week) => {
         delete week._id;
-        week.days.forEach(day => {
+        week.localId = uuid();
+
+        week.days.forEach((day) => {
           delete day._id;
-          day.exercises?.forEach(ex => delete ex._id);
-          day.warmups?.forEach(w => delete w._id);
+          day.localId = uuid();
+
+          day.exercises?.forEach((ex) => {
+            delete ex._id;
+            ex.localId = uuid();
+          });
+
+          day.warmups?.forEach((w) => {
+            delete w._id;
+            w.localId = uuid();
+          });
         });
       });
 
@@ -71,7 +91,8 @@ export const MonthPlan = React.memo(
         measure?.();
         scrollToMonth?.(newMonthIndex);
       });
-    }, [months, realMonthIndex, updateMonths, setCurrentPage, measure]);
+    }, [months, realMonthIndex, updateMonths, setCurrentPage, measure, scrollToMonth]);
+
     const deleteMonth = useCallback(() => {
       const updatedMonths = [...months];
       updatedMonths.splice(monthIndex, 1);
@@ -107,8 +128,9 @@ export const MonthPlan = React.memo(
     const isFourWeeksOrLess = month.weeks.length <= 3;
     return (
       <div
-        key={monthIndex}
-        className={`my-4 border p-4 rounded bg-white shadow month-${monthIndex}`}
+      ref={ref}
+        key={month.localId}
+        className={`my-1 border p-2 rounded bg-white shadow month-${month.localId}`}
         style={{ backgroundColor: '#E8E8E8' }}
       >
         <div className="flex justify-between items-center mb-2 gap-3">
@@ -169,7 +191,7 @@ export const MonthPlan = React.memo(
           ) : null}
           {month.weeks.map((week, weekIndex) => (
             <WeekPlan
-              key={weekIndex}
+              key={`${month.localId}-${week.localId}`}
               monthIndex={realMonthIndex}
               weekIndex={weekIndex}
               week={week}
@@ -177,9 +199,14 @@ export const MonthPlan = React.memo(
               months={months}
               updateMonths={updateMonths}
               isFourWeeksOrLess={isFourWeeksOrLess}
+              expandedWeeks={expandedWeeks}
+              setExpandedWeeks={setExpandedWeeks}
+              monthLocalId={month.localId}
             />
+
           ))}
+
         </div>
       </div>
     );
-  });
+  }));

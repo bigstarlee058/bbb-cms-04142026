@@ -19,30 +19,9 @@ export const login = async (body: LoginRequest): Promise<any> => {
       password: body.password,
     })
     const token = response.data.token;
-    console.log(token);
     storage.setToken(token);
     toast.success('You have successfully logged in!');
     return { success: true, data: { email: response.data.user_email} };
-  } catch (error: any) {
-    return { success: false, data: error };
-  }
-}
-
-export const updateUserInfo = async (body: UpdateUserRequest): Promise<any> => {
-  try {
-    // if (auth.currentUser) {
-    //   if (body.newPassword && body.newPassword.length > 0) {
-    //     await updatePassword(auth.currentUser, body.newPassword);
-    //   }
-    //   await putUser(body);
-
-    //   return { 
-    //     success: true,
-    //     fullname: body.fullname,
-    //     email: body.email,
-    //     password: body.newPassword,
-    //   };
-    // }
   } catch (error: any) {
     return { success: false, data: error };
   }

@@ -16,11 +16,13 @@ interface Props {
   onScrollToWeek: (monthIndex: number, weekIndex: number) => void;
   onScrollToDay: (monthIndex: number, weekIndex: number, dayIndex: number) => void;
   startIndex: number;
-
+  onCollapseChange: () => void;
 }
-export const Navbar = React.memo(({ currentPage, months, perPage, allMonths, startIndex, setAllMonths, onScrollToMonth, onScrollToWeek, onScrollToDay }: Props) => {
+export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPage, allMonths, startIndex, setAllMonths, onScrollToMonth, onScrollToWeek, onScrollToDay }: Props) => {
 
   const [collapsed, setCollapsed] = useState<boolean[]>([]);
+  const [expandedWeeks, setExpandedWeeks] = useState<{ [key: string]: boolean }>({});
+
   const refs = useRef([]);
 
   useEffect(() => {
@@ -51,7 +53,12 @@ export const Navbar = React.memo(({ currentPage, months, perPage, allMonths, sta
     const newCollapsed = [...collapsed];
     newCollapsed[monthIndex] = !newCollapsed[monthIndex];
     setCollapsed(newCollapsed);
+
+    if (onCollapseChange) {
+      onCollapseChange();
+    }
   };
+
 
   const handleDragStart = (result) => {
     const { source } = result;
@@ -95,22 +102,34 @@ export const Navbar = React.memo(({ currentPage, months, perPage, allMonths, sta
       <DragDropContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <Droppable droppableId="navbar" type="month">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className="px-3 bg-gray-100">
+            <div {...provided.droppableProps} ref={provided.innerRef} className="bg-gray-100">
               {months.map((month, monthIndex) => {
                 const realMonthIndex = getRealIndex(monthIndex);
                 return (
                   <Draggable key={realMonthIndex} draggableId={`month-${realMonthIndex}`} index={monthIndex}>
                     {(provided) => (
-                      <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 rounded bg-white shadow">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div {...provided.dragHandleProps} className="w-8 h-8 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg">
+                      <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 rounded bg-white shadow w-full">
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center w-full">
+                            <div
+                              {...provided.dragHandleProps}
+                              className="w-8 h-8 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg"
+                            >
                               <FaGripVertical className="text-black" />
                             </div>
-                            <h2 className="text-md font-bold cursor-pointer" onClick={() => onScrollToMonth(getRealIndex(monthIndex))} >
-                              Month {(currentPage - 1) * perPage + monthIndex + 1} &nbsp;&nbsp;&nbsp; {month.title}
-                            </h2>
+                            <div
+                              className="cursor-pointer"
+                              onClick={() => onScrollToMonth(getRealIndex(monthIndex))}
+                            >
+                              <div className="text-sm font-semibold text-gray-800">
+                                Month {(currentPage - 1) * perPage + monthIndex + 1}
+                              </div>
+                              <div className="inline-block text-xs font-medium text-black">
+                                {month.title}
+                              </div>
+                            </div>
                           </div>
+
                           <div className="w-8 h-8 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg">
                             <Button
                               variant="danger"
@@ -136,39 +155,79 @@ export const Navbar = React.memo(({ currentPage, months, perPage, allMonths, sta
                         >
                           <Droppable droppableId={`month-${monthIndex}`} type="week">
                             {(provided) => (
-                              <div {...provided.droppableProps} ref={provided.innerRef} className="pl-8">
+                              <div {...provided.droppableProps} ref={provided.innerRef} className="pl-2">
                                 {month.weeks.length === 0 ? (
                                   <div className="text-gray-500">No weeks</div>
                                 ) : (
                                   month.weeks.map((week, weekIndex) => (
                                     <Draggable key={weekIndex} draggableId={`month-${monthIndex}-week-${weekIndex}`} index={weekIndex}>
                                       {(provided) => (
-                                        <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-200 rounded">
-                                          <div className="flex items-center mb-2">
-                                            <div {...provided.dragHandleProps} className="w-8 h-8 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg">
+                                        <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-200 rounded w-full">
+                                          <div className="flex items-center ">
+                                            <div {...provided.dragHandleProps} className="w-4 h-4 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg">
                                               <FaGripVertical className="text-black" />
                                             </div>
-                                            <span className="cursor-pointer" onClick={(e) => {
-                                              e.stopPropagation();
-                                              onScrollToWeek(getRealIndex(monthIndex), weekIndex);
-                                            }}>
-                                              Week {weekIndex + 1} &nbsp;&nbsp;&nbsp; {week.title}
-                                            </span>
+                                            <div
+                                              className="cursor-pointer"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                const key = `${monthIndex}-${weekIndex}`;
+                                                setExpandedWeeks(prev => ({
+                                                  ...prev,
+                                                  [key]: !prev[key],
+                                                }));
+                                                onScrollToWeek(getRealIndex(monthIndex), weekIndex);
+                                              }}
+                                            >
+                                              <div className="text-md font-semibold">
+                                                Week {weekIndex + 1}
+                                                {expandedWeeks[`${monthIndex}-${weekIndex}`] ? (
+                                                  <ChevronUpIcon className="inline-block h-3 w-3 ml-1" />
+                                                ) : (
+                                                  <ChevronDownIcon className="inline-block h-3 w-3 ml-1" />
+                                                )}
+                                              </div>
+                                              <div className="text-sm text-gray-600">{week.title}</div>
+                                            </div>
                                           </div>
                                           <div className="pl-12 min-h-[50px]">
                                             {week.days.length === 0 ? (
                                               <div className="text-gray-500">No days</div>
                                             ) : (
                                               week.days.map((day, dayIndex) => (
-                                                <div key={dayIndex} className="border p-2 my-2 bg-gray-300 rounded">
-                                                  <span className="cursor-pointer" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
+                                                <div
+                                                  style={{
+                                                    overflow: 'hidden',
+                                                    transition: 'height 0.3s ease',
+                                                    height: expandedWeeks[`${monthIndex}-${weekIndex}`] ? 'auto' : 0,
                                                   }}
-                                                  >
-                                                    Day {day.typeId} &nbsp;&nbsp;&nbsp; {day.title}
-                                                  </span>
+                                                  className=""
+                                                >
+                                                  {week.days.length === 0 ? (
+                                                    <div className="text-gray-500">No days</div>
+                                                  ) : (
+                                                    week.days.map((day, dayIndex) => (
+                                                      <div key={dayIndex} className="border p-2 bg-gray-300 rounded w-full">
+                                                        <span
+                                                          className="cursor-pointer w-full block"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
+                                                          }}
+                                                        >
+                                                          <div className="text-sm font-semibold text-gray-800">
+                                                            Day {day.typeId}
+                                                          </div>
+                                                          <div className="text-xs font-medium text-black w-full ">
+                                                            {day.title}
+                                                          </div>
+                                                        </span>
+
+                                                      </div>
+                                                    ))
+                                                  )}
                                                 </div>
+
                                               ))
                                             )}
                                           </div>

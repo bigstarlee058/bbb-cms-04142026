@@ -6,7 +6,7 @@ import { WeekDetail } from './WeekDetail';
 import { DayPlan } from './DayPlan';
 import { Day, Week, Month } from '@/types';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
-
+import { v4 as uuid } from 'uuid';
 import _ from 'lodash';
 interface Props {
   monthIndex: number;
@@ -16,7 +16,12 @@ interface Props {
   months: Month[];
   updateMonths: (months: Month[]) => void;
   isFourWeeksOrLess: boolean;
+  expandedWeeks: { [key: string]: boolean };
+  setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  monthLocalId: string;
+
 }
+
 
 const showAddDay = (days) => {
   let count = 0;
@@ -26,8 +31,29 @@ const showAddDay = (days) => {
   return count < 12; // 3 + 4 + 5 = 12 days split
 }
 
-const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updateMonths, isFourWeeksOrLess }: Props) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+const WeekPlanComponent = ({
+  monthIndex,
+  weekIndex,
+  week,
+  addWeek,
+  months,
+  updateMonths,
+  isFourWeeksOrLess,
+  expandedWeeks,
+  setExpandedWeeks,
+  monthLocalId
+}: Props) => {
+  const weekKey = `${monthLocalId}-${week.localId}`;
+
+  const isCollapsed = !(expandedWeeks[weekKey] ?? false);
+
+  const toggleCollapse = () => {
+    setExpandedWeeks((prev) => ({
+      ...prev,
+      [weekKey]: !prev[weekKey],
+    }));
+  };
+
 
   if (!months[monthIndex]?.weeks[weekIndex]) return null;
 
@@ -45,7 +71,7 @@ const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updat
       thumbnailTwo: null,
       thumbnailThree: null,
       formats: newFormats,
-
+      localId: uuid(),
       warmups: [],
       exercises: []
     };
@@ -55,21 +81,23 @@ const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updat
 
   const duplicateWeek = (monthIndex: number, weekIndex: number) => {
     const originWeek = months[monthIndex].weeks[weekIndex];
-    const newWeek = _.cloneDeep(originWeek);
-    delete newWeek._id;
-    newWeek.days.map((day) => {
-      delete day._id;
-      day.exercises.map((exercise) => {
-        delete exercise._id;
+    const newWeek = JSON.parse(JSON.stringify(originWeek));
+    newWeek.localId = uuid();
+    newWeek.days.forEach((day: any) => {
+      day.localId = uuid();
+      day.exercises.forEach((ex: any) => {
+        ex.localId = uuid();
       });
-      day.warmups.map((warmup) => {
-        delete warmup._id;
+      day.warmups.forEach((w: any) => {
+        w.localId = uuid();
       });
     });
+
     const updatedMonths = [...months];
     updatedMonths[monthIndex].weeks.splice(weekIndex + 1, 0, newWeek);
     updateMonths(updatedMonths);
   };
+
 
   const updateWeek = (monthIndex: number, weekIndex: number, updatedWeek: Week) => {
     const updatedMonths = [...months];
@@ -86,7 +114,7 @@ const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updat
   const reassignDayTypeIds = (deletedDayTypeId: number) => {
     const updatedMonths = [...months];
     const days = updatedMonths[monthIndex].weeks[weekIndex].days;
-    days.forEach((day, index) => {
+    days.forEach((day, _) => {
       if (day.typeId > deletedDayTypeId) day.typeId--;
     });
     updateMonths(updatedMonths);
@@ -95,15 +123,6 @@ const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updat
   const updateWeekTitle = (title) => {
     const updatedWeek = { ...week, title };
     updateWeek(monthIndex, weekIndex, updatedWeek);
-  };
-
-  const updateWeekRestday = (restdayId) => {
-    const updatedWeek = { ...week, restdayId };
-    updateWeek(monthIndex, weekIndex, updatedWeek);
-  };
-
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
   };
   const isSevenDays = showAddDay(week.days);
   return (
@@ -158,7 +177,7 @@ const WeekPlanComponent = ({ monthIndex, weekIndex, week, addWeek, months, updat
         ) : null}
         {week.days.map((day, dayIndex) => (
           <DayPlan
-            key={dayIndex}
+            key={day.localId}
             monthIndex={monthIndex}
             weekIndex={weekIndex}
             dayIndex={dayIndex}
