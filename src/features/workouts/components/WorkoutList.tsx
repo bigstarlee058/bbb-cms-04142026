@@ -189,21 +189,25 @@ export const WorkoutList = () => {
     );
   }
   return (
-    <>
-      <div className="flex justify-between sticky top-10">
-        {allMonths.length < 1 ? (
-          <Button variant="danger" onClick={handleAddMonth} startIcon={<PlusIcon className="h-4 w-4" />}>
-            Add Month
-          </Button>
-        ) : (
-          <span></span>
-        )}
-      </div>
+  <>
+    <div className="flex justify-between sticky top-10">
+      {allMonths.length < 1 ? (
+        <Button
+          variant="danger"
+          onClick={handleAddMonth}
+          startIcon={<PlusIcon className="h-4 w-4" />}
+        >
+          Add Month
+        </Button>
+      ) : (
+        <span></span>
+      )}
+    </div>
 
-      <div className="flex gap-4 h-[calc(100vh)]">
-
+    <div className="flex flex-col h-full">
+      <div className="flex gap-4">
         <div className="w-1/4 max-h-full overflow-auto">
-          {allMonths.length > 0 ? (
+          {allMonths.length > 0 && (
             <Navbar
               currentPage={currentPage}
               months={monthsForPage}
@@ -221,15 +225,12 @@ export const WorkoutList = () => {
               onScrollToWeek={scrollToWeek}
               onScrollToDay={scrollToDay}
             />
-
-          ) : null}
+          )}
         </div>
+
         <div className="w-3/4 h-full overflow-auto">
           <div className="h-full w-full">
-            <div
-              ref={parentRef}
-              className="h-full overflow-auto w-full"
-            >
+            <div ref={parentRef} className="h-full overflow-auto w-full">
               <div
                 style={{
                   height: rowVirtualizer.getTotalSize(),
@@ -255,7 +256,7 @@ export const WorkoutList = () => {
                       }}
                     >
                       <MonthPlan
-                        ref={(el) => monthRefs.current[virtualRow.index] = el}
+                        ref={(el) => (monthRefs.current[virtualRow.index] = el)}
                         monthIndex={virtualRow.index}
                         month={month}
                         scrollToMonth={scrollToMonth}
@@ -272,7 +273,6 @@ export const WorkoutList = () => {
                             [month.localId]: !prev[month.localId],
                           }))
                         }
-
                         measure={rowVirtualizer.measure}
                         setCurrentPage={setCurrentPage}
                         addMonth={handleAddMonth}
@@ -289,19 +289,21 @@ export const WorkoutList = () => {
               </div>
             </div>
           </div>
-
-          {allMonths.length > filters.perPage && (
-            <div className="flex justify-center mt-6 px-4">
-              <Pagination
-                currentPage={currentPage}
-                lastPage={Math.ceil(allMonths.length / filters.perPage)}
-                maxLength={7}
-                setCurrentPage={setCurrentPage}
-              />
-            </div>
-          )}
         </div>
       </div>
-    </>
-  );
+
+      {allMonths.length > filters.perPage && (
+        <div className="flex justify-center mt-4">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={Math.ceil(allMonths.length / filters.perPage)}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
+    </div>
+  </>
+);
+
 };

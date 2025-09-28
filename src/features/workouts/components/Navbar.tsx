@@ -48,7 +48,9 @@ export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPa
       observer.disconnect();
     };
   }, [allMonths, collapsed]);
-
+  useEffect(() => {
+    setCollapsed(months.map(() => true));
+  }, [months]);
   const toggleCollapse = (monthIndex) => {
     const newCollapsed = [...collapsed];
     newCollapsed[monthIndex] = !newCollapsed[monthIndex];
