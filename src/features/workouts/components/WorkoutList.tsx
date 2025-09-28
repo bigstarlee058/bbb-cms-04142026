@@ -213,7 +213,9 @@ export const WorkoutList = () => {
               months={monthsForPage}
               perPage={filters.perPage}
               allMonths={allMonths}
-              onCollapseChange={handleCollapseChange}
+              onCollapseChange={() => {
+                    requestAnimationFrame(() => rowVirtualizer. measure());
+              }}
               setAllMonths={(months) => {
                 setAllMonths(months);
                 onSetMonths(months);
@@ -245,7 +247,9 @@ export const WorkoutList = () => {
                       key={month.localId}
                       data-index={virtualRow.index}
                       ref={(el) => {
-                        if (el) rowVirtualizer.measureElement(el);
+                         if (!el) return;
+                            rowVirtualizer.measureElement(el);
+                          monthRefs.current[virtualRow.index] = el;
                       }}
                       style={{
                         position: 'absolute',

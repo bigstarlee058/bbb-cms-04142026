@@ -48,16 +48,14 @@ export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPa
       observer.disconnect();
     };
   }, [allMonths, collapsed]);
-  useEffect(() => {
-    setCollapsed(months.map(() => true));
-  }, [months]);
+
   const toggleCollapse = (monthIndex) => {
     const newCollapsed = [...collapsed];
     newCollapsed[monthIndex] = !newCollapsed[monthIndex];
     setCollapsed(newCollapsed);
 
     if (onCollapseChange) {
-      onCollapseChange();
+      requestAnimationFrame(() => onCollapseChange());
     }
   };
 
@@ -106,9 +104,8 @@ export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPa
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="bg-gray-100">
               {months.map((month, monthIndex) => {
-                const realMonthIndex = getRealIndex(monthIndex);
                 return (
-                  <Draggable key={realMonthIndex} draggableId={`month-${realMonthIndex}`} index={monthIndex}>
+                  <Draggable key={month.localId} draggableId={`month-${month.localId}`} index={monthIndex}>
                     {(provided) => (
                       <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 rounded bg-white shadow w-full">
                         <div className="flex items-center justify-between w-full">
@@ -121,7 +118,7 @@ export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPa
                             </div>
                             <div
                               className="cursor-pointer"
-                              onClick={() => onScrollToMonth(getRealIndex(monthIndex))}
+                              onClick={() => onScrollToMonth(monthIndex)}
                             >
                               <div className="text-sm font-semibold text-gray-800">
                                 Month {(currentPage - 1) * perPage + monthIndex + 1}
@@ -155,14 +152,15 @@ export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPa
                             transition: 'height 0.3s ease',
                           }}
                         >
-                          <Droppable droppableId={`month-${monthIndex}`} type="week">
+                          <Droppable droppableId={`month-${month.localId}`} type="week">
                             {(provided) => (
                               <div {...provided.droppableProps} ref={provided.innerRef} className="pl-2">
                                 {month.weeks.length === 0 ? (
                                   <div className="text-gray-500">No weeks</div>
                                 ) : (
                                   month.weeks.map((week, weekIndex) => (
-                                    <Draggable key={weekIndex} draggableId={`month-${monthIndex}-week-${weekIndex}`} index={weekIndex}>
+
+                                    <Draggable key={week.localId} draggableId={`month-${month.localId}-week-${week.localId}`} index={weekIndex}>
                                       {(provided) => (
                                         <div ref={provided.innerRef} {...provided.draggableProps} className="border p-2 my-2 bg-gray-200 rounded w-full">
                                           <div className="flex items-center ">
@@ -196,42 +194,37 @@ export const Navbar = React.memo(({ currentPage, onCollapseChange, months, perPa
                                             {week.days.length === 0 ? (
                                               <div className="text-gray-500">No days</div>
                                             ) : (
-                                              week.days.map((day, dayIndex) => (
-                                                <div
-                                                  style={{
-                                                    overflow: 'hidden',
-                                                    transition: 'height 0.3s ease',
-                                                    height: expandedWeeks[`${monthIndex}-${weekIndex}`] ? 'auto' : 0,
-                                                  }}
-                                                  className=""
-                                                >
-                                                  {week.days.length === 0 ? (
-                                                    <div className="text-gray-500">No days</div>
-                                                  ) : (
-                                                    week.days.map((day, dayIndex) => (
-                                                      <div key={dayIndex} className="border p-2 bg-gray-300 rounded w-full">
-                                                        <span
-                                                          className="cursor-pointer w-full block"
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
-                                                          }}
-                                                        >
-                                                          <div className="text-sm font-semibold text-gray-800">
-                                                            Day {day.typeId}
-                                                          </div>
-                                                          <div className="text-xs font-medium text-black w-full ">
-                                                            {day.title}
-                                                          </div>
-                                                        </span>
-
+                                              <div
+                                                style={{
+                                                  overflow: 'hidden',
+                                                  transition: 'height 0.3s ease',
+                                                  height: expandedWeeks[`${monthIndex}-${weekIndex}`] ? 'auto' : 0,
+                                                }}
+                                              >
+                                                {week.days.map((day, dayIndex) => (
+                                                  <div
+                                                    key={day.localId}
+                                                    className="border p-2 bg-gray-300 rounded w-full"
+                                                  >
+                                                    <span
+                                                      className="cursor-pointer w-full block"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
+                                                      }}
+                                                    >
+                                                      <div className="text-sm font-semibold text-gray-800">
+                                                        Day {day.typeId}
                                                       </div>
-                                                    ))
-                                                  )}
-                                                </div>
-
-                                              ))
+                                                      <div className="text-xs font-medium text-black w-full">
+                                                        {day.title}
+                                                      </div>
+                                                    </span>
+                                                  </div>
+                                                ))}
+                                              </div>
                                             )}
+
                                           </div>
                                         </div>
                                       )}
