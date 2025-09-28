@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkbbb_cms=self.webpackChunkbbb_cms||[]).push([[309],{2309:(s,e,p)=>{p.r(e),p.d(e,{PopupWorkoutRoutes:()=>t});var u=p(1030),b=p(8246),o=p(7929);const t=()=>(0,o.jsx)(u.BV,{children:(0,o.jsx)(u.qh,{path:"popupWorkout",element:(0,o.jsx)(b.a,{})})})}}]);
-//# sourceMappingURL=309.c5a0f5bd.chunk.js.map

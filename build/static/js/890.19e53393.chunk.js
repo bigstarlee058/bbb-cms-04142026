@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkbbb_cms=self.webpackChunkbbb_cms||[]).push([[890],{6890:(e,s,c)=>{c.r(s),c.d(s,{ScreensRoutes:()=>h});var b=c(1030),n=c(7979),r=c(7929);const h=()=>(0,r.jsx)(b.BV,{children:(0,r.jsx)(b.qh,{path:"backgroundScreens",element:(0,r.jsx)(n.K,{})})})}}]);
-//# sourceMappingURL=890.19e53393.chunk.js.map
