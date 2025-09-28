@@ -348,13 +348,13 @@ export interface Day extends WorkoutsBaseEntity {
   thumbnailTwo: any;
   thumbnailThree: any;
   formats: string[];
-  localId: string;
+  localId?: string;
   warmups: DayWarmup[];
   exercises: DayExercise[];
   circuits?: any[];
 }
 export interface ExtraExercise {
-  _id: string;
+  _id?: string;
   sets: number;
   reps: number;
   weight: number;
@@ -373,7 +373,7 @@ export interface DayExercise extends WorkoutsBaseEntity {
   formats?: string[];
   status: string;
   extra: ExtraExercise[];
-  localId: string;
+  localId?: string;
 }
 export interface DayWarmup extends WorkoutsBaseEntity {
   typeId: number;
