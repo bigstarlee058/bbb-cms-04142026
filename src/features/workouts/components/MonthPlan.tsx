@@ -32,12 +32,14 @@ interface Props {
   perPage: number;
   expandedWeeks: { [key: string]: boolean };
   setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  expandedDays: { [key: string]: boolean };
+  setExpandedDays: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
 }
 export const MonthPlan = React.memo(
   React.forwardRef<HTMLDivElement, Props>(({
     monthIndex, month, months, setCurrentPage, startIndex, currentPage,
     perPage, addMonth, scrollToMonth, updateMonths, measure,
-    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks
+    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks,expandedDays,setExpandedDays
   }, ref) => {
     const realMonthIndex = startIndex + monthIndex;
 
@@ -201,6 +203,8 @@ export const MonthPlan = React.memo(
               isFourWeeksOrLess={isFourWeeksOrLess}
               expandedWeeks={expandedWeeks}
               setExpandedWeeks={setExpandedWeeks}
+              expandedDays={expandedDays}
+              setExpandedDays={setExpandedDays}
               monthLocalId={month.localId}
             />
 

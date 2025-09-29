@@ -18,6 +18,8 @@ interface Props {
   isFourWeeksOrLess: boolean;
   expandedWeeks: { [key: string]: boolean };
   setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  expandedDays: { [key: string]: boolean };
+  setExpandedDays: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   monthLocalId: string;
 
 }
@@ -41,6 +43,7 @@ const WeekPlanComponent = ({
   isFourWeeksOrLess,
   expandedWeeks,
   setExpandedWeeks,
+  expandedDays,setExpandedDays,
   monthLocalId
 }: Props) => {
   const weekKey = `${monthLocalId}-${week.localId}`;
@@ -126,7 +129,7 @@ const WeekPlanComponent = ({
   };
   const isSevenDays = showAddDay(week.days);
   return (
-    <div className={`my-4 border p-4 rounded shadow week-${weekIndex}`} style={{ backgroundColor: '#CDBDDC' }}>
+    <div className={`my-4 border p-4 rounded shadow week-${week.localId}`} style={{ backgroundColor: '#CDBDDC' }}>
       <div className="flex mb-2 justify-between items-center">
         <CustomTitle type={'WEEK'} index={weekIndex + 1} customTitle={week.title} updateFunction={updateWeekTitle} />
         <div className="flex gap-3">
@@ -186,6 +189,8 @@ const WeekPlanComponent = ({
             reassignDayTypeIds={reassignDayTypeIds}
             months={months}
             updateMonths={updateMonths}
+            setExpandedDays={setExpandedDays}
+            expandedDays={expandedDays}
             isSevenDays={isSevenDays}
             isWeekCollapsed={isCollapsed}
           />

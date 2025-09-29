@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
 import { Button, Spinner } from '@/components/Elements';
 import { PlusIcon } from '@heroicons/react/outline';
 import { Navbar } from './Navbar';
@@ -22,6 +22,7 @@ export const WorkoutList = () => {
   const monthRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [expandedMonths, setExpandedMonths] = useState<{ [key: string]: boolean }>({});
   const [expandedWeeks, setExpandedWeeks] = useState<{ [key: string]: boolean }>({});
+  const [expandedDays, setExpandedDays] = useState<{ [key: string]: boolean }>({});
   const paginatedMonths = useMemo(() => {
     const startIndex = (currentPage - 1) * filters.perPage;
     const endIndex = startIndex + filters.perPage;
@@ -31,8 +32,8 @@ export const WorkoutList = () => {
   const rowVirtualizer = useVirtualizer({
     count: paginatedMonths.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 500, 
-    measureElement: (el) => el.getBoundingClientRect().height,
+    estimateSize: () => 300,
+    overscan: 5,
   });
 
   const { onSetMonths } = useWorkoutContext();
@@ -102,7 +103,9 @@ export const WorkoutList = () => {
       const newPage = Math.floor(newMonthIndex / filters.perPage) + 1;
       setCurrentPage(newPage);
       requestAnimationFrame(() => {
-        rowVirtualizer.measure();
+        monthRefs.current.forEach((el) => {
+          if (el) rowVirtualizer.measureElement(el);
+        });
         scrollToMonth(newMonthIndex);
 
       });
@@ -110,69 +113,63 @@ export const WorkoutList = () => {
     });
 
   };
-
   const scrollToMonth = useCallback((monthIndex: number) => {
+    rowVirtualizer.scrollToIndex(monthIndex, { align: "start" });
+  }, [rowVirtualizer]);
+  const scrollToWeekSafe = async (monthIndex: number, weekLocalId: string) => {
     if (!parentRef.current) return;
-    monthRefs.current.forEach((el) => {
-      if (el) rowVirtualizer.measureElement(el);
-    });
-    requestAnimationFrame(() => {
-      const monthEl = monthRefs.current[monthIndex];
-
-      if (monthEl) {
-        parentRef.current.scrollTo({
-          top: monthEl.offsetTop,
-          behavior: 'smooth',
-        });
-      } else {
-        const item = rowVirtualizer.getVirtualItems().find(v => v.index === monthIndex);
-        if (item) {
-          parentRef.current.scrollTo({
-            top: item.start,
-            behavior: 'smooth',
-          });
-        } else {
-          parentRef.current.scrollTo({
-            top: monthIndex * 500,
-            behavior: 'smooth',
-          });
-        }
-      }
-    });
-  }, [rowVirtualizer]);
-
-  const scrollToWeek = useCallback((monthIndex, weekIndex) => {
-    const item = rowVirtualizer.getVirtualItems().find((v) => v.index === monthIndex);
-    if (item && parentRef.current) {
-      parentRef.current.scrollTo({ top: item.start, behavior: 'smooth' });
-      requestAnimationFrame(() => {
-        rowVirtualizer.measure();
-        const weekElement = parentRef.current?.querySelector(`.month-${monthIndex} .week-${weekIndex}`);
-        weekElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const month = allMonths[monthIndex];
+    if (!expandedMonths[month.localId]) {
+      setExpandedMonths(prev => ({ ...prev, [month.localId]: true }));
+      await new Promise(requestAnimationFrame);
+      monthRefs.current.forEach((el) => {
+        if (el) rowVirtualizer.measureElement(el);
       });
-    } else if (parentRef.current) {
-      parentRef.current.scrollTo({ top: monthIndex * 500, behavior: 'smooth' });
     }
-  }, [rowVirtualizer]);
-  const handleCollapseChange = () => {
-    monthRefs.current.forEach((el) => {
-      if (el) rowVirtualizer.measureElement(el);
+
+    await new Promise(requestAnimationFrame);
+
+    const monthEl = monthRefs.current[monthIndex];
+    if (!monthEl) return;
+
+    const weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
+    if (!weekEl) return;
+
+    parentRef.current.scrollTo({
+      top: weekEl.getBoundingClientRect().top - parentRef.current.getBoundingClientRect().top + parentRef.current.scrollTop,
+      behavior: "smooth",
     });
   };
+  const scrollToDay = async (monthIndex: number, weekLocalId: string, dayLocalId: string) => {
+    if (!parentRef.current) return;
 
-  const scrollToDay = useCallback((monthIndex, weekIndex, dayIndex) => {
-    const item = rowVirtualizer.getVirtualItems().find((v) => v.index === monthIndex);
-    if (item && parentRef.current) {
-      parentRef.current.scrollTo({ top: item.start, behavior: 'smooth' });
-      requestAnimationFrame(() => {
-        rowVirtualizer.measure();
-        const dayElement = parentRef.current?.querySelector(`.month-${monthIndex} .week-${weekIndex} .day-${dayIndex}`);
-        dayElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    } else if (parentRef.current) {
-      parentRef.current.scrollTo({ top: monthIndex * 500, behavior: 'smooth' });
-    }
-  }, [rowVirtualizer]);
+    const month = allMonths[monthIndex];
+    if (!expandedMonths[month.localId]) return;
+    if (!expandedWeeks[weekLocalId]) return;
+
+    await new Promise(requestAnimationFrame);
+
+    const monthEl = monthRefs.current[monthIndex];
+    if (!monthEl) return;
+
+    const dayEl = monthEl.querySelector(`.day-${dayLocalId}`) as HTMLElement;
+    if (!dayEl) return;
+
+    parentRef.current.scrollTo({
+      top:
+        dayEl.getBoundingClientRect().top -
+        parentRef.current.getBoundingClientRect().top +
+        parentRef.current.scrollTop,
+      behavior: "smooth",
+    });
+  };
+  useLayoutEffect(() => {
+    monthRefs.current.forEach((el) => {
+      if (el) rowVirtualizer.measureElement(el);
+    });
+  }, [paginatedMonths, rowVirtualizer]);
+
+
   if (loadingMonths || isLoading) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -189,125 +186,133 @@ export const WorkoutList = () => {
     );
   }
   return (
-  <>
-    <div className="flex justify-between sticky top-10">
-      {allMonths.length < 1 ? (
-        <Button
-          variant="danger"
-          onClick={handleAddMonth}
-          startIcon={<PlusIcon className="h-4 w-4" />}
-        >
-          Add Month
-        </Button>
-      ) : (
-        <span></span>
-      )}
-    </div>
+    <>
+      <div className="flex justify-between sticky top-10">
+        {allMonths.length < 1 ? (
+          <Button
+            variant="danger"
+            onClick={handleAddMonth}
+            startIcon={<PlusIcon className="h-4 w-4" />}
+          >
+            Add Month
+          </Button>
+        ) : (
+          <span></span>
+        )}
+      </div>
 
-    <div className="flex flex-col h-full">
-      <div className="flex gap-4">
-        <div className="w-1/4 max-h-full overflow-auto">
-          {allMonths.length > 0 && (
-            <Navbar
-              currentPage={currentPage}
-              months={monthsForPage}
-              perPage={filters.perPage}
-              allMonths={allMonths}
-              onCollapseChange={() => {
-                    requestAnimationFrame(() => rowVirtualizer. measure());
-              }}
-              setAllMonths={(months) => {
-                setAllMonths(months);
-                onSetMonths(months);
-                const lastPage = Math.ceil(months.length / filters.perPage) || 1;
-                if (currentPage > lastPage) setCurrentPage(lastPage);
-              }}
-              startIndex={startIndex}
-              onScrollToMonth={scrollToMonth}
-              onScrollToWeek={scrollToWeek}
-              onScrollToDay={scrollToDay}
-            />
-          )}
-        </div>
-
-        <div className="w-3/4 h-full overflow-auto">
-          <div className="h-full w-full">
-            <div ref={parentRef} className="h-full overflow-auto w-full">
-              <div
-                style={{
-                  height: rowVirtualizer.getTotalSize(),
-                  position: 'relative',
-                  width: '100%',
+      <div className="flex flex-col h-full">
+        <div className="flex gap-4">
+          <div className="w-1/4 h-[450px] overflow-auto">
+            {allMonths.length > 0 && (
+              <Navbar
+                currentPage={currentPage}
+                months={monthsForPage}
+                perPage={filters.perPage}
+                allMonths={allMonths}
+                onCollapseChange={() => {
+                  requestAnimationFrame(() => rowVirtualizer.measure());
                 }}
-              >
-                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                  const month = paginatedMonths[virtualRow.index];
-                  return (
-                    <div
-                      key={month.localId}
-                      data-index={virtualRow.index}
-                      ref={(el) => {
-                         if (!el) return;
-                            rowVirtualizer.measureElement(el);
+                setAllMonths={(months) => {
+                  setAllMonths(months);
+                  onSetMonths(months);
+                  const lastPage = Math.ceil(months.length / filters.perPage) || 1;
+                  if (currentPage > lastPage) setCurrentPage(lastPage);
+                }}
+                startIndex={startIndex}
+                onScrollToMonth={scrollToMonth}
+                onScrollToWeek={(monthIndex, weekIndex) => {
+                  const weekLocalId = allMonths[monthIndex]?.weeks[weekIndex]?.localId;
+                  if (weekLocalId) scrollToWeekSafe(monthIndex, weekLocalId);
+                }}
+                onScrollToDay={(monthIndex, weekIndex, dayIndex) => {
+                  const weekLocalId = allMonths[monthIndex]?.weeks[weekIndex]?.localId;
+                  const dayLocalId = allMonths[monthIndex]?.weeks[weekIndex]?.days[dayIndex]?.localId;
+                  if (weekLocalId && dayLocalId) scrollToDay(monthIndex, weekLocalId, dayLocalId);
+                }}
+              />
+            )}
+          </div>
+
+          <div className="w-3/4 h-full overflow-auto">
+            <div className="h-full w-full">
+              <div ref={parentRef} className="h-[450px] overflow-auto w-full">
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    position: 'relative',
+                    width: '100%',
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const month = paginatedMonths[virtualRow.index];
+                    return (
+                      <div
+                        key={month.localId}
+                        data-index={virtualRow.index}
+                        ref={(el) => {
+                          if (!el) return;
                           monthRefs.current[virtualRow.index] = el;
-                      }}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        transform: `translateY(${virtualRow.start}px)`,
-                      }}
-                    >
-                      <MonthPlan
-                        ref={(el) => (monthRefs.current[virtualRow.index] = el)}
-                        monthIndex={virtualRow.index}
-                        month={month}
-                        scrollToMonth={scrollToMonth}
-                        perPage={filters.perPage}
-                        currentPage={currentPage}
-                        startIndex={startIndex}
-                        months={allMonths}
-                        isCollapsed={!expandedMonths[month.localId]}
-                        expandedWeeks={expandedWeeks}
-                        setExpandedWeeks={setExpandedWeeks}
-                        toggleCollapse={() =>
-                          setExpandedMonths((prev) => ({
-                            ...prev,
-                            [month.localId]: !prev[month.localId],
-                          }))
-                        }
-                        measure={rowVirtualizer.measure}
-                        setCurrentPage={setCurrentPage}
-                        addMonth={handleAddMonth}
-                        updateMonths={(months) => {
-                          setAllMonths(months);
-                          onSetMonths(months);
-                          const lastPage = Math.ceil(months.length / filters.perPage) || 1;
-                          if (currentPage > lastPage) setCurrentPage(lastPage);
                         }}
-                      />
-                    </div>
-                  );
-                })}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          transform: `translateY(${virtualRow.start}px)`,
+                        }}
+                      >
+                        <MonthPlan
+                          ref={(el) => (monthRefs.current[virtualRow.index] = el)}
+                          monthIndex={virtualRow.index}
+                          month={month}
+                          scrollToMonth={scrollToMonth}
+                          perPage={filters.perPage}
+                          currentPage={currentPage}
+                          startIndex={startIndex}
+                          months={allMonths}
+                          isCollapsed={!expandedMonths[month.localId]}
+                          expandedWeeks={expandedWeeks}
+                          setExpandedWeeks={setExpandedWeeks}
+                          expandedDays={expandedDays}
+                          setExpandedDays={setExpandedDays}
+                          toggleCollapse={() =>
+                            setExpandedMonths((prev) => ({
+                              ...prev,
+                              [month.localId]: !prev[month.localId],
+                            }))
+                          }
+                          measure={rowVirtualizer.measure}
+                          setCurrentPage={setCurrentPage}
+                          addMonth={handleAddMonth}
+                          updateMonths={(months) => {
+                            setAllMonths(months);
+                            onSetMonths(months);
+                            const lastPage = Math.ceil(months.length / filters.perPage) || 1;
+                            if (currentPage > lastPage) setCurrentPage(lastPage);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {allMonths.length > filters.perPage && (
-        <div className="flex justify-center mt-4">
-          <Pagination
-            currentPage={currentPage}
-            lastPage={Math.ceil(allMonths.length / filters.perPage)}
-            maxLength={7}
-            setCurrentPage={setCurrentPage}
-          />
-        </div>
-      )}
-    </div>
-  </>
-);
+        {allMonths.length > filters.perPage && (
+          <div className="flex justify-center mt-4">
+            <Pagination
+              currentPage={currentPage}
+              lastPage={Math.ceil(allMonths.length / filters.perPage)}
+              maxLength={7}
+              setCurrentPage={setCurrentPage}
+            />
+          </div>
+        )}
+      </div>
+    </>
+  );
 
 };

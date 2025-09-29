@@ -24,6 +24,8 @@ interface Props {
   isPumpDay?: boolean;
   updateDays?: (days: any[]) => void;
   days?: any[];
+  expandedDays?: { [key: string]: boolean };
+  setExpandedDays?: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
 }
 const DayPlanComponent = ({
   monthIndex,
@@ -38,16 +40,15 @@ const DayPlanComponent = ({
   isWeekCollapsed,
   isPumpDay = false,
   updateDays = (_val: Day[]) => {},
-  days = []
+  days = [],
+  setExpandedDays,
+  expandedDays
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const dayKey = `${monthIndex}-${weekIndex}-${day.localId}`;
+
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
 
   if (!isPumpDay && !months[monthIndex]?.weeks[weekIndex]?.days[dayIndex]) return null;
-
-  useEffect(() => {
-    if (!isPumpDay && isWeekCollapsed) setIsCollapsed(true);
-  }, [isWeekCollapsed]);
 
   const addExercise = (
     monthIndex: number,
@@ -263,10 +264,18 @@ const DayPlanComponent = ({
     const updatedDay = { ...day, title };
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
+  console.log(dayKey)
+const isCollapsed = isWeekCollapsed || !(expandedDays?.[dayKey] ?? true);
+const toggleCollapse = React.useCallback(() => {
+  if (!setExpandedDays) return;
+  setExpandedDays(prev => ({
+    ...prev,
+    [dayKey]: !(prev[dayKey] ?? true),
+  }));
+}, [dayKey, setExpandedDays]);
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+
+
 
   const getNextFormat = () => {
     const allFormats = ['3', '4', '5'];
@@ -304,7 +313,7 @@ const DayPlanComponent = ({
 
   return (
     <>
-      <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${dayIndex}`} style={{ backgroundColor: '#EAC0AB' }}>
+      <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${day.localId}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
           <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay />
           <div className="flex gap-3">
