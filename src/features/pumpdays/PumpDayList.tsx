@@ -82,6 +82,8 @@ export const PumpDayList = () => {
             onSetDays(val);
             setDays(val);
           }}
+          setExpandedDays={()=>{}}
+          expandedDays={0}
           days={days}
         />
       ))}

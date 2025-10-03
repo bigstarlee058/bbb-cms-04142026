@@ -112,3 +112,38 @@ export const fetchUserWorkout = async (userId: string) => {
     return Promise.reject(error);
   }
 };
+export const updateUserSubscription = async ({
+  userId,
+  subscription,
+}: {
+  userId: string;
+  subscription: {
+    user_subscription_status: string;
+    subscription_type: string;
+    price: string;
+    purchase_date: string | null;
+    end_date: string | null;
+  };
+}) => {
+  try {
+    const payload = {
+      ...subscription,
+      userId,
+    };
+
+    const result = (await axios.put('/users/manage_subscription', payload)) as ResponseMessage;
+    if (result.result === true) {
+      queryClient.invalidateQueries(['get-user', userId]);
+      queryClient.invalidateQueries({ queryKey: ['get-users'] }); // 👈 refresh users list
+      return 'Subscription updated successfully.';
+    }
+
+    return result.message;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err?.response?.data?.message || err.message || 'Failed to update subscription.',
+    };
+    return Promise.reject(error);
+  }
+};

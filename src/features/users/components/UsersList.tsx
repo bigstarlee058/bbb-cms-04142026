@@ -8,7 +8,7 @@ import Pagination from '@/components/Elements/Pagination';
 import { useEffect, useState } from 'react';
 import { useFilteringStore } from '@/stores/filter';
 import { UserDetail } from '../UserDetail';
-
+import { ManageSubscription } from './ManageSubscription';
 export const UsersList = () => {
   const { search, sortBy } = useFilteringStore();
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +20,7 @@ export const UsersList = () => {
     sortBy: undefined,
   });
 
-  const { data, isLoading, isFetching, refetch } = useQuery(
+  const { data, isLoading, isFetching, } = useQuery(
     ['get-users', filters],
     () => fetchUsers(filters),
     { keepPreviousData: true }
@@ -100,6 +100,63 @@ export const UsersList = () => {
               return <span>{formatDate(createdAt)}</span>;
             },
           },
+          {
+            title: 'Subscription',
+            field: 'subscription',
+            Cell({ entry }) {
+              const { subscription, _id, name, email } = entry;
+              const currentType: 'free' | 'monthly' | 'yearly' = (() => {
+                const type = subscription?.subscription_type || '';
+                if (type.toLowerCase().includes('month')) return 'monthly';
+                if (type.toLowerCase().includes('year')) return 'yearly';
+                return 'free';
+              })();
+
+              const [subscriptionType, setSubscriptionType] = useState(currentType);
+              const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
+
+              const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+                const newValue = e.target.value as 'free' | 'monthly' | 'yearly';
+                setSubscriptionType(newValue);
+                if (newValue !== currentType) {
+                  setShowSubscriptionPopup(true);
+                }
+              };
+
+              return (
+                <>
+                  <select
+                    value={subscriptionType}
+                    onChange={handleChange}
+                    className="border rounded p-1"
+                  >
+                    <option value="free">Free</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+
+                  {showSubscriptionPopup && (
+                    <ManageSubscription
+                      id={_id}
+                      name={name}
+                      email={email}
+                      onClose={() => {
+                        setShowSubscriptionPopup(false);
+                        setSubscriptionType(currentType);
+                      }}
+                      currentSubscription={{
+                        subscription_type: currentType,
+                        price: subscription?.price,
+                        purchase_date: subscription?.purchase_date,
+                        end_date: subscription?.end_date,
+                      }}
+                    />
+                  )}
+                </>
+              );
+            },
+          }
+          ,
           {
             title: '',
             field: '_id',
