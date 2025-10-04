@@ -116,11 +116,11 @@ export const UsersList = () => {
               const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
               const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-                const newValue = e.target.value as 'free' | 'monthly' | 'yearly';
-                setSubscriptionType(newValue);
-                if (newValue !== currentType) {
+                const newValue = e.target.value as 'current' | 'change';
+                if (newValue === 'change') {
                   setShowSubscriptionPopup(true);
                 }
+                setSubscriptionType(currentType);
               };
 
               return (
@@ -130,9 +130,8 @@ export const UsersList = () => {
                     onChange={handleChange}
                     className="border rounded p-1"
                   >
-                    <option value="free">Free</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
+                    <option value={currentType}>{currentType.charAt(0).toUpperCase() + currentType.slice(1)}</option>
+                    <option value="change">Change</option>
                   </select>
 
                   {showSubscriptionPopup && (
@@ -140,10 +139,7 @@ export const UsersList = () => {
                       id={_id}
                       name={name}
                       email={email}
-                      onClose={() => {
-                        setShowSubscriptionPopup(false);
-                        setSubscriptionType(currentType);
-                      }}
+                      onClose={() => setShowSubscriptionPopup(false)}
                       currentSubscription={{
                         subscription_type: currentType,
                         price: subscription?.price,
