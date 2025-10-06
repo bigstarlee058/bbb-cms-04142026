@@ -22,7 +22,7 @@ interface Props {
   months: Month[];
   setCurrentPage?: (page: number) => void;
   addMonth: () => void;
-  updateMonths: (months: Month[]) => void;
+  updateMonths: (months: Month[], options?: { syncPage?: boolean; skipMeasure?: boolean }) => void;
   measure: () => void;
   toggleCollapse: () => void;
   isCollapsed: boolean;
@@ -34,12 +34,17 @@ interface Props {
   setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   expandedDays: { [key: string]: boolean };
   setExpandedDays: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
+  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
+  onDuplicateMonth?: (realMonthIndex: number) => void;
 }
 export const MonthPlan = React.memo(
   React.forwardRef<HTMLDivElement, Props>(({
     monthIndex, month, months, setCurrentPage, startIndex, currentPage,
     perPage, addMonth, scrollToMonth, updateMonths, measure,
-    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks,expandedDays,setExpandedDays
+    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks, expandedDays, setExpandedDays, 
+    scrollToWeek, onScrollToDay,
+    onDuplicateMonth
   }, ref) => {
     const realMonthIndex = startIndex + monthIndex;
 
@@ -49,56 +54,14 @@ export const MonthPlan = React.memo(
       updatedMonths[realMonthIndex].weeks.push(newWeek);
       updateMonths(updatedMonths);
     }, [months, realMonthIndex, updateMonths]);
-
     useEffect(() => {
-      if (measure) measure();
-    }, [isCollapsed, measure]);
-
-    const duplicateMonth = useCallback(() => {
-      const originMonth = months[realMonthIndex];
-      if (!originMonth) return;
-      const newMonth = _.cloneDeep(originMonth);
-      delete newMonth._id;
-      newMonth.localId = uuid();
-      newMonth.weeks.forEach((week) => {
-        delete week._id;
-        week.localId = uuid();
-
-        week.days.forEach((day) => {
-          delete day._id;
-          day.localId = uuid();
-
-          day.exercises?.forEach((ex) => {
-            delete ex._id;
-            ex.localId = uuid();
-          });
-
-          day.warmups?.forEach((w) => {
-            delete w._id;
-            w.localId = uuid();
-          });
-        });
-      });
-
-      const updatedMonths = [...months];
-      updatedMonths.splice(realMonthIndex + 1, 0, newMonth);
-      updateMonths(updatedMonths);
-
-      const newMonthIndex = realMonthIndex + 1;
-      const newPage = Math.floor(newMonthIndex / 6) + 1;
-
-      if (setCurrentPage) setCurrentPage(newPage);
-
       requestAnimationFrame(() => {
         measure?.();
-        scrollToMonth?.(newMonthIndex);
       });
-    }, [months, realMonthIndex, updateMonths, setCurrentPage, measure, scrollToMonth]);
-
+    }, [isCollapsed, measure]);
     const deleteMonth = useCallback(() => {
       const updatedMonths = [...months];
-      updatedMonths.splice(monthIndex, 1);
-
+      updatedMonths.splice(realMonthIndex, 1);
       const lastPage = Math.ceil(updatedMonths.length / perPage) || 1;
       const newPage = currentPage > lastPage ? lastPage : currentPage;
 
@@ -130,9 +93,9 @@ export const MonthPlan = React.memo(
     const isFourWeeksOrLess = month.weeks.length <= 3;
     return (
       <div
-      ref={ref}
+        ref={ref}
         key={month.localId}
-        className={`my-1 border p-2 rounded bg-white shadow month-${month.localId}`}
+        className={`border p-2 rounded bg-white shadow month-${month.localId} mb-2`}
         style={{ backgroundColor: '#E8E8E8' }}
       >
         <div className="flex justify-between items-center mb-2 gap-3">
@@ -153,7 +116,7 @@ export const MonthPlan = React.memo(
               variant="danger"
               name="duplicate month"
               startIcon={<DuplicateIcon className="h-4 w-4" />}
-              onClick={() => duplicateMonth()}
+              onClick={() => onDuplicateMonth?.(realMonthIndex)}
             />
             <DeleteConfirmation
               deleteFunction={deleteMonth}
@@ -206,6 +169,13 @@ export const MonthPlan = React.memo(
               expandedDays={expandedDays}
               setExpandedDays={setExpandedDays}
               monthLocalId={month.localId}
+              onScrollToWeek={(monthIdx, wkIdx) => {
+                const weekLocalId = month.weeks[wkIdx]?.localId;
+                if (weekLocalId && scrollToWeek) scrollToWeek(monthIdx, weekLocalId);
+              }}
+              onScrollToMonth={(monthIdx) => scrollToMonth?.(monthIdx)}
+              scrollToWeek={scrollToWeek}
+              onScrollToDay={onScrollToDay}
             />
 
           ))}

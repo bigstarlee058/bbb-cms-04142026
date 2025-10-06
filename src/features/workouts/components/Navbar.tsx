@@ -16,7 +16,12 @@ interface Props {
   onScrollToWeek: (monthIndex: number, weekIndex: number) => void;
   onScrollToDay: (monthIndex: number, weekIndex: number, dayIndex: number) => void;
   startIndex: number;
-  onCollapseChange: () => void;
+  onCollapseChange: (monthLocalId: string, isCollapsed: boolean) => void;
+  expandedMonths: { [key: string]: boolean };
+  expandedWeeks: { [key: string]: boolean };
+  setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  expandedDays: { [key: string]: boolean };
+  setExpandedDays: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
 }
 
 export const Navbar = React.memo(
@@ -30,43 +35,13 @@ export const Navbar = React.memo(
     setAllMonths,
     onScrollToMonth,
     onScrollToWeek,
-    onScrollToDay
+    onScrollToDay, expandedMonths,
+    expandedWeeks,
+    setExpandedWeeks,
+    expandedDays,
+    setExpandedDays
   }: Props) => {
-    const [collapsed, setCollapsed] = useState<boolean[]>([]);
-    const [expandedWeeks, setExpandedWeeks] = useState<{ [key: string]: boolean }>({});
-
     const refs = useRef<(HTMLDivElement | null)[]>([]);
-
-    useEffect(() => {
-      const updateHeights = () => {
-        refs.current.forEach((ref, index) => {
-          if (ref) {
-            ref.style.height = collapsed[index] ? '0px' : 'auto';
-            ref.style.transition = 'height 0.3s ease';
-          }
-        });
-      };
-
-      updateHeights();
-
-      const observer = new MutationObserver(updateHeights);
-      refs.current.forEach((ref) => {
-        if (ref) {
-          observer.observe(ref, { childList: true, subtree: true });
-        }
-      });
-
-      return () => {
-        observer.disconnect();
-      };
-    }, [allMonths, collapsed]);
-
-    const toggleCollapse = (monthIndex: number) => {
-      const newCollapsed = [...collapsed];
-      newCollapsed[monthIndex] = !newCollapsed[monthIndex];
-      setCollapsed(newCollapsed);
-      requestAnimationFrame(() => onCollapseChange());
-    };
 
     const handleDragStart = (result: any) => {
       const { source } = result;
@@ -95,11 +70,12 @@ export const Navbar = React.memo(
         updatedMonths[destMonthIndex].weeks.splice(destination.index, 0, movedWeek);
       }
       setAllMonths(updatedMonths);
-
       setTimeout(() => {
         refs.current.forEach((ref, index) => {
-          if (ref) {
-            ref.style.height = collapsed[index] ? '0px' : 'auto';
+          const month = months[index];
+          if (ref && month) {
+            const isCollapsed = !(expandedMonths[month.localId]);
+            ref.style.height = isCollapsed ? '0px' : 'auto';
           }
         });
       }, 0);
@@ -118,13 +94,13 @@ export const Navbar = React.memo(
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className="border p-2 rounded bg-white shadow w-full"
+                          className="border p-2 rounded bg-white shadow w-full mb-3"
                         >
                           <div className="flex items-center justify-between w-full">
                             <div className="flex items-center w-full">
                               <div
                                 {...provided.dragHandleProps}
-                                className="w-8 h-8 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg"
+                                className="w-4 h-4 mr-4 flex items-center justify-center cursor-pointer rounded-full shadow-lg"
                               >
                                 <FaGripVertical className="text-black" />
                               </div>
@@ -147,22 +123,33 @@ export const Navbar = React.memo(
                                 variant="danger"
                                 name="collapse"
                                 startIcon={
-                                  collapsed[monthIndex] ? (
+                                  !(expandedMonths[month.localId]) ? (
                                     <ChevronDownIcon className="h-4 w-4" />
                                   ) : (
                                     <ChevronUpIcon className="h-4 w-4" />
                                   )
                                 }
-                                onClick={() => toggleCollapse(monthIndex)}
+                                onClick={() => {
+                                  const isCollapsedNow = !(expandedMonths[month.localId]);
+                                  const newCollapsed = !isCollapsedNow;
+                                  onCollapseChange(month.localId, newCollapsed);
+                                  requestAnimationFrame(() => {
+                                    if (newCollapsed) {
+                                      const prevMonthIndex = Math.max(monthIndex - 1, 0);
+                                      onScrollToMonth(getRealIndex(prevMonthIndex));
+                                    } else {
+                                      onScrollToMonth(getRealIndex(monthIndex));
+                                    }
+                                  });
+                                }}
                                 className="ml-4"
                               />
                             </div>
                           </div>
                           <div
-                            ref={(el) => {
-                              refs.current[monthIndex] = el;
-                            }}
+                            ref={(el) => (refs.current[monthIndex] = el)}
                             style={{
+                              height: expandedMonths[month.localId] ? 'auto' : 0,
                               overflow: 'hidden',
                               transition: 'height 0.3s ease'
                             }}
@@ -211,23 +198,36 @@ export const Navbar = React.memo(
                                                 <Button
                                                   variant="danger"
                                                   name="collapse"
-                                                  startIcon={expandedWeeks[`${monthIndex}-${weekIndex}`] ? (
-                                                    <ChevronUpIcon className="h-3 w-3 text-white" />
-                                                  ) : (
-                                                    <ChevronDownIcon className="h-3 w-3 text-white" />
-                                                  )}
+                                                  startIcon={
+                                                    expandedWeeks[`${month.localId}-${week.localId}`] ? (
+                                                      <ChevronUpIcon className="h-3 w-3 text-white" />
+                                                    ) : (
+                                                      <ChevronDownIcon className="h-3 w-3 text-white" />
+                                                    )
+                                                  }
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const key = `${monthIndex}-${weekIndex}`;
-                                                    setExpandedWeeks((prev) => ({
+                                                    const key = `${month.localId}-${week.localId}`;
+                                                    const isExpanded = !!expandedWeeks[key];
+                                                    setExpandedWeeks(prev => ({
                                                       ...prev,
-                                                      [key]: !prev[key], // when true → days auto show
+                                                      [key]: !isExpanded,
                                                     }));
+
+                                                    requestAnimationFrame(() => {
+                                                      if (!isExpanded) {
+                                                        onScrollToWeek(getRealIndex(monthIndex), weekIndex);
+                                                      } else {
+                                                        const prevWeekIndex = Math.max(weekIndex - 1, 0);
+                                                        if (weekIndex > 0) {
+                                                          onScrollToWeek(getRealIndex(monthIndex), prevWeekIndex);
+                                                        } else {
+                                                          onScrollToMonth(getRealIndex(monthIndex));
+                                                        }
+                                                      }
+                                                    });
                                                   }}
-
-
                                                 />
-
                                               </div>
                                             </div>
 
@@ -239,30 +239,79 @@ export const Navbar = React.memo(
                                                   style={{
                                                     overflow: 'hidden',
                                                     transition: 'height 0.3s ease',
-                                                    height: expandedWeeks[`${monthIndex}-${weekIndex}`] ? 'auto' : 0
+                                                    height: expandedWeeks[`${month.localId}-${week.localId}`] ? 'auto' : 0,
                                                   }}
                                                 >
-                                                  {week.days.map((day, dayIndex) => (
-                                                    <div
-                                                      key={day.localId}
-                                                      className="border p-2 bg-gray-300 rounded w-full"
-                                                    >
-                                                      <span
-                                                        className="cursor-pointer w-full block"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
-                                                        }}
-                                                      >
-                                                        <div className="text-sm font-semibold text-gray-800">
-                                                          Day {day.typeId}
+                                                  {week.days.map((day, dayIndex) => {
+                                                    const dayKey = `${month.localId}-${week.localId}-${day.localId}`;
+                                                    const isExpanded = !!expandedDays[dayKey];
+
+                                                    return (
+                                                      <div key={day.localId} className="border p-2 bg-gray-300 rounded w-full">
+                                                        <div className="flex items-center justify-between text-sm">
+                                                          <span
+                                                            className="cursor-pointer flex-1"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
+                                                            }}
+                                                          >
+                                                            <div className="font-semibold text-gray-800">Day {day.typeId}</div>
+                                                            <div className="text-xs font-medium text-black">{day.title}</div>
+                                                          </span>
+                                                          <Button
+                                                            variant="danger"
+                                                            name="collapse"
+                                                            startIcon={
+                                                              isExpanded ? (
+                                                                <ChevronUpIcon className="h-3 w-3 text-white" />
+                                                              ) : (
+                                                                <ChevronDownIcon className="h-3 w-3 text-white" />
+                                                              )
+                                                            }
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              setExpandedDays((prev) => {
+                                                                const updated = { ...prev, [dayKey]: !isExpanded };
+                                                                return updated;
+                                                              });
+
+                                                              setTimeout(() => {
+                                                                if (!isExpanded) {
+                                                                  onScrollToDay(getRealIndex(monthIndex), weekIndex, dayIndex);
+                                                                } else {
+                                                                  const prevDayIndex = Math.max(dayIndex - 1, 0);
+                                                                  if (dayIndex > 0) {
+                                                                    onScrollToDay(getRealIndex(monthIndex), weekIndex, prevDayIndex);
+                                                                  } else {
+                                                                    onScrollToWeek(getRealIndex(monthIndex), weekIndex);
+                                                                  }
+                                                                }
+                                                              }, 150);
+                                                            }}
+                                                          />
                                                         </div>
-                                                        <div className="text-xs font-medium text-black w-full">
-                                                          {day.title}
+                                                        <div
+                                                          style={{
+                                                            overflow: 'hidden',
+                                                            transition: 'height 0.3s ease',
+                                                            height: isExpanded ? 'auto' : 0,
+                                                          }}
+                                                          className="pl-6 mt-1"
+                                                        >                                                 {(day.exercises.length > 0 || day.warmups.length > 0) ? (
+                                                          <>
+                                                            <div className="text-xs text-gray-600">
+                                                              Exercises: {day.exercises.length} | Warmups: {day.warmups.length}
+                                                            </div>
+                                                          </>
+                                                        ) : (
+                                                          <div className="text-xs text-gray-500">No details</div>
+                                                        )}
                                                         </div>
-                                                      </span>
-                                                    </div>
-                                                  ))}
+                                                      </div>
+                                                    );
+                                                  })}
+
                                                 </div>
                                               )}
                                             </div>

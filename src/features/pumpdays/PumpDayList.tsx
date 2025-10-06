@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 import _ from 'lodash';
-import { DayPlan } from '../workouts/components/DayPlan';
+import { DayPlan } from '../workouts/components/PumpDayPlan';
 import { Button } from '@/components/Elements';
 import { PlusIcon } from '@heroicons/react/outline';
 import { Day } from '@/types';
@@ -82,8 +82,6 @@ export const PumpDayList = () => {
             onSetDays(val);
             setDays(val);
           }}
-          setExpandedDays={()=>{}}
-          expandedDays={0}
           days={days}
         />
       ))}

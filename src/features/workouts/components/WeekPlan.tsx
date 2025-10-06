@@ -14,14 +14,17 @@ interface Props {
   week: Week;
   addWeek: (monthIndex: number) => void;
   months: Month[];
-  updateMonths: (months: Month[]) => void;
+  updateMonths: (months: Month[], options?: { skipMeasure?: boolean }) => void;
   isFourWeeksOrLess: boolean;
   expandedWeeks: { [key: string]: boolean };
   setExpandedWeeks: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   expandedDays: { [key: string]: boolean };
   setExpandedDays: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   monthLocalId: string;
-
+  onScrollToWeek?: (monthIndex: number, weekIndex: number) => void;
+  onScrollToMonth?: (monthIndex: number) => void;
+  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
+  scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
 }
 
 
@@ -43,21 +46,37 @@ const WeekPlanComponent = ({
   isFourWeeksOrLess,
   expandedWeeks,
   setExpandedWeeks,
-  expandedDays,setExpandedDays,
-  monthLocalId
+  expandedDays, setExpandedDays,
+  monthLocalId,
+  onScrollToWeek,
+  onScrollToMonth,
+  onScrollToDay,
+  scrollToWeek,
 }: Props) => {
   const weekKey = `${monthLocalId}-${week.localId}`;
-
-  const isCollapsed = !(expandedWeeks[weekKey] ?? false);
+  const isCollapsed = !(expandedWeeks?.[weekKey] ?? false);
 
   const toggleCollapse = () => {
-    setExpandedWeeks((prev) => ({
-      ...prev,
-      [weekKey]: !prev[weekKey],
-    }));
-  };
+  const weekKey = `${monthLocalId}-${week.localId}`;
+  const isExpandedNow = !!expandedWeeks[weekKey];
 
+  setExpandedWeeks((prev) => ({
+    ...prev,
+    [weekKey]: !isExpandedNow,
+  }));
 
+  requestAnimationFrame(() => {
+    if (!isExpandedNow) {
+      onScrollToWeek?.(monthIndex, weekIndex);
+    } else {
+      if (weekIndex > 0) {
+        onScrollToWeek?.(monthIndex, weekIndex - 1);
+      } else {
+        onScrollToMonth?.(monthIndex);
+      }
+    }
+  });
+};
   if (!months[monthIndex]?.weeks[weekIndex]) return null;
 
   const addDay = (monthIndex: number, weekIndex: number, newTypeId: number, newFormats: string[]) => {
@@ -79,7 +98,7 @@ const WeekPlanComponent = ({
       exercises: []
     };
     updatedMonths[monthIndex].weeks[weekIndex].days.push(newDay);
-    updateMonths(updatedMonths);
+    updateMonths(updatedMonths, { skipMeasure: true })
   };
 
   const duplicateWeek = (monthIndex: number, weekIndex: number) => {
@@ -98,20 +117,20 @@ const WeekPlanComponent = ({
 
     const updatedMonths = [...months];
     updatedMonths[monthIndex].weeks.splice(weekIndex + 1, 0, newWeek);
-    updateMonths(updatedMonths);
+    updateMonths(updatedMonths, { skipMeasure: true })
   };
 
 
   const updateWeek = (monthIndex: number, weekIndex: number, updatedWeek: Week) => {
     const updatedMonths = [...months];
     updatedMonths[monthIndex].weeks[weekIndex] = updatedWeek;
-    updateMonths(updatedMonths);
+    updateMonths(updatedMonths, { skipMeasure: true })
   };
 
   const deleteWeek = (monthIndex: number, weekIndex: number) => {
     const updatedMonths = [...months];
     updatedMonths[monthIndex].weeks.splice(weekIndex, 1);
-    updateMonths(updatedMonths);
+    updateMonths(updatedMonths, { skipMeasure: true })
   };
 
   const reassignDayTypeIds = (deletedDayTypeId: number) => {
@@ -120,7 +139,7 @@ const WeekPlanComponent = ({
     days.forEach((day, _) => {
       if (day.typeId > deletedDayTypeId) day.typeId--;
     });
-    updateMonths(updatedMonths);
+    updateMonths(updatedMonths, { skipMeasure: true })
   };
 
   const updateWeekTitle = (title) => {
@@ -193,6 +212,8 @@ const WeekPlanComponent = ({
             expandedDays={expandedDays}
             isSevenDays={isSevenDays}
             isWeekCollapsed={isCollapsed}
+            onScrollToDay={onScrollToDay}
+            scrollToWeek={scrollToWeek}
           />
         ))}
       </div>

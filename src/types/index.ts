@@ -381,7 +381,7 @@ export interface DayWarmup extends WorkoutsBaseEntity {
   title: string;
   guide: string;
   formats: string[];
-  localId: string;
+  localId?: string;
 }
 
 export interface Staff extends BaseEntity {
