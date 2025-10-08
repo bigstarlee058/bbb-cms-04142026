@@ -579,7 +579,7 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
           </div>
         </div>
 
-        {monthCount > filters.perPage && (
+        {monthCount >= filters.perPage && (
           <div className="flex justify-center mt-4">
             <Pagination
               currentPage={currentPage}

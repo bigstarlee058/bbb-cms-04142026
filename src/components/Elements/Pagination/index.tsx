@@ -52,7 +52,7 @@ export default function SlidingPagination({
   maxLength,
   setCurrentPage,
 }: SlidingPaginationProps) {
-  if (lastPage <= 1) return null;
+  if (lastPage < 1) return null;
 
   const range = (start: number, end: number) =>
     Array.from({ length: end - start + 1 }, (_, i) => start + i);
