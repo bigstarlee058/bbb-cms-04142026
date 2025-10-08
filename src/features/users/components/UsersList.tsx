@@ -105,7 +105,12 @@ export const UsersList = () => {
             field: 'subscription',
             Cell({ entry }) {
               const { subscription, _id, name, email } = entry;
+              const isActive = subscription?.end_date
+                ? new Date(subscription.end_date) > new Date()
+                : false;
+
               const currentType: 'free' | 'monthly' | 'yearly' = (() => {
+                if (!isActive) return 'free';
                 const type = subscription?.subscription_type || '';
                 if (type.toLowerCase().includes('month')) return 'monthly';
                 if (type.toLowerCase().includes('year')) return 'yearly';
@@ -130,7 +135,9 @@ export const UsersList = () => {
                     onChange={handleChange}
                     className="border rounded p-1"
                   >
-                    <option value={currentType}>{currentType.charAt(0).toUpperCase() + currentType.slice(1)}</option>
+                    <option value={currentType}>
+                      {currentType.charAt(0).toUpperCase() + currentType.slice(1)}
+                    </option>
                     <option value="change">Change</option>
                   </select>
 
