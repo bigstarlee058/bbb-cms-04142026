@@ -18,7 +18,7 @@ import {
   InformationCircleIcon,
   CubeIcon
 } from '@heroicons/react/outline';
-import { CiDumbbell, CiTrophy, CiSquareInfo,} from "react-icons/ci";
+import { CiDumbbell, CiTrophy, CiSquareInfo, } from "react-icons/ci";
 import { IoMdFitness, } from "react-icons/io";
 
 import { LiaDumbbellSolid } from "react-icons/lia";
@@ -347,6 +347,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const { months } = useWorkoutContext();
   const { days } = usePumpDaysContext();
   const { pathname } = useLocation();
+  React.useEffect(() => {
+    setSortByValue('Newest Added', 'NewestAdded');
+  }, [pathname]);
 
   const handleSortOptionChange = (val: any) => {
     setSortByValue(val.label, val.value);
@@ -403,16 +406,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
           </button>
           <div
-            className={`flex-1 px-4 flex items-center ${
-              currentPage == 'users' ||
-              currentPage == 'exercises' ||
-              currentPage == 'warmups' ||
-              currentPage == 'equipments' ||
-              currentPage == 'restdays' ||
-              currentPage == 'categories'
+            className={`flex-1 px-4 flex items-center ${currentPage == 'users' ||
+                currentPage == 'exercises' ||
+                currentPage == 'warmups' ||
+                currentPage == 'equipments' ||
+                currentPage == 'restdays' ||
+                currentPage == 'categories'
                 ? 'justify-between'
                 : 'justify-end'
-            }`}
+              }`}
           >
             {(currentPage == 'users' ||
               currentPage == 'exercises' ||
@@ -420,27 +422,27 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               currentPage == 'equipments' ||
               currentPage == 'restdays' ||
               currentPage == 'categories') && (
-              <div className="flex-1 px-4 flex justify-start items-center">
-                <div className="p-1">
-                  <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
+                <div className="flex-1 px-4 flex justify-start items-center">
+                  <div className="p-1">
+                    <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
+                  </div>
+                  <div className="p-4">
+                    <ReactSelect
+                      styles={reactSelectStylesConfig}
+                      className="w-56 shrink hover:shrink-0 whitespace-nowrap"
+                      placeholder="Sort by"
+                      name="sortby"
+                      options={SortOption}
+                      value={sortBy}
+                      onChange={handleSortOptionChange}
+                    />
+                  </div>
                 </div>
-                <div className="p-4">
-                  <ReactSelect
-                    styles={reactSelectStylesConfig}
-                    className="w-56 shrink hover:shrink-0 whitespace-nowrap"
-                    placeholder="Sort by"
-                    name="sortby"
-                    options={SortOption}
-                    value={sortBy}
-                    onChange={handleSortOptionChange}
-                  />
-                </div>
-              </div>
-            )}
+              )}
             <div className="ml-4 flex items-center md:ml-6">
               {pathname.includes('users') && (
                 <>
-                  <ExportData/>
+                  <ExportData />
                 </>
               )}
               {pathname.includes('workouts') && (
