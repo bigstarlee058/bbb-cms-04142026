@@ -275,14 +275,15 @@ export const updateWorkouts = async (months: Month[]) => {
     });
 
     // Upload all thumbnails in one request
-    const thumbnailURLs = await uploadImagesAndGetURLs(allThumbnails);
+    const filesToUpload = allThumbnails.filter((thumb): thumb is File => thumb instanceof File);      
+
+    const thumbnailURLs = await uploadImagesAndGetURLs(filesToUpload);
 
     // Process each month to update thumbnails with the received URLs
     let urlIndex = 0;
     const updateThumbnails = (item: any) => {
       if (urlIndex < thumbnailURLs.length) {
-        item.thumbnail = thumbnailURLs[urlIndex];
-        urlIndex++;
+        item.thumbnail = thumbnailURLs[urlIndex++];
       }
       if (item.weeks) {
         item.weeks.forEach((week) => updateThumbnails(week));
@@ -290,20 +291,19 @@ export const updateWorkouts = async (months: Month[]) => {
       if (item.days) {
         item.days.forEach((day) => {
           if (urlIndex < thumbnailURLs.length) {
-            day.thumbnail = thumbnailURLs[urlIndex];
-            urlIndex++;
+            day.thumbnail = thumbnailURLs[urlIndex++];
           }
           if (urlIndex < thumbnailURLs.length) {
-            day.thumbnailOne = thumbnailURLs[urlIndex];
-            urlIndex++;
+            day.thumbnailOne = thumbnailURLs[urlIndex++];
+            
           }
           if (urlIndex < thumbnailURLs.length) {
-            day.thumbnailTwo = thumbnailURLs[urlIndex];
-            urlIndex++;
+            day.thumbnailTwo = thumbnailURLs[urlIndex++];
+            
           }
           if (urlIndex < thumbnailURLs.length) {
-            day.thumbnailThree = thumbnailURLs[urlIndex];
-            urlIndex++;
+            day.thumbnailThree = thumbnailURLs[urlIndex++];
+            
           }
         })
         // item.days.forEach((day) => updateThumbnails(day));
