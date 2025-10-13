@@ -53,7 +53,7 @@ export const WorkoutList = () => {
   const timer = setTimeout(() => {
     switch (scrollTarget.type) {
       case 'month':
-        rowVirtualizer.scrollToIndex(targetIndexOnPage, { align: "start" });
+        rowVirtualizer.scrollToIndex(targetIndexOnPage, { align: "auto" ,behavior:"smooth"});
         break;
         
       case 'week':
@@ -248,7 +248,7 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
 
   };
   const scrollToMonth = useCallback((monthIndex: number) => {
-    rowVirtualizer.scrollToIndex(monthIndex, { align: "start" });
+    rowVirtualizer.scrollToIndex(monthIndex, { align: "auto",behavior:"smooth" });
   }, [rowVirtualizer]);
   const scrollToWeekSafe = useCallback(async (globalMonthIndex: number, weekLocalId: string) => {
   if (!parentRef.current) return;
@@ -460,7 +460,7 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
 
       <div className="flex flex-col h-full">
         <div className="flex gap-4">
-          <div className="w-1/4 h-[450px] overflow-auto">
+          <div className="w-1/4 h-[calc(100vh-270px)] overflow-auto">
             {allMonths.length > 0 && (
               <Navbar
                 currentPage={currentPage}
@@ -509,7 +509,7 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
 
           <div className="w-3/4 h-full overflow-auto">
             <div className="h-full w-full">
-              <div ref={parentRef} className="h-[450px] overflow-auto w-full">
+              <div ref={parentRef} className="w-full">
                 <div
                   style={{
                     height: rowVirtualizer.getTotalSize(),
