@@ -46,104 +46,37 @@ export const WorkoutList = () => {
       rowVirtualizer.measure();
     });
   }, [allMonths.length, filters.perPage, rowVirtualizer]);
-  useEffect(() => {
-  if (!scrollTarget) return;
+    useEffect(() => {
+    if (!scrollTarget) return;
 
-  const targetIndexOnPage = scrollTarget.monthIndex % filters.perPage;
-  const timer = setTimeout(() => {
-    switch (scrollTarget.type) {
-      case 'month':
-        rowVirtualizer.scrollToIndex(targetIndexOnPage, { align: "auto" ,behavior:"smooth"});
-        break;
-        
-      case 'week':
-        if (scrollTarget.weekLocalId) {
-          const month = allMonths[scrollTarget.monthIndex];
-          if (!month) {
-            console.warn("Month not found for scrollTarget:", scrollTarget.monthIndex);
-            setScrollTarget(null);
-            return;
+    const timer = requestAnimationFrame(() => {
+      switch (scrollTarget.type) {
+        case 'month':
+          const targetIndexOnPage = scrollTarget.monthIndex % filters.perPage;
+          rowVirtualizer.scrollToIndex(targetIndexOnPage, { align: "start", behavior: "smooth" });
+          break;
+        case 'week':
+          if (scrollTarget.weekLocalId) {
+            scrollToWeekSafe(scrollTarget.monthIndex, scrollTarget.weekLocalId);
           }
-
-          const monthEl = monthRefs.current[month.localId];
-          if (!monthEl) {
-            console.warn("Month element not found in refs:", month.localId);
-            setTimeout(() => {
-              const retryEl = monthRefs.current[month.localId];
-              if (retryEl) {
-                scrollToWeekElement(month.localId, scrollTarget.weekLocalId!);
-              }
-            }, 200);
-            setScrollTarget(null);
-            return;
+          break;
+        case 'day':
+          if (scrollTarget.weekLocalId && scrollTarget.dayLocalId) {
+            scrollToDay(
+              scrollTarget.monthIndex,
+              scrollTarget.weekLocalId,
+              scrollTarget.dayLocalId,
+              { expandIfCollapsed: scrollTarget.expandIfCollapsed !== false }
+            );
           }
-
-          scrollToWeekElement(month.localId, scrollTarget.weekLocalId);
-        }
-        break;
-        
-      case 'day':
-  if (scrollTarget.weekLocalId && scrollTarget.dayLocalId) {
-    scrollToDay(
-      scrollTarget.monthIndex,
-      scrollTarget.weekLocalId,
-      scrollTarget.dayLocalId,
-      { expandIfCollapsed: scrollTarget.expandIfCollapsed !== false }
-    );
-  }
-  break;
-    }
-    
-    setScrollTarget(null);
-  }, 200); 
-  return () => clearTimeout(timer);
-}, [scrollTarget, currentPage, allMonths]);
-
-const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
-  if (!parentRef.current) return;
-
-  const monthEl = monthRefs.current[monthLocalId];
-  if (!monthEl) {
-    console.warn("Month element not found:", monthLocalId);
-    return;
-  }
-
-  let weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
-  
-  if (!weekEl) {
-
-    let attempts = 0;
-    const findWeekInterval = setInterval(() => {
-      weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
-      attempts++;
-      
-      if (weekEl || attempts > 10) {
-        clearInterval(findWeekInterval);
-        
-        if (weekEl && parentRef.current) {
-          parentRef.current.scrollTo({
-            top:
-              weekEl.getBoundingClientRect().top -
-              parentRef.current.getBoundingClientRect().top +
-              parentRef.current.scrollTop,
-            behavior: "smooth",
-          });
-        } else {
-          console.warn("Week element not found after retries:", weekLocalId);
-        }
+          break;
       }
-    }, 50);
-    return;
-  }
+      setScrollTarget(null);
+    });
 
-  parentRef.current.scrollTo({
-    top:
-      weekEl.getBoundingClientRect().top -
-      parentRef.current.getBoundingClientRect().top +
-      parentRef.current.scrollTop,
-    behavior: "smooth",
-  });
-};
+    return () => cancelAnimationFrame(timer);
+  }, [scrollTarget]);
+
   const { onSetMonths } = useWorkoutContext();
   const { isLoading, isError } = useQuery(
     ['get-workouts'],
@@ -248,138 +181,128 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
 
   };
   const scrollToMonth = useCallback((monthIndex: number) => {
-    rowVirtualizer.scrollToIndex(monthIndex, { align: "auto",behavior:"smooth" });
+    rowVirtualizer.scrollToIndex(monthIndex, { align: "start",behavior:"smooth" });
   }, [rowVirtualizer]);
-  const scrollToWeekSafe = useCallback(async (globalMonthIndex: number, weekLocalId: string) => {
-  if (!parentRef.current) return;
+    const scrollToWeekSafe = useCallback(async (globalMonthIndex: number, weekLocalId: string) => {
+    if (!parentRef.current) return;
 
-  const month = allMonths[globalMonthIndex];
-  if (!month) return;
-  const currentPageStart = (currentPage - 1) * filters.perPage;
-  const currentPageEnd = currentPageStart + filters.perPage;
-  
-  if (globalMonthIndex < currentPageStart || globalMonthIndex >= currentPageEnd) {
-    const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
-    setCurrentPage(targetPage);
-    setExpandedMonths(prev => ({ ...prev, [month.localId]: true }));
+    const month = allMonths[globalMonthIndex];
+    if (!month) return;
+
+    const currentPageStart = (currentPage - 1) * filters.perPage;
+    const currentPageEnd = currentPageStart + filters.perPage;
+
+    if (globalMonthIndex < currentPageStart || globalMonthIndex >= currentPageEnd) {
+      const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+      setCurrentPage(targetPage);
+      setScrollTarget({ type: 'week', monthIndex: globalMonthIndex, weekLocalId });
+      return;
+    }
+
+    let needsRemeasure = false;
     const weekKey = `${month.localId}-${weekLocalId}`;
-    setExpandedWeeks(prev => ({ ...prev, [weekKey]: true }));
+
+    setExpandedMonths(prev => {
+      if (!prev[month.localId]) {
+        needsRemeasure = true;
+        return { ...prev, [month.localId]: true };
+      }
+      return prev;
+    });
+    setExpandedWeeks(prev => {
+      if (!prev[weekKey]) {
+        needsRemeasure = true;
+        return { ...prev, [weekKey]: true };
+      }
+      return prev;
+    });
+
+    if (needsRemeasure) {
+      await new Promise(res => requestAnimationFrame(res));
+      rowVirtualizer.measure();
+      await new Promise(res => requestAnimationFrame(res));
+    }
+
+    const monthEl = monthRefs.current[month.localId];
+    if (!monthEl) return;
+
+    const weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
+    if (!weekEl) return;
+
+    parentRef.current.scrollTo({
+      top: weekEl.offsetTop - 20,
+      behavior: "smooth",
+    });
+  }, [allMonths, currentPage, filters.perPage, rowVirtualizer]);
+    const scrollToDay = useCallback(async (
+    globalMonthIndex: number,
+    weekLocalId: string,
+    dayLocalId: string,
+    options?: { expandIfCollapsed?: boolean }
+  ) => {
+    if (!parentRef.current) return;
+
+    const month = allMonths[globalMonthIndex];
+    if (!month) return;
+
+    const currentPageStart = (currentPage - 1) * filters.perPage;
+    const currentPageEnd = currentPageStart + filters.perPage;
+    if (globalMonthIndex < currentPageStart || globalMonthIndex >= currentPageEnd) {
+      const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+      setCurrentPage(targetPage);
+      setScrollTarget({ type: 'day', monthIndex: globalMonthIndex, weekLocalId, dayLocalId, expandIfCollapsed: options?.expandIfCollapsed ?? true });
+      return;
+    }
+
+    const expandIfCollapsed = options?.expandIfCollapsed ?? true;
+    let needsRemeasure = false;
+    const weekKey = `${month.localId}-${weekLocalId}`;
+    const dayKey = `${month.localId}-${weekLocalId}-${dayLocalId}`;
+
+    setExpandedMonths(prev => {
+      if (!prev[month.localId]) {
+        needsRemeasure = true;
+        return { ...prev, [month.localId]: true };
+      }
+      return prev;
+    });
+
+    setExpandedWeeks(prev => {
+      if (!prev[weekKey]) {
+        needsRemeasure = true;
+        return { ...prev, [weekKey]: true };
+      }
+      return prev;
+    });
+
+    if (expandIfCollapsed) {
+      setExpandedDays(prev => {
+        if (!prev[dayKey]) {
+          needsRemeasure = true;
+          return { ...prev, [dayKey]: true };
+        }
+        return prev;
+      });
+    }
+
+    if (needsRemeasure) {
+      await new Promise(res => requestAnimationFrame(res));
+      rowVirtualizer.measure();
+      await new Promise(res => requestAnimationFrame(res));
+    }
+
+    const monthEl = monthRefs.current[month.localId];
+    if (!monthEl) return;
+
+    const dayEl = monthEl.querySelector(`.day-${dayLocalId}`) as HTMLElement;
+    if (!dayEl) return;
     
-    setScrollTarget({ type: 'week', monthIndex: globalMonthIndex, weekLocalId });
-    return;
-  }
+    parentRef.current.scrollTo({
+      top: dayEl.offsetTop - 20,
+      behavior: "smooth",
+    });
 
-  let needsRemeasure = false;
-  if (!expandedMonths[month.localId]) {
-    setExpandedMonths(prev => ({ ...prev, [month.localId]: true }));
-    needsRemeasure = true;
-  }
-
-  const weekKey = `${month.localId}-${weekLocalId}`;
-  if (!expandedWeeks[weekKey]) {
-    setExpandedWeeks(prev => ({ ...prev, [weekKey]: true }));
-    needsRemeasure = true;
-  }
-
-  if (needsRemeasure) {
-    await new Promise(res => setTimeout(res, 100));
-    rowVirtualizer.measure();
-    await new Promise(res => setTimeout(res, 100));
-  }
-
-  const monthEl = monthRefs.current[month.localId];
-  if (!monthEl) {
-    console.warn("Month element not found:", month.localId);
-    return;
-  }
-  
-  let weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
-  if (!weekEl) {
-    await new Promise(res => setTimeout(res, 100));
-    weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
-  }
-  
-  if (!weekEl) {
-    console.warn("Week element not found:", weekLocalId);
-    return;
-  }
-
-  parentRef.current.scrollTo({
-    top:
-      weekEl.getBoundingClientRect().top -
-      parentRef.current.getBoundingClientRect().top +
-      parentRef.current.scrollTop,
-    behavior: "smooth",
-  });
-}, [allMonths, currentPage, filters.perPage, expandedMonths, expandedWeeks, rowVirtualizer]);
-  const scrollToDay = async (
-  globalMonthIndex: number,
-  weekLocalId: string,
-  dayLocalId: string,
-  options?: { expandIfCollapsed?: boolean }
-) => {
-  if (!parentRef.current) return;
-
-  const month = allMonths[globalMonthIndex];
-  if (!month) return;
-  const currentPageStart = (currentPage - 1) * filters.perPage;
-  const currentPageEnd = currentPageStart + filters.perPage;
-
-  if (globalMonthIndex < currentPageStart || globalMonthIndex >= currentPageEnd) {
-    const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
-    setCurrentPage(targetPage);
-    setScrollTarget({ type: 'day', monthIndex: globalMonthIndex, weekLocalId, dayLocalId, expandIfCollapsed: options?.expandIfCollapsed ?? true });
-    return;
-  }
-
-  let needsRemeasure = false;
-  if (!expandedMonths[month.localId]) {
-    setExpandedMonths(prev => ({ ...prev, [month.localId]: true }));
-    needsRemeasure = true;
-  }
-
-  const weekKey = `${month.localId}-${weekLocalId}`;
-  if (!expandedWeeks[weekKey]) {
-    setExpandedWeeks(prev => ({ ...prev, [weekKey]: true }));
-    needsRemeasure = true;
-  }
-
-  const dayKey = `${month.localId}-${weekLocalId}-${dayLocalId}`;
-  const expandIfCollapsed = options?.expandIfCollapsed ?? true;
-  if (expandIfCollapsed && !expandedDays[dayKey]) {
-    setExpandedDays(prev => ({ ...prev, [dayKey]: true }));
-    needsRemeasure = true;
-  }
-
-  if (needsRemeasure) {
-    await new Promise(res => setTimeout(res, 80));
-    rowVirtualizer.measure();
-    await new Promise(res => setTimeout(res, 80));
-  }
-
-  const monthEl = monthRefs.current[month.localId];
-  if (!monthEl) return;
-
-  let dayEl: HTMLElement | null = null;
-  for (let i = 0; i < 10; i++) {
-    dayEl = monthEl.querySelector(`.day-${dayLocalId}`) as HTMLElement;
-    if (dayEl) break;
-    await new Promise(res => setTimeout(res, 100));
-  }
-
-  if (!dayEl) {
-    console.warn("scrollToDay: day element not found after waiting.");
-    return;
-  }
-
-  parentRef.current.scrollTo({
-    top:
-      dayEl.getBoundingClientRect().top -
-      parentRef.current.getBoundingClientRect().top +
-      parentRef.current.scrollTop,
-    behavior: "smooth",
-  });
-};
+  }, [allMonths, currentPage, filters.perPage, rowVirtualizer]);
   useEffect(() => {
   if (paginatedMonths.length === 0) return;
   requestAnimationFrame(() => {
@@ -458,8 +381,8 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
         )}
       </div>
 
-      <div className="flex flex-col h-full">
-        <div className="flex gap-4">
+      <div className="flex flex-col h-full" >
+        <div className="flex gap-4" >
           <div className="w-1/4 h-[calc(100vh-270px)] overflow-auto">
             {allMonths.length > 0 && (
               <Navbar
@@ -493,23 +416,22 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
                   setScrollTarget({ type: 'week', monthIndex: globalMonthIndex, weekLocalId });
                 }}
                 onScrollToDay={(globalMonthIndex, weekIndex, dayIndex) => {
-  const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
-  const weekLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.localId;
-  const dayLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.days[dayIndex]?.localId;
-  if (!weekLocalId || !dayLocalId) return;
-
-  setCurrentPage(targetPage);
-  setScrollTarget({ type: 'day', monthIndex: globalMonthIndex, weekLocalId, dayLocalId, expandIfCollapsed: false });
-}}
+                  const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+                  const weekLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.localId;
+                  const dayLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.days[dayIndex]?.localId;
+                  if (!weekLocalId || !dayLocalId) return;
+                  setCurrentPage(targetPage);
+                  setScrollTarget({ type: 'day', monthIndex: globalMonthIndex, weekLocalId, dayLocalId, expandIfCollapsed: false });
+                }}
                 expandedDays={expandedDays}
                 setExpandedDays={setExpandedDays}
               />
             )}
           </div>
 
-          <div className="w-3/4 h-full overflow-auto">
+          <div className="w-3/4 h-full overflow-auto" >
             <div className="h-full w-full">
-              <div ref={parentRef} className="w-full">
+              <div  className="w-full" ref={parentRef}>
                 <div
                   style={{
                     height: rowVirtualizer.getTotalSize(),
@@ -563,10 +485,10 @@ const scrollToWeekElement = (monthLocalId: string, weekLocalId: string) => {
                           addMonth={handleAddMonth}
                           updateMonths={(months, options) => safeUpdateMonths(months, options)}
                           scrollToWeek={scrollToWeekSafe}
-                          onScrollToDay={(monthIndex, weekIndex, dayLocalId) => {
-                            const weekLocalId = allMonths?.[monthIndex]?.weeks?.[weekIndex]?.localId;
-                            if (weekLocalId) scrollToDay(monthIndex, weekLocalId, dayLocalId);
-                          }}
+                          onScrollToDay={(monthIndex, weekIndex, dayLocalId, options) => {
+  const weekLocalId = allMonths?.[monthIndex]?.weeks?.[weekIndex]?.localId;
+  if (weekLocalId) scrollToDay(monthIndex, weekLocalId, dayLocalId, options);
+}}
                           onDuplicateMonth={handleDuplicateMonth}
 
                         />

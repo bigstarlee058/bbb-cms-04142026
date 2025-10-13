@@ -23,7 +23,7 @@ interface Props {
   monthLocalId: string;
   onScrollToWeek?: (monthIndex: number, weekIndex: number) => void;
   onScrollToMonth?: (monthIndex: number) => void;
-  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
+  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string, options?: { expandIfCollapsed?: boolean }) => void;
   scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
 }
 
@@ -58,24 +58,22 @@ const WeekPlanComponent = ({
 
   const toggleCollapse = () => {
   const weekKey = `${monthLocalId}-${week.localId}`;
-  const isExpandedNow = !!expandedWeeks[weekKey];
+  const isCurrentlyExpanded = expandedWeeks?.[weekKey] === true;
 
   setExpandedWeeks((prev) => ({
     ...prev,
-    [weekKey]: !isExpandedNow,
+    [weekKey]: !prev?.[weekKey],
   }));
 
-  requestAnimationFrame(() => {
-    if (!isExpandedNow) {
-      onScrollToWeek?.(monthIndex, weekIndex);
-    } else {
+  if (isCurrentlyExpanded) {
+    requestAnimationFrame(() => {
       if (weekIndex > 0) {
         onScrollToWeek?.(monthIndex, weekIndex - 1);
       } else {
         onScrollToMonth?.(monthIndex);
       }
-    }
-  });
+    });
+  }
 };
   if (!months[monthIndex]?.weeks[weekIndex]) return null;
 

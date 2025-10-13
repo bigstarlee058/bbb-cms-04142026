@@ -269,32 +269,41 @@ const DayPlanComponent = ({
 
   const isCollapsed = isWeekCollapsed || !expandedDays?.[dayKey];
   const toggleCollapse = React.useCallback(() => {
-    
-  if (!setExpandedDays) return;
-  const isCollapsedNow = expandedDays?.[dayKey] ?? true;
+    if (!setExpandedDays) return;
 
-  setExpandedDays(prev => ({
-    ...prev,
-    [dayKey]: !isCollapsedNow,
-  }));
+    const isCurrentlyExpanded = expandedDays?.[dayKey] === true;
+    const willBeExpanded = !isCurrentlyExpanded;
 
-  setTimeout(() => {
-    const doScroll = () => {
-      if (!isCollapsedNow) {
+    setExpandedDays(prev => ({
+      ...prev,
+      [dayKey]: !prev?.[dayKey],
+    }));
+
+    requestAnimationFrame(() => {
+      if (willBeExpanded) {
         onScrollToDay?.(monthIndex, weekIndex, day.localId);
       } else {
         if (dayIndex > 0) {
           const prevDayLocalId = months[monthIndex].weeks[weekIndex].days[dayIndex - 1].localId;
-          onScrollToDay?.(monthIndex, weekIndex, prevDayLocalId);
+          onScrollToDay?.(monthIndex, weekIndex, prevDayLocalId, { expandIfCollapsed: false });
         } else {
           const parentWeekLocalId = months[monthIndex].weeks[weekIndex].localId;
           scrollToWeek?.(monthIndex, parentWeekLocalId);
         }
       }
-    };
-    requestAnimationFrame(doScroll);
-  }, 300);
-}, [dayKey, setExpandedDays, expandedDays, onScrollToDay, scrollToWeek, monthIndex, weekIndex, day.localId, dayIndex, months]);
+    });
+  }, [
+    dayKey,
+    expandedDays,
+    setExpandedDays,
+    onScrollToDay,
+    scrollToWeek,
+    monthIndex,
+    weekIndex,
+    dayIndex,
+    day.localId,
+    months,
+  ]);
   const getNextFormat = () => {
     const allFormats = ['3', '4', '5'];
     const selectedFormats = checkedStates

@@ -35,7 +35,7 @@ interface Props {
   expandedDays: { [key: string]: boolean };
   setExpandedDays: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
-  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
+  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string, options?: { expandIfCollapsed?: boolean }) => void;
   onDuplicateMonth?: (realMonthIndex: number) => void;
 }
 export const MonthPlan = React.memo(
