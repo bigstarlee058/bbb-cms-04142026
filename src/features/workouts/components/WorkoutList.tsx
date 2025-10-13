@@ -46,21 +46,23 @@ export const WorkoutList = () => {
       rowVirtualizer.measure();
     });
   }, [allMonths.length, filters.perPage, rowVirtualizer]);
-    useEffect(() => {
+  useEffect(() => {
     if (!scrollTarget) return;
 
     const timer = requestAnimationFrame(() => {
       switch (scrollTarget.type) {
-        case 'month':
+        case 'month': {
           const targetIndexOnPage = scrollTarget.monthIndex % filters.perPage;
           rowVirtualizer.scrollToIndex(targetIndexOnPage, { align: "start", behavior: "smooth" });
           break;
-        case 'week':
+        }
+        case 'week': {
           if (scrollTarget.weekLocalId) {
             scrollToWeekSafe(scrollTarget.monthIndex, scrollTarget.weekLocalId);
           }
           break;
-        case 'day':
+        }
+        case 'day': {
           if (scrollTarget.weekLocalId && scrollTarget.dayLocalId) {
             scrollToDay(
               scrollTarget.monthIndex,
@@ -70,6 +72,7 @@ export const WorkoutList = () => {
             );
           }
           break;
+        }
       }
       setScrollTarget(null);
     });
@@ -123,34 +126,34 @@ export const WorkoutList = () => {
   const startIndex = (currentPage - 1) * filters.perPage;
   const monthsForPage = allMonths.slice(startIndex, startIndex + filters.perPage);
   const safeUpdateMonths = (
-  updatedMonths: Month[],
-  options?: { syncPage?: boolean; skipMeasure?: boolean }
-) => {
-  const { syncPage = true, skipMeasure = false } = options || {};
+    updatedMonths: Month[],
+    options?: { syncPage?: boolean; skipMeasure?: boolean }
+  ) => {
+    const { syncPage = true, skipMeasure = false } = options || {};
 
-  onSetMonths(updatedMonths);
-  setAllMonths(updatedMonths);
+    onSetMonths(updatedMonths);
+    setAllMonths(updatedMonths);
 
-  const lastPage = Math.max(1, Math.ceil(updatedMonths.length / filters.perPage));
+    const lastPage = Math.max(1, Math.ceil(updatedMonths.length / filters.perPage));
 
-  if (syncPage) {
-    setCurrentPage(prevPage => {
-      const newPage = Math.min(prevPage, lastPage);
-      if (newPage !== prevPage) {
-        requestAnimationFrame(() => {
-          rowVirtualizer.scrollToIndex(0);
-        });
-      }
-      return newPage;
-    });
-  }
+    if (syncPage) {
+      setCurrentPage(prevPage => {
+        const newPage = Math.min(prevPage, lastPage);
+        if (newPage !== prevPage) {
+          requestAnimationFrame(() => {
+            rowVirtualizer.scrollToIndex(0);
+          });
+        }
+        return newPage;
+      });
+    }
 
-  if (!skipMeasure) {
-    requestAnimationFrame(() => {
-      rowVirtualizer.measure();
-    });
-  }
-};
+    if (!skipMeasure) {
+      requestAnimationFrame(() => {
+        rowVirtualizer.measure();
+      });
+    }
+  };
   const handleAddMonth = () => {
     const newMonth: Month = {
       title: '',
@@ -181,9 +184,9 @@ export const WorkoutList = () => {
 
   };
   const scrollToMonth = useCallback((monthIndex: number) => {
-    rowVirtualizer.scrollToIndex(monthIndex, { align: "start",behavior:"smooth" });
+    rowVirtualizer.scrollToIndex(monthIndex, { align: "start", behavior: "smooth" });
   }, [rowVirtualizer]);
-    const scrollToWeekSafe = useCallback(async (globalMonthIndex: number, weekLocalId: string) => {
+  const scrollToWeekSafe = useCallback(async (globalMonthIndex: number, weekLocalId: string) => {
     if (!parentRef.current) return;
 
     const month = allMonths[globalMonthIndex];
@@ -234,7 +237,7 @@ export const WorkoutList = () => {
       behavior: "smooth",
     });
   }, [allMonths, currentPage, filters.perPage, rowVirtualizer]);
-    const scrollToDay = useCallback(async (
+  const scrollToDay = useCallback(async (
     globalMonthIndex: number,
     weekLocalId: string,
     dayLocalId: string,
@@ -296,7 +299,7 @@ export const WorkoutList = () => {
 
     const dayEl = monthEl.querySelector(`.day-${dayLocalId}`) as HTMLElement;
     if (!dayEl) return;
-    
+
     parentRef.current.scrollTo({
       top: dayEl.offsetTop - 20,
       behavior: "smooth",
@@ -304,13 +307,13 @@ export const WorkoutList = () => {
 
   }, [allMonths, currentPage, filters.perPage, rowVirtualizer]);
   useEffect(() => {
-  if (paginatedMonths.length === 0) return;
-  requestAnimationFrame(() => {
-    Object.values(monthRefs.current).forEach((el) => {
-      if (el) rowVirtualizer.measureElement(el);
+    if (paginatedMonths.length === 0) return;
+    requestAnimationFrame(() => {
+      Object.values(monthRefs.current).forEach((el) => {
+        if (el) rowVirtualizer.measureElement(el);
+      });
     });
-  });
-}, [paginatedMonths.length]);
+  }, [paginatedMonths.length]);
   const handleDuplicateMonth = useCallback((realMonthIndex: number) => {
     const origin = allMonths[realMonthIndex];
     if (!origin) return;
@@ -431,7 +434,7 @@ export const WorkoutList = () => {
 
           <div className="w-3/4 h-full overflow-auto" >
             <div className="h-full w-full">
-              <div  className="w-full" ref={parentRef}>
+              <div className="w-full" ref={parentRef}>
                 <div
                   style={{
                     height: rowVirtualizer.getTotalSize(),
@@ -486,9 +489,9 @@ export const WorkoutList = () => {
                           updateMonths={(months, options) => safeUpdateMonths(months, options)}
                           scrollToWeek={scrollToWeekSafe}
                           onScrollToDay={(monthIndex, weekIndex, dayLocalId, options) => {
-  const weekLocalId = allMonths?.[monthIndex]?.weeks?.[weekIndex]?.localId;
-  if (weekLocalId) scrollToDay(monthIndex, weekLocalId, dayLocalId, options);
-}}
+                            const weekLocalId = allMonths?.[monthIndex]?.weeks?.[weekIndex]?.localId;
+                            if (weekLocalId) scrollToDay(monthIndex, weekLocalId, dayLocalId, options);
+                          }}
                           onDuplicateMonth={handleDuplicateMonth}
 
                         />
