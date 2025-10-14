@@ -58,22 +58,11 @@ const WeekPlanComponent = ({
 
   const toggleCollapse = () => {
   const weekKey = `${monthLocalId}-${week.localId}`;
-  const isCurrentlyExpanded = expandedWeeks?.[weekKey] === true;
 
   setExpandedWeeks((prev) => ({
     ...prev,
     [weekKey]: !prev?.[weekKey],
   }));
-
-  if (isCurrentlyExpanded) {
-    requestAnimationFrame(() => {
-      if (weekIndex > 0) {
-        onScrollToWeek?.(monthIndex, weekIndex - 1);
-      } else {
-        onScrollToMonth?.(monthIndex);
-      }
-    });
-  }
 };
   if (!months[monthIndex]?.weeks[weekIndex]) return null;
 
