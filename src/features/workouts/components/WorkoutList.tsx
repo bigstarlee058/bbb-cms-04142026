@@ -432,7 +432,7 @@ export const WorkoutList = () => {
             )}
           </div>
 
-          <div className="w-3/4 h-full overflow-auto" >
+          <div className="w-3/4 h-full " >
             <div className="h-full w-full">
               <div className="w-full" ref={parentRef}>
                 <div
