@@ -462,3 +462,12 @@ export interface PhasesResponse {
   count: number;
   phases: Phases[];
 }
+export interface ToolsResponse {
+  toolsCount: number;
+  tools: Tools[];
+}
+export interface Tools extends BaseEntity {
+  title: string;
+  toolName: string;
+  visible:boolean;
+}

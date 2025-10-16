@@ -20,6 +20,7 @@ const { PopupEquipmentRoutes } = lazyImport(() => import('@/features/popup-equip
 const { PopupWorkoutRoutes } = lazyImport(() => import('@/features/popup-workout/'), 'PopupWorkoutRoutes');
 const { UsersRoutes } = lazyImport(() => import('@/features/users'), 'UsersRoutes');
 const { TutorialsRoutes } = lazyImport(() => import('@/features/tutorial'), 'TutorialsRoutes');
+const { ToolsRoutes } = lazyImport(() => import('@/features/tools'), 'ToolsRoutes');
 const { WorkoutsRoutes } = lazyImport(() => import('@/features/workouts'), 'WorkoutsRoutes');
 const { WarmupRoutes } = lazyImport(() => import('@/features/warmups'), 'WarmupRoutes');
 const { ExercisesRoutes } = lazyImport(() => import('@/features/exercises'), 'ExercisesRoutes');
@@ -90,6 +91,7 @@ export const protectedRoutes = [
       },
       { path: 'users/*', element: <UsersRoutes /> },
       { path: 'tutorials/*', element: <TutorialsRoutes /> },
+      { path: 'tools/*', element: <ToolsRoutes /> },
       { path: 'workouts/*', element: <WorkoutsRoutes /> },
       { path: 'exercises/*', element: <ExercisesRoutes /> },
       { path: 'warmups/*', element: <WarmupRoutes /> },
