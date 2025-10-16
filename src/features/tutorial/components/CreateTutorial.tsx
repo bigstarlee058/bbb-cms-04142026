@@ -9,10 +9,11 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createTutorialSchema } from '@/utils/yup';
 
 import { createTutorial } from '../api';
-
+import { Select } from '@/components/Form/Select';
 interface FormikState {
   title: string;
   description: string;
+  category: number;
   vimeoId: string;
   deleteImage: boolean;
   image: any;
@@ -32,10 +33,15 @@ export const CreateTutorial = () => {
   const initialValues: FormikState = {
     title: '',
     description: '',
+    category: 0,
     vimeoId: '',
     image: '',
     deleteImage: false,
   };
+  const categoryOptions = [
+    { value: 0, label: 'Tutorials' },
+    { value: 1, label: 'Nutrition Tutorials' },
+  ];
   const formik = useFormik({
     initialValues,
     validationSchema: createTutorialSchema,
@@ -62,17 +68,25 @@ export const CreateTutorial = () => {
         }
       >
         <form id="create-tutorial" onSubmit={formik.handleSubmit}>
-            <Field label="Title" formik={formik} name="title" />
-            <Field label="VimeoId" formik={formik} name="vimeoId" />
-            <Dropzone
-                label="Thumbnail"
-                name="image"
-                formik={formik}
-                defaultImg={formik.values.image}
-                onDrop={(img) => formik.setFieldValue('image', img)}
-                onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-            />
-            <Textarea label="Description" formik={formik} name="description" />
+          <Field label="Title" formik={formik} name="title" />
+          <Select
+            label="Category"
+            formik={formik}
+            name="category"
+            options={categoryOptions}
+            value={categoryOptions.find(option => option.value === formik.values.category)}
+            onChange={(option: any) => formik.setFieldValue('category', option.value)}
+          />
+          <Field label="Vimeo Id" formik={formik} name="vimeoId" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Textarea label="Description" formik={formik} name="description" />
         </form>
       </FormDrawer>
     </Authorization>
