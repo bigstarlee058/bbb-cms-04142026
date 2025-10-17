@@ -48,8 +48,6 @@ const WeekPlanComponent = ({
   setExpandedWeeks,
   expandedDays, setExpandedDays,
   monthLocalId,
-  onScrollToWeek,
-  onScrollToMonth,
   onScrollToDay,
   scrollToWeek,
 }: Props) => {
@@ -91,13 +89,17 @@ const WeekPlanComponent = ({
   const duplicateWeek = (monthIndex: number, weekIndex: number) => {
     const originWeek = months[monthIndex].weeks[weekIndex];
     const newWeek = JSON.parse(JSON.stringify(originWeek));
+    delete newWeek._id;
     newWeek.localId = uuid();
     newWeek.days.forEach((day: any) => {
+      delete day._id;
       day.localId = uuid();
       day.exercises.forEach((ex: any) => {
+        delete ex._id;
         ex.localId = uuid();
       });
       day.warmups.forEach((w: any) => {
+        delete w._id;
         w.localId = uuid();
       });
     });

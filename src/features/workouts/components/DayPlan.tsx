@@ -183,11 +183,13 @@ const DayPlanComponent = ({
     // const newDay = _.cloneDeep(originDay);
     const newDay = { ..._.cloneDeep(originDay), formats: [] }; // Reset formats
     delete newDay._id;
+    newDay.localId=uuid();
     newDay.exercises.map((exercise) => {
-      delete exercise._id;
+      exercise.localId=uuid();
     });
     newDay.warmups.map((warmup) => {
       delete warmup._id;
+      warmup.localId=uuid();
     });
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();

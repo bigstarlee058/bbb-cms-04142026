@@ -91,23 +91,23 @@ export const WorkoutList = () => {
           .sort((a, b) => a.index - b.index)
           .map((month) => ({
             ...month,
-            localId: month._id || uuid(),
+            localId:  uuid(),
             weeks: (month.weeks || []).map((week) => ({
               ...week,
-              localId: week._id || uuid(),
+              localId: uuid(),
               days: (week.days || []).map((day) => ({
                 ...day,
-                localId: day._id || uuid(),
+                localId:  uuid(),
                 warmups: (day.warmups || []).map((w) => ({
                   ...w,
-                  localId: w._id || uuid(),
+                  localId:  uuid(),
                 })),
                 exercises: (day.exercises || []).map((ex) => ({
                   ...ex,
-                  localId: ex._id || uuid(),
+                  localId:  uuid(),
                   extra: (ex.extra || []).map((e) => ({
                     ...e,
-                    localId: e._id || uuid(),
+                    localId:  uuid(),
                   })),
                 })),
               })),
