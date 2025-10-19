@@ -20,7 +20,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSelectRange,
   const handleDayClick = (day: Date) => {
     const newRange = {
       from: day,
-      to: getToDate(day, 28),
+      to: getToDate(day, 29),
     };
     onSelectRange(newRange);
     setSelectedFrom(day)
@@ -42,7 +42,7 @@ export const DateRangePicker: React.FC<DateRangePickerProps> = ({ onSelectRange,
     setSelectedFrom(date)
     const newRange = {
       from: date,
-      to: getToDate(date, 28),
+      to: getToDate(date, 29),
     };
     onSelectRange(newRange as DateRange);
   };
