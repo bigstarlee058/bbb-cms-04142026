@@ -4,7 +4,6 @@ import * as React from 'react';
 
 import { Dialog, DialogTitle } from '@/components/Elements/Dialog';
 import { User, UserWorkoutHistory } from '@/types';
-
 export type PopupDialogProps = {
   triggerButton: React.ReactElement;
   name: string;
@@ -49,6 +48,20 @@ export const PopupDialog = ({
     }).replace(',', '');
   };
 
+  const subscription = userData?.subscription;
+  const isActive = subscription?.end_date ? new Date(subscription.end_date) > new Date() : false;
+
+  const subscriptionType = (() => {
+    if (!isActive) return 'Free';
+    const type = subscription?.subscription_type || '';
+    if (type.toLowerCase().includes('month')) return 'Monthly';
+    if (type.toLowerCase().includes('year')) return 'Yearly';
+    return 'Free';
+  })();
+
+  const systemName = userData?.deviceInfo?.systemName;
+  const osVersion = userData?.deviceInfo?.osVersion;
+  const platform = !systemName ? '-' : osVersion ? `${systemName} ${osVersion}` : systemName;
   const tabContents = [
     <div key="summary" className="space-y-6 max-h-[500px] overflow-auto px-2 relative">
       {isLoading || !userData ? (
@@ -58,7 +71,22 @@ export const PopupDialog = ({
           <h3 className="text-md font-bold text-gray-900">
             Role: {userData.role === 0 ? 'User' : 'Admin'}
           </h3>
-          <p>Register Date: {userData.createdAt ? String(userData.createdAt) : 'N/A'}</p>
+          <p>
+            Created On: {userData.createdAt
+              ? `${new Date(userData.createdAt).toLocaleString('en-US', {
+                timeZone: 'America/Los_Angeles',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+              })} PST`
+              : 'N/A'}
+          </p>
+          <p>Source: {userData.uid === "-1" ? 'Mobile' : 'Wordpress'}</p>
+          <p>Subscription: {subscriptionType}</p>
+          <p>Platform: {platform}</p>
+          <p>App Version: {userData?.deviceInfo?.appVersion || "-"}</p>
         </>
       )}
     </div>,
@@ -106,11 +134,10 @@ export const PopupDialog = ({
                     {sameDateWorkouts.map((ex, exIndex) => (
                       <div
                         key={ex.date + exIndex}
-                        className={`p-4 rounded-lg border ${
-                          ex.status === 'Completed'
+                        className={`p-4 rounded-lg border ${ex.status === 'Completed'
                             ? 'bg-green-50 border-green-300'
                             : 'bg-red-50 border-red-300'
-                        }`}
+                          }`}
                       >
                         <h5 className="text-md font-medium text-gray-800">{ex.exerciseTitle}</h5>
                         <ul className="mt-2 text-sm text-gray-600 space-y-1">
@@ -128,9 +155,8 @@ export const PopupDialog = ({
                           </li>
                         </ul>
                         <p
-                          className={`mt-3 text-sm font-semibold ${
-                            ex.status === 'Completed' ? 'text-green-600' : 'text-red-600'
-                          }`}
+                          className={`mt-3 text-sm font-semibold ${ex.status === 'Completed' ? 'text-green-600' : 'text-red-600'
+                            }`}
                         >
                           {ex.status}
                         </p>
@@ -177,9 +203,8 @@ export const PopupDialog = ({
               <button
                 key={index}
                 onClick={() => setActiveTab(index)}
-                className={`px-4 py-2 rounded-md ${
-                  activeTab === index ? 'bg-[#9a354e] text-white' : 'bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-md ${activeTab === index ? 'bg-[#9a354e] text-white' : 'bg-gray-200'
+                  }`}
               >
                 {tab}
               </button>

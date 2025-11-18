@@ -64,6 +64,13 @@ export interface UserSubscription {
   user_subscription_status: string;
 }
 
+interface DeviceInfo {
+  device?: string;
+  systemName?: string;
+  osVersion?: string;
+  appVersion?: string;
+  lastLogin?: Date;
+}
 export interface User extends BaseEntity {
   workoutsHistory: UserWorkout[];
   subscription: UserSubscription;
@@ -71,6 +78,7 @@ export interface User extends BaseEntity {
   email: string;
   role: number;
   uid: string;
+  deviceInfo:DeviceInfo;
 }
 export interface UsersResponse {
   users: User[];
@@ -267,10 +275,12 @@ export interface VersionResponse {
   android: {
     forceUpdate: boolean;
     version: string;
+    showPopUp:boolean;
   };
   ios: {
     forceUpdate: boolean;
     version: string;
+    showPopUp:boolean;
   };
   _id: string;
   id: string;
@@ -295,6 +305,7 @@ export interface Filters {
   perPage?: number;
   search?: string;
   sortBy?: string;
+  subscription?:string;
   sortOrder?: number;
   filter?: any;
   lastId?: string;

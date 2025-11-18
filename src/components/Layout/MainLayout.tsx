@@ -354,13 +354,18 @@ const SortOption = [
   { label: 'Newest Added', value: 'NewestAdded' },
   { label: 'Oldest Added', value: 'OldestAdded' }
 ];
-
+const subscriptionType = [
+  { label: 'all', value: '' },
+  { label: 'Free', value: 'free' },
+  { label: 'Monthly', value: 'month' },
+  { label: 'Yearly', value: 'year' }
+];
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [monthCover, setMonthCover] = React.useState('');
 
   const { currentPage } = useUserStore();
-  const { setSearchBoxValue, setSortByValue, sortBy } = useFilteringStore();
+  const { setSearchBoxValue, setSortByValue, sortBy, subscription, setSubscriptionByValue } = useFilteringStore();
   const { months } = useWorkoutContext();
   const { days } = usePumpDaysContext();
   const { pathname } = useLocation();
@@ -371,7 +376,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const handleSortOptionChange = (val: any) => {
     setSortByValue(val.label, val.value);
   };
-
+  const handleSubscriptionOptionChange = (val: any) => {
+    setSubscriptionByValue(val.label, val.value);
+  };
   const fetchSetting = async () => {
     try {
       const result = await axios.get(`/settings/admin/get`);
@@ -424,13 +431,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           </button>
           <div
             className={`flex-1 px-4 flex items-center ${currentPage == 'users' ||
-                currentPage == 'exercises' ||
-                currentPage == 'warmups' ||
-                currentPage == 'equipments' ||
-                currentPage == 'restdays' ||
-                currentPage == 'categories'
-                ? 'justify-between'
-                : 'justify-end'
+              currentPage == 'exercises' ||
+              currentPage == 'warmups' ||
+              currentPage == 'equipments' ||
+              currentPage == 'restdays' ||
+              currentPage == 'categories'
+              ? 'justify-between'
+              : 'justify-end'
               }`}
           >
             {(currentPage == 'users' ||
@@ -454,6 +461,19 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                       onChange={handleSortOptionChange}
                     />
                   </div>
+                  {(currentPage == 'users') && (
+                    <div className="p-1">
+                      <ReactSelect
+                        styles={reactSelectStylesConfig}
+                        className="w-56 shrink hover:shrink-0 whitespace-nowrap"
+                        placeholder="Subscription"
+                        name="subscription"
+                        options={subscriptionType}
+                        value={subscription}
+                        onChange={handleSubscriptionOptionChange}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             <div className="ml-4 flex items-center md:ml-6">

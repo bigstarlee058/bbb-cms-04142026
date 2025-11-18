@@ -5,6 +5,8 @@ import { fetchTools, updateVisibility } from '../api';
 import { Tools } from '@/types';
 import Pagination from '@/components/Elements/Pagination';
 import { useNotificationStore } from '@/stores/notifications';
+import { DeleteTool } from './DeleteTool';
+import { UpdateTool } from './UpdateTool';
 export const ToolsList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
@@ -81,6 +83,18 @@ const { addNotification } = useNotificationStore();
               );
             },
           },
+          {
+            title: 'Actions',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return (
+              <div className="flex items-center space-x-2">
+                  <UpdateTool toolId={_id} tools={toolsData} />
+                  <DeleteTool id={_id} />
+                </div>
+                )
+            },
+          }
         ]}
       />
 

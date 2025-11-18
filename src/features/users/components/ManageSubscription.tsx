@@ -33,7 +33,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
   const { addNotification } = useNotificationStore();
 
   const [subscriptionType, setSubscriptionType] = React.useState<
-    'free' | 'monthly' | 'yearly'
+    'free' | 'monthly' | 'yearly' | 'custom'
   >(currentSubscription?.subscription_type || 'free');
 
   const [price, setPrice] = React.useState<number>(
@@ -45,10 +45,23 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
   );
 
   const [acknowledged, setAcknowledged] = React.useState(false);
+  const toLocalDateTime = (date: Date) => {
+    const d = new Date(date);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 16);
+  };
+
+  const [customStart, setCustomStart] = React.useState(
+    toLocalDateTime(new Date())
+  );
+  const [customEnd, setCustomEnd] = React.useState(
+    toLocalDateTime(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
+  );
 
   React.useEffect(() => {
     if (subscriptionType === 'monthly') setPrice(29.95);
     else if (subscriptionType === 'yearly') setPrice(289.95);
+    else if (subscriptionType === 'custom') setPrice(price);
     else setPrice(0);
     setAcknowledged(false);
 
@@ -75,7 +88,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
   const handleConfirm = () => {
     if (!acknowledged) return;
 
-    const subscription =
+    let subscription =
       subscriptionType === 'free'
         ? {
           subscription_type: 'free',
@@ -94,6 +107,16 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
               ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
               : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         };
+    if (subscriptionType === 'custom') {
+       subscription = {
+        subscription_type: 'monthly',
+        price: price.toString(),
+        user_subscription_status: 'subscribed_user',
+        purchase_date: customStart,
+        end_date: customEnd,
+      };
+    }
+
 
     mutate({ userId: id, subscription });
   };
@@ -166,6 +189,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                   className="border rounded-md p-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="free">Free</option>
+                  <option value="custom">Custom</option>
                   <option value="monthly">Monthly</option>
                   <option value="yearly">Yearly</option>
                 </select>
@@ -182,7 +206,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
 
               {subscriptionType !== currentSubscription.subscription_type && (
                 <div className="space-y-2">
-                  {subscriptionType !== 'free' && (
+                  {["monthly", "yearly"].includes(subscriptionType) && (
                     <div className="text-sm text-gray-600 space-y-1">
                       <div className="flex">
                         <span className="w-40 font-semibold">New Purchase Date:</span>
@@ -200,6 +224,34 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                       </div>
                     </div>
                   )}
+                  {subscriptionType === 'custom' && (
+                    <div className="text-sm text-gray-600 space-y-1">
+                      <div className="flex items-center">
+                        <span className="w-40 font-semibold">New Purchase Date:</span>
+                        <input
+                          type="datetime-local"
+                          value={customStart}
+                          onChange={(e) =>
+                            setCustomStart(e.target.value)
+                          }
+                          className="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center">
+                        <span className="w-40 font-semibold">New End Date:</span>
+                        <input
+                          type="datetime-local"
+                          value={customEnd}
+                          onChange={(e) =>
+                            setCustomEnd(e.target.value)
+                          }
+                          className="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex items-center space-x-2 whitespace-nowrap">
                     <input
                       id="acknowledge"

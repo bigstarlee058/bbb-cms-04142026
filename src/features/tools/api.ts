@@ -14,7 +14,7 @@ export const fetchTools = async () => {
     return Promise.reject(error);
   }
 };
-export const updateVisibility = async (payload: { 
+export const updateVisibility = async (payload: {
   toolId: string
   visible: boolean
 }) => {
@@ -34,6 +34,69 @@ export const updateVisibility = async (payload: {
       status: true,
       message: err.message || String(err),
     };
+    return Promise.reject(error);
+  }
+};
+export const createTool = async (payload: {
+  title: string;
+  toolName: string;
+  visible: boolean;
+}) => {
+  try {
+    const { title, toolName, visible } = payload
+    const result = (await axios.post('/tools', { title, toolName, visible })) as any;
+    console.log(result)
+    if (result?._id) {
+      queryClient.invalidateQueries('get-tools');
+      return result;
+    }
+    return result.message;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string,
+    };
+    console.log(error);
+    return Promise.reject(error);
+  }
+};
+export const deleteTool = async (toolId: string) => {
+  try {
+    const result = (await axios.delete(`/tools/${toolId}`)) as any;
+    if (result.result === true) {
+      queryClient.invalidateQueries('get-tools');
+      return 'Successfully deleted.';
+    }
+    return Promise.reject(result.message);
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string,
+    };
+    return Promise.reject(error);
+  }
+};
+export const updateTool = async (payload: {
+  toolId: string;
+  title?: string;
+  toolName?: string;
+  visible?: boolean;
+}) => {
+  try {
+    const { toolId, ...updatedFields } = payload;
+    const response = (await axios.put(`/tools/${toolId}`, updatedFields)) as any;
+    if (response.result === true) {
+      queryClient.invalidateQueries('get-tools');
+      queryClient.invalidateQueries(['get-tool', toolId]);
+      return response.data?.tool || 'Tool successfully updated.';
+    }
+    return Promise.reject(response.data?.message || 'Failed to update tool.');
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err.message || String(err),
+    };
+    console.error(error);
     return Promise.reject(error);
   }
 };

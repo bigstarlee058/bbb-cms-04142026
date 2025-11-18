@@ -10,7 +10,7 @@ import { useFilteringStore } from '@/stores/filter';
 import { UserDetail } from '../UserDetail';
 import { ManageSubscription } from './ManageSubscription';
 export const UsersList = () => {
-  const { search, sortBy } = useFilteringStore();
+  const { search, sortBy,subscription } = useFilteringStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
@@ -18,6 +18,7 @@ export const UsersList = () => {
     search: '',
     filter: {},
     sortBy: undefined,
+    subscription:undefined,
   });
 
   const { data, isLoading, isFetching, } = useQuery(
@@ -28,7 +29,7 @@ export const UsersList = () => {
 
 
   useEffect(() => {
-    setFilters((prev) => ({ ...prev, search, page: 1 }));
+    setFilters((prev) => ({ ...prev, search, page: 1 ,subscription:undefined}));
     setCurrentPage(1);
   }, [search]);
 
@@ -36,7 +37,10 @@ export const UsersList = () => {
     setFilters((prev) => ({ ...prev, sortBy: sortBy?.value, page: 1 }));
     setCurrentPage(1);
   }, [sortBy]);
-
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, subscription:subscription?.value, page: 1 }));
+    setCurrentPage(1);
+  }, [subscription]);
   useEffect(() => {
     setFilters((prev) => ({ ...prev, page: currentPage }));
   }, [currentPage]);
@@ -65,25 +69,10 @@ export const UsersList = () => {
           { title: 'Name', field: 'name' },
           { title: 'Email', field: 'email' },
           {
-            title: 'Register Type',
+            title: 'Source',
             field: 'uid',
             Cell({ entry: { uid } }) {
               return <span>{uid == '-1' ? 'Mobile' : 'Wordpress'}</span>;
-            },
-          },
-          {
-            title: 'Tier',
-            field: 'subscription',
-            Cell({ entry: { subscription } }) {
-              return (
-                <span>
-                  {subscription?.user_subscription_status === 'free_user'
-                    ? 'Free'
-                    : new Date(subscription?.end_date) > new Date()
-                    ? 'Paid'
-                    : 'Free'}
-                </span>
-              );
             },
           },
           {
@@ -158,22 +147,36 @@ export const UsersList = () => {
                 </>
               );
             },
+          },
+          {
+            title: 'Platform',
+            field: '_id',
+            Cell({ entry }) {
+              const systemName = entry?.deviceInfo?.systemName;
+              const osVersion = entry?.deviceInfo?.osVersion;    
+              if (!systemName) return <div>-</div>;
+              return <div>{osVersion ? `${systemName} ${osVersion}` : systemName}</div>;
+            },
+          },
+          {
+            title: 'App Version',
+            field: '_id',
+            Cell({ entry }) {
+              return <div>{entry?.deviceInfo?.appVersion || '-'}</div>;
+            },
+          },
+          {
+            title: '',
+            field: '_id',
+            Cell({ entry: { _id } }) {
+              return (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <UserDetail id={_id} />
+                  <DeleteUser id={_id} />
+                </div>
+              );
+            },
           }
-          ,
-          {
-            title: '',
-            field: '_id',
-            Cell({ entry: { _id } }) {
-              return <UserDetail id={_id} />;
-            },
-          },
-          {
-            title: '',
-            field: '_id',
-            Cell({ entry: { _id } }) {
-              return <DeleteUser id={_id} />;
-            },
-          },
         ]}
       />
 
