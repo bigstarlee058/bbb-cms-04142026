@@ -205,6 +205,9 @@ const SubscriptionChart: React.FC = () => {
             setLoading(false);
         }
     };
+    const allYValues = chartData? chartData.datasets.flatMap(ds => ds.data):[];
+    const maxYValue = allYValues.length ? Math.max(...allYValues) : 0;
+    const stepSize = maxYValue ? Math.ceil(maxYValue / 10) : 1;
     const options: ChartOptions<'line'> = {
         responsive: true,
         maintainAspectRatio: false,
@@ -255,7 +258,10 @@ const SubscriptionChart: React.FC = () => {
             y: {
                 beginAtZero: true,
                 title: { display: true, text: getYAxisLabel() },
-                ticks: { stepSize: 1 },
+                ticks: {
+                    stepSize,
+                    callback: (value) => value.toLocaleString(),
+                },
             },
             x: {
                 title: { display: true, text: getXAxisLabel() },
