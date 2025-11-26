@@ -83,7 +83,7 @@ export const PopupDialog = ({
               })} PST`
               : 'N/A'}
           </p>
-          <p>Source: {userData.uid === "-1" ? 'Mobile' : 'Wordpress'}</p>
+          <p>Source: {userData.uid == "-1" ? 'Mobile' : 'Wordpress'}</p>
           <p>Subscription: {subscriptionType}</p>
           <p>Platform: {platform}</p>
           <p>App Version: {userData?.deviceInfo?.appVersion || "-"}</p>
