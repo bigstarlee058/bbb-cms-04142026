@@ -461,7 +461,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                       onChange={handleSortOptionChange}
                     />
                   </div>
-                  {(currentPage == 'users') && (
+                  {pathname.includes('users') && (
                     <div className="p-1">
                       <ReactSelect
                         styles={reactSelectStylesConfig}

@@ -320,6 +320,7 @@ export const WorkoutList = () => {
 
     const newMonth = structuredClone(origin);
     delete newMonth._id;
+    delete newMonth.createdAt;
     newMonth.localId = uuid();
 
     newMonth.weeks.forEach((week) => {
