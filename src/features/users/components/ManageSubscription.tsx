@@ -36,13 +36,15 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     'free' | 'monthly' | 'yearly' | 'custom'
   >(currentSubscription?.subscription_type || 'free');
 
-  const [price, setPrice] = React.useState<number>(
-    currentSubscription?.subscription_type === 'yearly'
-      ? 289.95
-      : currentSubscription?.subscription_type === 'monthly'
-        ? 29.95
-        : 0
-  );
+  const [price, setPrice] = React.useState<number>(() => {
+  const raw = currentSubscription?.price;
+  if (!raw) return 0;
+  const [value] = raw.split(" ");
+  return parseFloat(value);
+});
+
+const currency = currentSubscription?.price?.split(" ")[1] ?? "";
+
 
   const [acknowledged, setAcknowledged] = React.useState(false);
   const toLocalDateTime = (date: Date) => {
@@ -58,11 +60,15 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     toLocalDateTime(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))
   );
 
+  const DEFAULT_PRICES = {
+    monthly: 29.95,
+    yearly: 289.95,
+  };
   React.useEffect(() => {
-    if (subscriptionType === 'monthly') setPrice(29.95);
-    else if (subscriptionType === 'yearly') setPrice(289.95);
-    else if (subscriptionType === 'custom') setPrice(price);
-    else setPrice(0);
+  if (price === 0 && subscriptionType !== 'custom') {
+    setPrice(DEFAULT_PRICES[subscriptionType] || 0);
+  }
+  
     setAcknowledged(false);
 
   }, [subscriptionType]);
@@ -201,7 +207,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                   disabled={subscriptionType === 'free'}
                   className="border rounded-md p-2 w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <span className="text-gray-600 font-semibold">$</span>
+                <span className="text-gray-600 font-semibold">{currency||"$"}</span>
               </div>
 
               {subscriptionType !== currentSubscription.subscription_type && (
