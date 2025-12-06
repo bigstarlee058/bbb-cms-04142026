@@ -37,14 +37,13 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
   >(currentSubscription?.subscription_type || 'free');
 
   const [price, setPrice] = React.useState<number>(() => {
-  const raw = currentSubscription?.price;
-  if (!raw) return 0;
-  const [value] = raw.split(" ");
-  return parseFloat(value);
-});
+    const raw = currentSubscription?.price;
+    if (!raw) return 0;
+    const numericString = raw.replace(/[^0-9.,]/g, "");
+    return parseFloat(numericString.replace(/,/g, "")) || 0;
+  });
 
-const currency = currentSubscription?.price?.split(" ")[1] ?? "";
-
+  const currency = currentSubscription?.price?.replace(/[^a-zA-Z]/g, "") ?? "";
 
   const [acknowledged, setAcknowledged] = React.useState(false);
   const toLocalDateTime = (date: Date) => {
