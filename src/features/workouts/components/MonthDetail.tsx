@@ -7,7 +7,7 @@ import Modal from 'react-modal';
 
 import { axios } from '@/lib/axios';
 import { useMonthCoverContext } from '../MonthCoverContext';
-Modal.setAppElement('#root'); // Set root element for accessibility
+Modal.setAppElement('#root');
 
 interface Props {
   monthIndex: number;
@@ -51,14 +51,9 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth }: Props
     setShowDatePickerModal(false);
   };
 
-  // useEffect(() => {
-  //   updateMonthDates({start: startDate, end: endDate});
-  // },[]);
-
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2 my-auto">
-        {/* <Textarea label="Description" name="description" value={month.description} onChange={handleChange}/> */}
         <Dropzone
           defaultImg={month.thumbnail}
           onDrop={(img) => {

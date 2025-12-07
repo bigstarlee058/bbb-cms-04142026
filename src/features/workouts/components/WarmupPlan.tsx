@@ -40,7 +40,7 @@ export const WarmupPlan = ({
     } else {
       const updatedMonths = [...months];
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups[warmupIndex] = updatedWarmup;
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
     }
   };
 
@@ -62,7 +62,7 @@ export const WarmupPlan = ({
         newWarmup.typeId = nextTypeId;
         updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
       } else updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex + 1, 0, newWarmup);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
     }
   };
 
@@ -79,7 +79,7 @@ export const WarmupPlan = ({
         (e) => e.typeId === warmup.typeId
       ).length;
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.splice(warmupIndex, 1);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
       if (countSameType === 1) reassignWarmupTypeIds(warmup.typeId);
     }
   };

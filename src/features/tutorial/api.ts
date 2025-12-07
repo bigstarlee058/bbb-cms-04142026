@@ -34,7 +34,8 @@ export const createTutorial = async (payload: {
   title: string;
   vimeoId: string;
   description: string;
-  image?: File;  // Assuming the image comes as a File object from the client
+  image?: File;  
+  category?:number;
 }) => {
   try {
     const formData = new FormData();
@@ -42,6 +43,7 @@ export const createTutorial = async (payload: {
     formData.append('vimeoId', payload.vimeoId);
     formData.append('description', payload.description);
     formData.append('image', payload.image);
+    formData.append('category', payload.category.toString());
     // Post the new tag data (including the image) to your backend
     const result = (await axios.post('/tutorials/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
@@ -96,7 +98,8 @@ export const updateTutorial = async (payload: {
   title: string;
   vimeoId: string;
   description: string;
-  image: File;  // Assuming the image comes as a File object from the client
+  category:number;
+  image: File; 
   deleteImage: Boolean
 }) => {
   try {
@@ -107,6 +110,7 @@ export const updateTutorial = async (payload: {
     formData.append('vimeoId', payload.vimeoId);
     formData.append('image', payload.image);
     formData.append('deleteImage', String(payload.deleteImage));
+    formData.append('category', payload.category.toString());
     const result = (await axios.put('/tutorials/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-tutorials');

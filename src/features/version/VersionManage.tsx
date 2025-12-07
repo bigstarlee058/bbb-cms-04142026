@@ -75,12 +75,18 @@ export const VersionManage = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">Force Update</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium w-[100px] text-center ${
                     data.android.forceUpdate 
                       ? 'bg-red-100 text-red-800' 
                       : 'bg-green-100 text-green-800'
                   }`}>
                     {data.android.forceUpdate ? 'Required' : 'Optional'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">Show Popup</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium w-[100px] text-center ${data.android.showPopUp ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {data.android.showPopUp ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
               </div>
@@ -103,12 +109,18 @@ export const VersionManage = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-500">Force Update</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <span className={`px-3 py-1 rounded-full w-[100px] text-center text-sm font-medium ${
                     data.ios.forceUpdate 
                       ? 'bg-red-100 text-red-800' 
                       : 'bg-green-100 text-green-800'
                   }`}>
                     {data.ios.forceUpdate ? 'Required' : 'Optional'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-gray-500">Show Popup</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium w-[100px] text-center ${data.ios.showPopUp ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {data.ios.showPopUp ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
               </div>

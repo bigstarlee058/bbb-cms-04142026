@@ -19,10 +19,12 @@ export const updateVersion = async (payload : {
     android: {
       version: string;
       forceUpdate: boolean;
+      showPopUp: boolean;
     };
     ios: {
       version: string;
       forceUpdate: boolean;
+      showPopUp: boolean;
     };
     update_title: string;
     update_message: string;
@@ -32,6 +34,8 @@ export const updateVersion = async (payload : {
     const jsonData = {
       androidVersion: payload.android.version,
       androidForceUpdate: payload.android.forceUpdate,
+      androidShowPopUp: payload.android.showPopUp,
+      iosShowPopUp: payload.ios.showPopUp,
       iosVersion: payload.ios.version,
       iosForceUpdate: payload.ios.forceUpdate,
       updateTitle: payload.update_title,

@@ -7,13 +7,14 @@ import { updateTutorial } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createTutorialSchema } from '@/utils/yup';
-
+import { Select } from '@/components/Form/Select';
 interface FormikState {
-    title: string;
-    description: string;
-    vimeoId: string;
-    deleteImage: boolean;
-    image: any;
+  title: string;
+  description: string;
+  category: number;
+  vimeoId: string;
+  deleteImage: boolean;
+  image: any;
 }
 
 export const UpdateTutorial = ({ tutorialId, tutorials }) => {
@@ -32,18 +33,23 @@ export const UpdateTutorial = ({ tutorialId, tutorials }) => {
   const initialValues: FormikState = {
     title: tutorialData?.title || '',
     description: tutorialData?.description || '',
+    category: tutorialData?.category || 0,
     vimeoId: tutorialData?.vimeoId || '',
     image: tutorialData?.thumbnail || '',
     deleteImage: false,
   };
+  const categoryOptions = [
+    { value: 0, label: 'Tutorials' },
+    { value: 1, label: 'Nutrition Tutorials' },
+  ];
   const formik = useFormik({
     initialValues,
     validationSchema: createTutorialSchema,
     onSubmit: (v) => onSubmit(v),
   });
   const onSubmit = (state: FormikState) => {
-    const { title, vimeoId, description, image, deleteImage } = state;
-    mutate({ tutorialId, title, vimeoId, description, image, deleteImage });
+    const { title, vimeoId, category, description, image, deleteImage } = state;
+    mutate({ tutorialId, title, category, vimeoId, description, image, deleteImage });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -58,17 +64,25 @@ export const UpdateTutorial = ({ tutorialId, tutorials }) => {
         }
       >
         <form id="update-tutorial" onSubmit={formik.handleSubmit}>
-            <Field label="Title" formik={formik} name="title" />
-            <Field label="VimeoId" formik={formik} name="vimeoId" />
-            <Dropzone
-                label="Thumbnail"
-                name="image"
-                formik={formik}
-                defaultImg={formik.values.image}
-                onDrop={(img) => formik.setFieldValue('image', img)}
-                onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-            />
-            <Textarea label="Description" formik={formik} name="description" />
+          <Field label="Title" formik={formik} name="title" />
+          <Select
+            label="Category"
+            formik={formik}
+            name="category"
+            options={categoryOptions}
+            value={categoryOptions.find(option => option.value === formik.values.category)}
+            onChange={(option: any) => formik.setFieldValue('category', option.value)}
+          />
+          <Field label="Vimeo Id" formik={formik} name="vimeoId" />
+          <Dropzone
+            label="Thumbnail"
+            name="image"
+            formik={formik}
+            defaultImg={formik.values.image}
+            onDrop={(img) => formik.setFieldValue('image', img)}
+            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+          />
+          <Textarea label="Description" formik={formik} name="description" />
         </form>
       </FormDrawer>
     </Authorization>

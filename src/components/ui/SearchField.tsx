@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BiSearch } from 'react-icons/bi';
 
 import useDebounce from '@/lib/useDebounce';
@@ -11,6 +11,16 @@ export const SearchField = ({ setSearchQuery }: Props) => {
   const [value, setValue] = useState('');
   const { debounce } = useDebounce();
 
+  const didReset = useRef(false);
+
+  useEffect(() => {
+    if (!didReset.current) {
+      didReset.current = true;
+      setValue('');
+      setSearchQuery('');
+    }
+  }, [setSearchQuery]);
+
   return (
     <div className="relative flex-1 lg:flex-none ml-7 lg:ml-0">
       <BiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary text-2xl" />
@@ -22,8 +32,9 @@ export const SearchField = ({ setSearchQuery }: Props) => {
           focus:outline-none focus:ring-[#87C6E8] focus:border-[#87C6E8]"
         value={value}
         onChange={(e) => {
-          setValue(e.target.value);
-          debounce(() => setSearchQuery(e.target.value));
+          const newValue = e.target.value;
+          setValue(newValue);
+          debounce(() => setSearchQuery(newValue));
         }}
       />
     </div>

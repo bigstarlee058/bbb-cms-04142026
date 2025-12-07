@@ -162,3 +162,13 @@ export const createTutorialSchema = Yup.object().shape({
   vimeoId: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
+export const createToolSchema = Yup.object().shape({
+  title: Yup.string().max(255).required('Title is required'),
+  toolName: Yup.string()
+    .max(255)
+    .required('Tool name is required')
+    .matches(
+      /^[a-zA-Z][a-zA-Z0-9_-]*$/,
+      'Tool name must start with a letter and contain only letters, numbers, hyphens, and underscores (no spaces)'
+    ),
+});

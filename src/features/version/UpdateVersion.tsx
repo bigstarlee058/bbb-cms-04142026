@@ -17,6 +17,8 @@ interface FormikState {
   iosForceUpdate: boolean;
   updateTitle: string;
   updateMessage: string;
+  androidShowPopUp: boolean;
+  iosShowPopUp: boolean;
 }
 
 export const UpdateVersion = ({screenData}) => {
@@ -27,6 +29,8 @@ export const UpdateVersion = ({screenData}) => {
     iosVersion: screenData?.ios?.version || '1.0.0',
     androidForceUpdate: screenData?.android?.forceUpdate || false,
     iosForceUpdate: screenData?.ios?.forceUpdate || false,
+    androidShowPopUp: screenData?.android?.showPopUp || false,
+    iosShowPopUp: screenData?.ios?.showPopUp || false,
     updateTitle: screenData?.update_title || '',
     updateMessage: screenData?.update_message || '',
   };
@@ -47,10 +51,11 @@ export const UpdateVersion = ({screenData}) => {
   });
 
   const onSubmit = (state: FormikState) => {
-    const { androidVersion, iosVersion, androidForceUpdate, iosForceUpdate, updateTitle, updateMessage } = state;
-    mutate({ 
-      android: { version: androidVersion, forceUpdate: androidForceUpdate },
-      ios: { version: iosVersion, forceUpdate: iosForceUpdate },
+    const { androidVersion, iosVersion, androidShowPopUp,
+      iosShowPopUp, androidForceUpdate, iosForceUpdate, updateTitle, updateMessage } = state;
+    mutate({
+      android: { version: androidVersion, forceUpdate: androidForceUpdate, showPopUp: iosShowPopUp },
+      ios: { version: iosVersion, forceUpdate: iosForceUpdate, showPopUp: androidShowPopUp },
       update_title: updateTitle,
       update_message: updateMessage
     });
@@ -75,31 +80,46 @@ export const UpdateVersion = ({screenData}) => {
         <form id="update-version" onSubmit={formik.handleSubmit} className="space-y-6">
           {/* Android Version Section */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a2 2 0 114 0 2 2 0 01-4 0z"/>
-                </svg>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a2 2 0 114 0 2 2 0 01-4 0z" />
+                  </svg>
+                </div>
+                Android
+              </h3>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Show Popup</span>
+                <button
+                  type="button"
+                  onClick={() => formik.setFieldValue('androidShowPopUp', !formik.values.androidShowPopUp)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${formik.values.androidShowPopUp ? 'bg-red-600' : 'bg-gray-200'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formik.values.androidShowPopUp ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                  />
+                </button>
               </div>
-              Android
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Version" formik={formik} name="androidVersion" />
+            </div>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${!formik.values.androidShowPopUp ? 'opacity-50 pointer-events-none' : ''}`}>
+              <Field label="Version" formik={formik} name="androidVersion" disabled={!formik.values.androidShowPopUp} />
               <div className="flex items-center justify-between">
                 <label htmlFor="androidForceUpdate" className="text-base font-medium text-gray-700">
                   Force Update Required
                 </label>
                 <button
                   type="button"
+                  disabled={!formik.values.androidShowPopUp}
                   onClick={() => formik.setFieldValue('androidForceUpdate', !formik.values.androidForceUpdate)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
-                    formik.values.androidForceUpdate ? 'bg-red-600' : 'bg-gray-200'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${formik.values.androidForceUpdate ? 'bg-red-600' : 'bg-gray-200'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      formik.values.androidForceUpdate ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formik.values.androidForceUpdate ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>
@@ -108,31 +128,46 @@ export const UpdateVersion = ({screenData}) => {
 
           {/* iOS Version Section */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a2 2 0 114 0 2 2 0 01-4 0z"/>
-                </svg>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 12a2 2 0 114 0 2 2 0 01-4 0z" />
+                  </svg>
+                </div>
+                iOS
+              </h3>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Show Popup</span>
+                <button
+                  type="button"
+                  onClick={() => formik.setFieldValue('iosShowPopUp', !formik.values.iosShowPopUp)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${formik.values.iosShowPopUp ? 'bg-red-600' : 'bg-gray-200'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formik.values.iosShowPopUp ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                  />
+                </button>
               </div>
-              iOS
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Version" formik={formik} name="iosVersion" />
+            </div>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${!formik.values.iosShowPopUp ? 'opacity-50 pointer-events-none' : ''}`}>
+              <Field label="Version" formik={formik} name="iosVersion" disabled={!formik.values.iosShowPopUp} />
               <div className="flex items-center justify-between">
                 <label htmlFor="iosForceUpdate" className="text-base font-medium text-gray-700">
                   Force Update Required
                 </label>
                 <button
                   type="button"
+                  disabled={!formik.values.iosShowPopUp}
                   onClick={() => formik.setFieldValue('iosForceUpdate', !formik.values.iosForceUpdate)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
-                    formik.values.iosForceUpdate ? 'bg-red-600' : 'bg-gray-200'
-                  }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${formik.values.iosForceUpdate ? 'bg-red-600' : 'bg-gray-200'
+                    }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      formik.values.iosForceUpdate ? 'translate-x-6' : 'translate-x-1'
-                    }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formik.values.iosForceUpdate ? 'translate-x-6' : 'translate-x-1'
+                      }`}
                   />
                 </button>
               </div>

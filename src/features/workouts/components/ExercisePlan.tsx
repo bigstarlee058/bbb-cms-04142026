@@ -64,7 +64,7 @@ export const ExercisePlan = ({
     } else {
       const updatedMonths = [...months];
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex] = updatedExercise;
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
     }
   };
 
@@ -105,7 +105,7 @@ export const ExercisePlan = ({
         updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.push(newExercise);
       } else
         updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex + 1, 0, newExercise);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
     }
   };
 
@@ -132,7 +132,7 @@ export const ExercisePlan = ({
         (ex) => ex.typeId === exercise.typeId
       ).length;
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.splice(exerciseIndex, 1);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
       if (countSameType === 1) reassignExerciseTypeIds(exercise.typeId);
     }
   };
@@ -151,7 +151,7 @@ export const ExercisePlan = ({
     } else {
       const updatedMonths = [...months];
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.splice(extraIndex, 1);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
     }
   };
 
@@ -315,7 +315,7 @@ export const ExercisePlan = ({
         type: 1
       };
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex].extra.push(newExtraExercise);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true })
     }
   };
 

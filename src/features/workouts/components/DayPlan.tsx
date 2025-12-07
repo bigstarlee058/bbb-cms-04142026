@@ -4,13 +4,32 @@ import { CustomTitle } from './CustomTitle';
 import { DayDetail } from './DayDetail';
 import { Day, DayExercise, DayWarmup } from '@/types';
 import { ExercisePlan } from './ExercisePlan';
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { WarmupPlan } from './WarmupPlan';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
 import { CircuitPlan } from './CircuitPlan';
-
-export const DayPlan = ({
+import { v4 as uuid } from 'uuid';
+interface Props {
+  monthIndex: number;
+  weekIndex: number;
+  dayIndex: number;
+  day: Day;
+  addDay: (monthIndex: number, weekIndex: number, newTypeId: number, newFormats: string[]) => void;
+  reassignDayTypeIds: (deletedDayTypeId: number) => void;
+  months: any[];
+  updateMonths: (months: any[], options?: { skipMeasure?: boolean }) => void;
+  isSevenDays: boolean;
+  isWeekCollapsed: boolean;
+  isPumpDay?: boolean;
+  updateDays?: (days: any[]) => void;
+  days?: any[];
+  expandedDays?: { [key: string]: boolean };
+  setExpandedDays?: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
+  onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
+  scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
+}
+const DayPlanComponent = ({
   monthIndex,
   weekIndex,
   dayIndex,
@@ -22,17 +41,18 @@ export const DayPlan = ({
   isSevenDays,
   isWeekCollapsed,
   isPumpDay = false,
-  updateDays = (val) => {},
-  days = []
+  updateDays = (_val: Day[]) => { },
+  days = [],
+  setExpandedDays,
+  expandedDays,
+  onScrollToDay,
+  scrollToWeek,
 }) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const dayKey = `${months[monthIndex].localId}-${months[monthIndex].weeks[weekIndex].localId}-${day.localId}`;
+
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
 
   if (!isPumpDay && !months[monthIndex]?.weeks[weekIndex]?.days[dayIndex]) return null;
-
-  useEffect(() => {
-    if (!isPumpDay && isWeekCollapsed) setIsCollapsed(true);
-  }, [isWeekCollapsed]);
 
   const addExercise = (
     monthIndex: number,
@@ -53,7 +73,8 @@ export const DayPlan = ({
         rest: 0,
         formats: newFormats,
         status: '',
-        extra: []
+        extra: [],
+        localId: uuid(),
       };
       updatedDays[dayIndex].exercises.push(newExercise);
       updateDays(updatedDays);
@@ -69,10 +90,11 @@ export const DayPlan = ({
         rest: 0,
         formats: newFormats,
         status: '',
-        extra: []
+        extra: [],
+        localId: uuid(),
       };
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises.push(newExercise);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
     }
   };
 
@@ -91,7 +113,8 @@ export const DayPlan = ({
           weight: 0,
           rest: 0,
           status: '',
-          extra: []
+          extra: [],
+          localId: uuid()
         }
       ]
     };
@@ -113,7 +136,8 @@ export const DayPlan = ({
         warmupId: '',
         title: '',
         guide: '',
-        formats: newFormats
+        formats: newFormats,
+        localId: uuid()
       };
       updatedDays[dayIndex].warmups.push(newWarmup);
       updateDays(updatedDays);
@@ -124,10 +148,11 @@ export const DayPlan = ({
         warmupId: '',
         title: '',
         guide: '',
-        formats: newFormats
+        formats: newFormats,
+        localId: uuid()
       };
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
     }
   };
 
@@ -136,8 +161,6 @@ export const DayPlan = ({
     weekIndex: number,
     dayIndex: number,
     updatedDay: Day,
-    isTypeIdUpdate?: boolean,
-    typeId?: number
   ) => {
     if (isPumpDay) {
       const updatedDays = [...days];
@@ -146,7 +169,7 @@ export const DayPlan = ({
     } else {
       const updatedMonths = [...months];
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex] = updatedDay;
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
     }
   };
 
@@ -160,11 +183,13 @@ export const DayPlan = ({
     // const newDay = _.cloneDeep(originDay);
     const newDay = { ..._.cloneDeep(originDay), formats: [] }; // Reset formats
     delete newDay._id;
+    newDay.localId=uuid();
     newDay.exercises.map((exercise) => {
-      delete exercise._id;
+      exercise.localId=uuid();
     });
     newDay.warmups.map((warmup) => {
       delete warmup._id;
+      warmup.localId=uuid();
     });
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
@@ -181,7 +206,7 @@ export const DayPlan = ({
         newDay.typeId = nextTypeId;
         updatedMonths[monthIndex].weeks[weekIndex].days.push(newDay);
       } else updatedMonths[monthIndex].weeks[weekIndex].days.splice(dayIndex + 1, 0, newDay);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
     }
   };
 
@@ -198,7 +223,7 @@ export const DayPlan = ({
         (d) => d.typeId === day.typeId
       ).length;
       updatedMonths[monthIndex].weeks[weekIndex].days.splice(dayIndex, 1);
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
       if (countSameType === 1) reassignDayTypeIds(day.typeId);
     }
   };
@@ -217,7 +242,7 @@ export const DayPlan = ({
       warmups.forEach((warmup, index) => {
         if (warmup.typeId > deletedWarmupTypeId) warmup.typeId--;
       });
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
     }
   };
 
@@ -232,10 +257,10 @@ export const DayPlan = ({
     } else {
       const updatedMonths = [...months];
       const exercises = updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].exercises;
-      exercises.forEach((exercise, index) => {
+      exercises.forEach((exercise) => {
         if (exercise.typeId > deletedExerciseTypeId) exercise.typeId--;
       });
-      updateMonths(updatedMonths);
+      updateMonths(updatedMonths, { skipMeasure: true });
     }
   };
 
@@ -244,10 +269,43 @@ export const DayPlan = ({
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
 
-  const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
-  };
+  const isCollapsed = isWeekCollapsed || !expandedDays?.[dayKey];
+  const toggleCollapse = React.useCallback(() => {
+    if (!setExpandedDays) return;
 
+    const isCurrentlyExpanded = expandedDays?.[dayKey] === true;
+    const willBeExpanded = !isCurrentlyExpanded;
+
+    setExpandedDays(prev => ({
+      ...prev,
+      [dayKey]: !prev?.[dayKey],
+    }));
+
+    requestAnimationFrame(() => {
+      if (willBeExpanded) {
+        onScrollToDay?.(monthIndex, weekIndex, day.localId);
+      } else {
+        if (dayIndex > 0) {
+          const prevDayLocalId = months[monthIndex].weeks[weekIndex].days[dayIndex - 1].localId;
+          onScrollToDay?.(monthIndex, weekIndex, prevDayLocalId, { expandIfCollapsed: false });
+        } else {
+          const parentWeekLocalId = months[monthIndex].weeks[weekIndex].localId;
+          scrollToWeek?.(monthIndex, parentWeekLocalId);
+        }
+      }
+    });
+  }, [
+    dayKey,
+    expandedDays,
+    setExpandedDays,
+    onScrollToDay,
+    scrollToWeek,
+    monthIndex,
+    weekIndex,
+    dayIndex,
+    day.localId,
+    months,
+  ]);
   const getNextFormat = () => {
     const allFormats = ['3', '4', '5'];
     const selectedFormats = checkedStates
@@ -284,7 +342,7 @@ export const DayPlan = ({
 
   return (
     <>
-      <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${dayIndex}`} style={{ backgroundColor: '#EAC0AB' }}>
+      <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${day.localId}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
           <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay />
           <div className="flex gap-3">
@@ -306,102 +364,105 @@ export const DayPlan = ({
             />
           </div>
         </div>
-        <div className={`collapse-content ${isCollapsed ? 'collapsed' : 'expanded'}`}>
-          <DayDetail
-            monthIndex={monthIndex}
-            weekIndex={weekIndex}
-            dayIndex={dayIndex}
-            week={monthIndex != null && weekIndex != null ? [...months][monthIndex]?.weeks[weekIndex] : null}
-            day={day}
-            states={checkedStates}
-            updateStates={setCheckedStates}
-            updateDay={updateDay}
-            isPumpDay={isPumpDay}
-            days={days}
-          />
-          {day.warmups.length < 1 ? (
-            <Button
-              variant="danger"
-              onClick={() => addWarmup(monthIndex, weekIndex, dayIndex, 1, [])}
-              startIcon={<PlusIcon className="h-4 w-4" />}
-              className="mt-4"
-            >
-              Add Warmup
-            </Button>
-          ) : null}
-          {day.warmups.map((warmup, warmupIndex) => (
-            <WarmupPlan
-              key={warmupIndex}
+        {!isCollapsed && (
+          <div>
+            <DayDetail
               monthIndex={monthIndex}
               weekIndex={weekIndex}
               dayIndex={dayIndex}
-              warmupIndex={warmupIndex}
-              warmup={warmup}
-              addWarmup={addWarmup}
-              reassignWarmupTypeIds={reassignWarmupTypeIds}
-              months={months}
-              updateMonths={updateMonths}
+              week={monthIndex != null && weekIndex != null ? [...months][monthIndex]?.weeks[weekIndex] : null}
+              day={day}
+              states={checkedStates}
+              updateStates={setCheckedStates}
+              updateDay={updateDay}
               isPumpDay={isPumpDay}
               days={days}
-              updateDays={updateDays}
             />
-          ))}
-          <div className="flex gap-6">
-            <div className="flex-1">
-              {day.exercises.map((exercise, exerciseIndex) => (
-                <ExercisePlan
-                  key={exerciseIndex}
-                  monthIndex={monthIndex}
-                  weekIndex={weekIndex}
-                  dayIndex={dayIndex}
-                  exerciseIndex={exerciseIndex}
-                  exercise={exercise}
-                  addExercise={addExercise}
-                  reassignExerciseTypeIds={reassignExerciseTypeIds}
-                  months={months}
-                  updateMonths={updateMonths}
-                  isPumpDay={isPumpDay}
-                  days={days}
-                  updateDays={updateDays}
-                />
-              ))}
-              {day.exercises.length === 0 ? (
-                <Button
-                  variant="danger"
-                  onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
-                  className="mt-4"
-                >
-                  Add Exercise
-                </Button>
-              ) : null}
-            </div>
-            {day.circuits && (
+            {day.warmups.length < 1 ? (
+              <Button
+                variant="danger"
+                onClick={() => addWarmup(monthIndex, weekIndex, dayIndex, 1, [])}
+                startIcon={<PlusIcon className="h-4 w-4" />}
+                className="mt-4"
+              >
+                Add Warmup
+              </Button>
+            ) : null}
+            {day.warmups.map((warmup, warmupIndex) => (
+              <WarmupPlan
+                key={warmupIndex}
+                monthIndex={monthIndex}
+                weekIndex={weekIndex}
+                dayIndex={dayIndex}
+                warmupIndex={warmupIndex}
+                warmup={warmup}
+                addWarmup={addWarmup}
+                reassignWarmupTypeIds={reassignWarmupTypeIds}
+                months={months}
+                updateMonths={updateMonths}
+                isPumpDay={isPumpDay}
+                days={days}
+                updateDays={updateDays}
+              />
+            ))}
+            <div className="flex gap-6">
               <div className="flex-1">
-                {(day.circuits || []).map((circuit, circuitIndex) => (
-                  <CircuitPlan
-                    key={circuitIndex}
+                {day.exercises.map((exercise, exerciseIndex) => (
+                  <ExercisePlan
+                    key={exerciseIndex}
+                    monthIndex={monthIndex}
+                    weekIndex={weekIndex}
                     dayIndex={dayIndex}
-                    circuitIndex={circuitIndex}
-                    circuit={circuit}
+                    exerciseIndex={exerciseIndex}
+                    exercise={exercise}
+                    addExercise={addExercise}
+                    reassignExerciseTypeIds={reassignExerciseTypeIds}
+                    months={months}
+                    updateMonths={updateMonths}
+                    isPumpDay={isPumpDay}
                     days={days}
                     updateDays={updateDays}
-                    addCircuit={addCircuit}
                   />
                 ))}
-                {day.circuits && day.circuits.length === 0 && (
+                {day.exercises.length === 0 ? (
                   <Button
                     variant="danger"
-                    onClick={() => addCircuit(dayIndex, 1, [])}
-                    startIcon={<PlusIcon className="h-4 w-4" />}
+                    onClick={() => addExercise(monthIndex, weekIndex, dayIndex, 1, [])}
                     className="mt-4"
                   >
-                    Add Circuit
+                    Add Exercise
                   </Button>
-                )}
+                ) : null}
               </div>
-            )}
+              {day.circuits && (
+                <div className="flex-1">
+                  {(day.circuits || []).map((circuit, circuitIndex) => (
+                    <CircuitPlan
+                      key={circuitIndex}
+                      dayIndex={dayIndex}
+                      circuitIndex={circuitIndex}
+                      circuit={circuit}
+                      days={days}
+                      updateDays={updateDays}
+                      addCircuit={addCircuit}
+                    />
+                  ))}
+                  {day.circuits && day.circuits.length === 0 && (
+                    <Button
+                      variant="danger"
+                      onClick={() => addCircuit(dayIndex, 1, [])}
+                      startIcon={<PlusIcon className="h-4 w-4" />}
+                      className="mt-4"
+                    >
+                      Add Circuit
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
       </div>
       {(!isPumpDay && dayIndex === months[monthIndex].weeks[weekIndex].days.length - 1 && isSevenDays) ? (
         <Button
@@ -416,3 +477,4 @@ export const DayPlan = ({
     </>
   );
 };
+export const DayPlan = React.memo(DayPlanComponent);

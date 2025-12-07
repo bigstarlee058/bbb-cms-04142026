@@ -18,7 +18,7 @@ import {
   InformationCircleIcon,
   CubeIcon
 } from '@heroicons/react/outline';
-import { CiDumbbell, CiTrophy, CiSquareInfo,} from "react-icons/ci";
+import { CiDumbbell, CiTrophy, CiSquareInfo, } from "react-icons/ci";
 import { IoMdFitness, } from "react-icons/io";
 
 import { LiaDumbbellSolid } from "react-icons/lia";
@@ -44,7 +44,23 @@ import { SavePumpDays } from '@/features/pumpdays/SavePumpDays';
 import { usePumpDaysContext } from '@/features/pumpdays/PumpDaysContext';
 import WeightClockIcon from '../Elements/Icon/WeightClockIcon';
 import { ExportData } from '@/features/users/components/custom/ExportData';
-
+const WrenchScrewdriverIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="w-6 h-6"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z"
+    />
+  </svg>
+);
 type SideNavigationItem = {
   title: string;
   path: string;
@@ -58,6 +74,7 @@ const SideNavigation = () => {
 
   const navigation = [
     { title: 'Dashboard', path: '.', icon: HomeIcon },
+    { title: 'Tools', path: './tools', icon: WrenchScrewdriverIcon },
     checkAccess({ allowedRoles: [ROLES.ADMIN] }) && {
       title: 'Users',
       path: './users',
@@ -337,21 +354,31 @@ const SortOption = [
   { label: 'Newest Added', value: 'NewestAdded' },
   { label: 'Oldest Added', value: 'OldestAdded' }
 ];
-
+const subscriptionType = [
+  { label: 'all', value: '' },
+  { label: 'Free', value: 'free' },
+  { label: 'Monthly', value: 'month' },
+  { label: 'Yearly', value: 'year' }
+];
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [monthCover, setMonthCover] = React.useState('');
 
   const { currentPage } = useUserStore();
-  const { setSearchBoxValue, setSortByValue, sortBy } = useFilteringStore();
+  const { setSearchBoxValue, setSortByValue, sortBy, subscription, setSubscriptionByValue } = useFilteringStore();
   const { months } = useWorkoutContext();
   const { days } = usePumpDaysContext();
   const { pathname } = useLocation();
+  React.useEffect(() => {
+    setSortByValue('Newest Added', 'NewestAdded');
+  }, [pathname]);
 
   const handleSortOptionChange = (val: any) => {
     setSortByValue(val.label, val.value);
   };
-
+  const handleSubscriptionOptionChange = (val: any) => {
+    setSubscriptionByValue(val.label, val.value);
+  };
   const fetchSetting = async () => {
     try {
       const result = await axios.get(`/settings/admin/get`);
@@ -403,16 +430,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
           </button>
           <div
-            className={`flex-1 px-4 flex items-center ${
-              currentPage == 'users' ||
+            className={`flex-1 px-4 flex items-center ${currentPage == 'users' ||
               currentPage == 'exercises' ||
               currentPage == 'warmups' ||
               currentPage == 'equipments' ||
               currentPage == 'restdays' ||
               currentPage == 'categories'
-                ? 'justify-between'
-                : 'justify-end'
-            }`}
+              ? 'justify-between'
+              : 'justify-end'
+              }`}
           >
             {(currentPage == 'users' ||
               currentPage == 'exercises' ||
@@ -420,27 +446,40 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               currentPage == 'equipments' ||
               currentPage == 'restdays' ||
               currentPage == 'categories') && (
-              <div className="flex-1 px-4 flex justify-start items-center">
-                <div className="p-1">
-                  <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
+                <div className="flex-1 px-4 flex justify-start items-center">
+                  <div className="p-1">
+                    <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
+                  </div>
+                  <div className="p-4">
+                    <ReactSelect
+                      styles={reactSelectStylesConfig}
+                      className="w-56 shrink hover:shrink-0 whitespace-nowrap"
+                      placeholder="Sort by"
+                      name="sortby"
+                      options={SortOption}
+                      value={sortBy}
+                      onChange={handleSortOptionChange}
+                    />
+                  </div>
+                  {pathname.includes('users') && (
+                    <div className="p-1">
+                      <ReactSelect
+                        styles={reactSelectStylesConfig}
+                        className="w-56 shrink hover:shrink-0 whitespace-nowrap"
+                        placeholder="Subscription"
+                        name="subscription"
+                        options={subscriptionType}
+                        value={subscription}
+                        onChange={handleSubscriptionOptionChange}
+                      />
+                    </div>
+                  )}
                 </div>
-                <div className="p-4">
-                  <ReactSelect
-                    styles={reactSelectStylesConfig}
-                    className="w-56 shrink hover:shrink-0 whitespace-nowrap"
-                    placeholder="Sort by"
-                    name="sortby"
-                    options={SortOption}
-                    value={sortBy}
-                    onChange={handleSortOptionChange}
-                  />
-                </div>
-              </div>
-            )}
+              )}
             <div className="ml-4 flex items-center md:ml-6">
               {pathname.includes('users') && (
                 <>
-                  <ExportData/>
+                  <ExportData />
                 </>
               )}
               {pathname.includes('workouts') && (

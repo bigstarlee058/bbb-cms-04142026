@@ -1,62 +1,159 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { Button, Spinner } from '@/components/Elements';
-import { ChevronDownIcon, ChevronUpIcon, PlusIcon, SaveIcon } from '@heroicons/react/outline';
+import { PlusIcon } from '@heroicons/react/outline';
 import { Navbar } from './Navbar';
 import { MonthPlan } from './MonthPlan';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { fetchWorkouts } from '@/features/workouts/api';
-import { useFilteringStore } from '@/stores/filter';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import Pagination from '@/components/Elements/Pagination';
 import { Month } from '@/types';
-import { SaveConfirmation } from './custom/SaveConfirmation';
 import { useWorkoutContext } from '../WorkoutContext';
+import { v4 as uuid } from 'uuid';
 
 export const WorkoutList = () => {
-  const [months, setMonths] = useState([]);
   const [allMonths, setAllMonths] = useState([]);
-  const [loadingMonths, setLoadingMonths] = useState(true); // New state for loading months
-  const workoutListRef = useRef(null);
+  const [loadingMonths, setLoadingMonths] = useState(true);
+  const [scrollTarget, setScrollTarget] = useState<{ type: string; monthIndex: number; weekLocalId?: string; dayLocalId?: string; expandIfCollapsed?: boolean } | null>(null);
+  const [monthCount, setMountCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState({
-    perPage: 13,
-    page: 1
+  const filters = useMemo(() => ({ perPage: 6, page: currentPage }), [currentPage]);
+  const parentRef = useRef<HTMLDivElement>(null);
+  const monthRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [expandedMonths, setExpandedMonths] = useState<{ [key: string]: boolean }>({});
+  const [expandedWeeks, setExpandedWeeks] = useState<{ [key: string]: boolean }>({});
+  const [expandedDays, setExpandedDays] = useState<{ [key: string]: boolean }>({});
+  const paginatedMonths = useMemo(() => {
+    const startIndex = (currentPage - 1) * filters.perPage;
+    const endIndex = startIndex + filters.perPage;
+    return allMonths.slice(startIndex, endIndex);
+  }, [allMonths, currentPage, filters.perPage]);
+
+  const rowVirtualizer = useVirtualizer({
+    count: paginatedMonths.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 200,
+    measureElement: (el) => el.getBoundingClientRect().height,
+    overscan: 5,
   });
+  useEffect(() => {
+    const lastPage = Math.ceil(allMonths.length / filters.perPage) || 1;
+    if (currentPage > lastPage) {
+      setCurrentPage(lastPage);
+    }
+    requestAnimationFrame(() => {
+      rowVirtualizer.measure();
+    });
+  }, [allMonths.length, filters.perPage, rowVirtualizer]);
+  useEffect(() => {
+    if (!scrollTarget) return;
+
+    const timer = requestAnimationFrame(() => {
+      switch (scrollTarget.type) {
+        case 'month': {
+          const targetIndexOnPage = scrollTarget.monthIndex % filters.perPage;
+          rowVirtualizer.scrollToIndex(targetIndexOnPage, { align: "start", behavior: "smooth" });
+          break;
+        }
+        case 'week': {
+          if (scrollTarget.weekLocalId) {
+            scrollToWeekSafe(scrollTarget.monthIndex, scrollTarget.weekLocalId);
+          }
+          break;
+        }
+        case 'day': {
+          if (scrollTarget.weekLocalId && scrollTarget.dayLocalId) {
+            scrollToDay(
+              scrollTarget.monthIndex,
+              scrollTarget.weekLocalId,
+              scrollTarget.dayLocalId,
+              { expandIfCollapsed: scrollTarget.expandIfCollapsed !== false }
+            );
+          }
+          break;
+        }
+      }
+      setScrollTarget(null);
+    });
+
+    return () => cancelAnimationFrame(timer);
+  }, [scrollTarget]);
 
   const { onSetMonths } = useWorkoutContext();
+  const { isLoading, isError } = useQuery(
+    ['get-workouts'],
+    () => fetchWorkouts({ page: 1, perPage: 1000 }),
+    {
+      onSuccess: (data) => {
+        setMountCount(data?.count || 0);
+        const months = (data.months || [])
+          .sort((a, b) => a.index - b.index)
+          .map((month) => ({
+            ...month,
+            localId:  uuid(),
+            weeks: (month.weeks || []).map((week) => ({
+              ...week,
+              localId: uuid(),
+              days: (week.days || []).map((day) => ({
+                ...day,
+                localId:  uuid(),
+                warmups: (day.warmups || []).map((w) => ({
+                  ...w,
+                  localId:  uuid(),
+                })),
+                exercises: (day.exercises || []).map((ex) => ({
+                  ...ex,
+                  localId:  uuid(),
+                  extra: (ex.extra || []).map((e) => ({
+                    ...e,
+                    localId:  uuid(),
+                  })),
+                })),
+              })),
+            })),
+          }));
 
-  // Fetch workouts data from the server
-  const {
-    data: workouts,
-    isLoading,
-    isError
-  } = useQuery(['get-workouts', filters], () => fetchWorkouts(filters), {
-    onSuccess: (data) => {
-      const months = data.months?.sort((a, b) => a.index - b.index);
-      setAllMonths(months);
-      onSetMonths(months);
-      setLoadingMonths(false); // Data fetched, no longer loading
-    },
-    onError: (err) => {
-      console.error('Error fetching workouts:', err);
-      setLoadingMonths(false); // Ensure loading state is set to false even on error
+        safeUpdateMonths(months);
+        setLoadingMonths(false);
+      },
+      onError: (error) => {
+        console.error(error);
+        setLoadingMonths(false);
+      },
     }
-  });
+  );
+  const startIndex = (currentPage - 1) * filters.perPage;
+  const monthsForPage = allMonths.slice(startIndex, startIndex + filters.perPage);
+  const safeUpdateMonths = (
+    updatedMonths: Month[],
+    options?: { syncPage?: boolean; skipMeasure?: boolean }
+  ) => {
+    const { syncPage = true, skipMeasure = false } = options || {};
 
-  useEffect(() => {
-    if (allMonths.length) {
-      const startIndex = (currentPage - 1) * filters.perPage;
-      const paginatedMonths = allMonths.slice(startIndex, Math.min(startIndex + filters.perPage, allMonths.length));
-      setMonths(paginatedMonths);
-      const totalPages = Math.ceil((allMonths.length || 0) / (filters.perPage || 10));
-      if (currentPage === totalPages + 1 && totalPages !== 0 && paginatedMonths.length === 0) {
-        setCurrentPage((prev) => prev - 1);
-      }
+    onSetMonths(updatedMonths);
+    setAllMonths(updatedMonths);
+
+    const lastPage = Math.max(1, Math.ceil(updatedMonths.length / filters.perPage));
+
+    if (syncPage) {
+      setCurrentPage(prevPage => {
+        const newPage = Math.min(prevPage, lastPage);
+        if (newPage !== prevPage) {
+          requestAnimationFrame(() => {
+            rowVirtualizer.scrollToIndex(0);
+          });
+        }
+        return newPage;
+      });
     }
-  }, [currentPage, allMonths]);
 
-  // Handle adding a new month
+    if (!skipMeasure) {
+      requestAnimationFrame(() => {
+        rowVirtualizer.measure();
+      });
+    }
+  };
   const handleAddMonth = () => {
     const newMonth: Month = {
       title: '',
@@ -65,52 +162,198 @@ export const WorkoutList = () => {
       thumbnail: null,
       startDate: null,
       endDate: null,
-
-      weeks: []
+      weeks: [],
+      localId: uuid()
     };
+
     setAllMonths((prev) => {
-      onSetMonths([...prev, newMonth]);
-      return [...prev, newMonth];
+      const updated = [...prev, newMonth];
+      safeUpdateMonths(updated, { syncPage: false });
+      const newMonthIndex = updated.length - 1;
+      const newPage = Math.floor(newMonthIndex / filters.perPage) + 1;
+      setCurrentPage(newPage);
+      requestAnimationFrame(() => {
+        Object.values(monthRefs.current).forEach((el) => {
+          if (el) rowVirtualizer.measureElement(el);
+        });
+        scrollToMonth(newMonthIndex);
+
+      });
+      return updated;
     });
+
   };
+  const scrollToMonth = useCallback((monthIndex: number) => {
+    rowVirtualizer.scrollToIndex(monthIndex, { align: "start", behavior: "smooth" });
+  }, [rowVirtualizer]);
+  const scrollToWeekSafe = useCallback(async (globalMonthIndex: number, weekLocalId: string) => {
+    if (!parentRef.current) return;
 
-  const scrollToMonth = useCallback((monthIndex) => {
-    if (workoutListRef.current) {
-      const monthElement = workoutListRef.current.querySelector(`.month-${monthIndex}`);
-      monthElement?.scrollIntoView({ behavior: 'smooth' });
+    const month = allMonths[globalMonthIndex];
+    if (!month) return;
+
+    const currentPageStart = (currentPage - 1) * filters.perPage;
+    const currentPageEnd = currentPageStart + filters.perPage;
+
+    if (globalMonthIndex < currentPageStart || globalMonthIndex >= currentPageEnd) {
+      const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+      setCurrentPage(targetPage);
+      setScrollTarget({ type: 'week', monthIndex: globalMonthIndex, weekLocalId });
+      return;
     }
-  }, []);
 
-  const scrollToWeek = useCallback((monthIndex, weekIndex) => {
-    if (workoutListRef.current) {
-      const weekElement = workoutListRef.current.querySelector(`.month-${monthIndex} .week-${weekIndex}`);
-      weekElement?.scrollIntoView({ behavior: 'smooth' });
+    let needsRemeasure = false;
+    const weekKey = `${month.localId}-${weekLocalId}`;
+
+    setExpandedMonths(prev => {
+      if (!prev[month.localId]) {
+        needsRemeasure = true;
+        return { ...prev, [month.localId]: true };
+      }
+      return prev;
+    });
+    setExpandedWeeks(prev => {
+      if (!prev[weekKey]) {
+        needsRemeasure = true;
+        return { ...prev, [weekKey]: true };
+      }
+      return prev;
+    });
+
+    if (needsRemeasure) {
+      await new Promise(res => requestAnimationFrame(res));
+      rowVirtualizer.measure();
+      await new Promise(res => requestAnimationFrame(res));
     }
-  }, []);
 
-  const scrollToDay = useCallback((monthIndex, weekIndex, dayIndex) => {
-    if (workoutListRef.current) {
-      const dayElement = workoutListRef.current.querySelector(
-        `.month-${monthIndex} .week-${weekIndex} .day-${dayIndex}`
-      );
-      dayElement?.scrollIntoView({ behavior: 'smooth' });
+    const monthEl = monthRefs.current[month.localId];
+    if (!monthEl) return;
+
+    const weekEl = monthEl.querySelector(`.week-${weekLocalId}`) as HTMLElement;
+    if (!weekEl) return;
+
+    parentRef.current.scrollTo({
+      top: weekEl.offsetTop - 20,
+      behavior: "smooth",
+    });
+  }, [allMonths, currentPage, filters.perPage, rowVirtualizer]);
+  const scrollToDay = useCallback(async (
+    globalMonthIndex: number,
+    weekLocalId: string,
+    dayLocalId: string,
+    options?: { expandIfCollapsed?: boolean }
+  ) => {
+    if (!parentRef.current) return;
+
+    const month = allMonths[globalMonthIndex];
+    if (!month) return;
+
+    const currentPageStart = (currentPage - 1) * filters.perPage;
+    const currentPageEnd = currentPageStart + filters.perPage;
+    if (globalMonthIndex < currentPageStart || globalMonthIndex >= currentPageEnd) {
+      const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+      setCurrentPage(targetPage);
+      setScrollTarget({ type: 'day', monthIndex: globalMonthIndex, weekLocalId, dayLocalId, expandIfCollapsed: options?.expandIfCollapsed ?? true });
+      return;
     }
-  }, []);
 
-  // const scrollToTop = () => {
-  //   if (workoutListRef.current) {
-  //     const monthElement = workoutListRef.current.querySelector(`.month-0`);
-  //     monthElement?.scrollIntoView({ behavior: 'smooth' });
-  //   }
-  // };
+    const expandIfCollapsed = options?.expandIfCollapsed ?? true;
+    let needsRemeasure = false;
+    const weekKey = `${month.localId}-${weekLocalId}`;
+    const dayKey = `${month.localId}-${weekLocalId}-${dayLocalId}`;
 
-  // const scrollToBottom = () => {
-  //   if (workoutListRef.current) {
-  //     workoutListRef.current.scrollTop = workoutListRef.current.scrollHeight;
-  //   }
-  // };
+    setExpandedMonths(prev => {
+      if (!prev[month.localId]) {
+        needsRemeasure = true;
+        return { ...prev, [month.localId]: true };
+      }
+      return prev;
+    });
 
-  // Handle display state based on loading and error
+    setExpandedWeeks(prev => {
+      if (!prev[weekKey]) {
+        needsRemeasure = true;
+        return { ...prev, [weekKey]: true };
+      }
+      return prev;
+    });
+
+    if (expandIfCollapsed) {
+      setExpandedDays(prev => {
+        if (!prev[dayKey]) {
+          needsRemeasure = true;
+          return { ...prev, [dayKey]: true };
+        }
+        return prev;
+      });
+    }
+
+    if (needsRemeasure) {
+      await new Promise(res => requestAnimationFrame(res));
+      rowVirtualizer.measure();
+      await new Promise(res => requestAnimationFrame(res));
+    }
+
+    const monthEl = monthRefs.current[month.localId];
+    if (!monthEl) return;
+
+    const dayEl = monthEl.querySelector(`.day-${dayLocalId}`) as HTMLElement;
+    if (!dayEl) return;
+
+    parentRef.current.scrollTo({
+      top: dayEl.offsetTop - 20,
+      behavior: "smooth",
+    });
+
+  }, [allMonths, currentPage, filters.perPage, rowVirtualizer]);
+  useEffect(() => {
+    if (paginatedMonths.length === 0) return;
+    requestAnimationFrame(() => {
+      Object.values(monthRefs.current).forEach((el) => {
+        if (el) rowVirtualizer.measureElement(el);
+      });
+    });
+  }, [paginatedMonths.length]);
+  const handleDuplicateMonth = useCallback((realMonthIndex: number) => {
+    const origin = allMonths[realMonthIndex];
+    if (!origin) return;
+
+    const newMonth = structuredClone(origin);
+    delete newMonth._id;
+    delete newMonth.createdAt;
+    newMonth.localId = uuid();
+
+    newMonth.weeks.forEach((week) => {
+      delete week._id;
+      week.localId = uuid();
+      week.days.forEach((day) => {
+        delete day._id;
+        day.localId = uuid();
+        day.exercises?.forEach((ex) => {
+          delete ex._id;
+          ex.localId = uuid();
+        });
+        day.warmups?.forEach((w) => {
+          delete w._id;
+          w.localId = uuid();
+        });
+      });
+    });
+    setAllMonths((prev) => {
+      const updated = [...prev];
+      const newMonthIndex = realMonthIndex + 1;
+      updated.splice(newMonthIndex, 0, newMonth);
+      safeUpdateMonths(updated, { syncPage: false });
+      const newPage = Math.floor(newMonthIndex / filters.perPage) + 1;
+      setCurrentPage(newPage);
+      requestAnimationFrame(() => {
+        Object.values(monthRefs.current).forEach((el) => el && rowVirtualizer.measureElement(el));
+        scrollToMonth(newMonthIndex);
+      });
+
+      return updated;
+    });
+  }, [allMonths, filters.perPage, safeUpdateMonths, rowVirtualizer, scrollToMonth]);
   if (loadingMonths || isLoading) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -126,75 +369,154 @@ export const WorkoutList = () => {
       </div>
     );
   }
-
   return (
     <>
       <div className="flex justify-between sticky top-10">
         {allMonths.length < 1 ? (
-          <Button variant="danger" onClick={handleAddMonth} startIcon={<PlusIcon className="h-4 w-4" />}>
+          <Button
+            variant="danger"
+            onClick={handleAddMonth}
+            startIcon={<PlusIcon className="h-4 w-4" />}
+          >
             Add Month
           </Button>
         ) : (
           <span></span>
         )}
-        {/* <SaveConfirmation allMonths={allMonths}/> */}
       </div>
-      {/* <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-        <Button
-          variant="danger"
-          onClick={scrollToTop}
-          startIcon={<ChevronUpIcon className="h-6 w-4" />}
-        />
-        <Button
-          variant="danger"
-          onClick={scrollToBottom}
-          startIcon={<ChevronDownIcon className="h-6 w-4" />}
-        />
-      </div> */}
-      <div className="flex">
-        <div className="w-1/5 overflow-y-auto mt-[160px] mb-[110px] h-[calc(100vh-270px)] fixed top-0 z-10">
-          {allMonths.length > 0 ? (
-            <Navbar
-              currentPage={currentPage}
-              months={months}
-              allMonths={allMonths}
-              setAllMonths={(months) => {
-                setAllMonths(months);
-                onSetMonths(months);
-              }}
-              onScrollToMonth={scrollToMonth}
-              onScrollToWeek={scrollToWeek}
-              onScrollToDay={scrollToDay}
-            />
-          ) : null}
+
+      <div className="flex flex-col h-full" >
+        <div className="flex gap-4" >
+          <div className="w-1/4 h-[calc(100vh-270px)] overflow-auto">
+            {allMonths.length > 0 && (
+              <Navbar
+                currentPage={currentPage}
+                months={monthsForPage}
+                perPage={filters.perPage}
+                expandedWeeks={expandedWeeks}
+                setExpandedWeeks={setExpandedWeeks}
+                allMonths={allMonths}
+                expandedMonths={expandedMonths}
+                onCollapseChange={(monthLocalId, isCollapsed) => {
+                  setExpandedMonths((prev) => ({
+                    ...prev,
+                    [monthLocalId]: !isCollapsed,
+                  }));
+                  requestAnimationFrame(() => rowVirtualizer.measure());
+                }}
+                setAllMonths={(months) => safeUpdateMonths(months)}
+                startIndex={startIndex}
+                onScrollToMonth={(globalMonthIndex) => {
+                  const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+                  setCurrentPage(targetPage);
+                  setScrollTarget({ type: 'month', monthIndex: globalMonthIndex });
+                }}
+                onScrollToWeek={(globalMonthIndex, weekIndex) => {
+                  const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+                  const weekLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.localId;
+                  if (!weekLocalId) return;
+
+                  setCurrentPage(targetPage);
+                  setScrollTarget({ type: 'week', monthIndex: globalMonthIndex, weekLocalId });
+                }}
+                onScrollToDay={(globalMonthIndex, weekIndex, dayIndex) => {
+                  const targetPage = Math.floor(globalMonthIndex / filters.perPage) + 1;
+                  const weekLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.localId;
+                  const dayLocalId = allMonths[globalMonthIndex]?.weeks[weekIndex]?.days[dayIndex]?.localId;
+                  if (!weekLocalId || !dayLocalId) return;
+                  setCurrentPage(targetPage);
+                  setScrollTarget({ type: 'day', monthIndex: globalMonthIndex, weekLocalId, dayLocalId, expandIfCollapsed: false });
+                }}
+                expandedDays={expandedDays}
+                setExpandedDays={setExpandedDays}
+              />
+            )}
+          </div>
+
+          <div className="w-3/4 h-full " >
+            <div className="h-full w-full">
+              <div className="w-full" ref={parentRef}>
+                <div
+                  style={{
+                    height: rowVirtualizer.getTotalSize(),
+                    position: 'relative',
+                    width: '100%',
+                  }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const month = paginatedMonths[virtualRow.index];
+                    return (
+                      <div
+                        key={month.localId}
+                        data-index={virtualRow.index}
+                        ref={(el) => {
+                          if (!el) return;
+                          monthRefs.current[month.localId] = el;
+                        }} style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          transform: `translateY(${virtualRow.start}px)`,
+                          willChange: 'transform',
+                        }}
+                      >
+                        <MonthPlan
+                          ref={(el) => (monthRefs.current[month.localId] = el)}
+                          monthIndex={virtualRow.index}
+                          month={month}
+                          scrollToMonth={scrollToMonth}
+                          perPage={filters.perPage}
+                          currentPage={currentPage}
+                          startIndex={startIndex}
+                          months={allMonths}
+                          isCollapsed={!expandedMonths[month.localId]}
+                          expandedWeeks={expandedWeeks}
+                          setExpandedWeeks={setExpandedWeeks}
+                          expandedDays={expandedDays}
+                          setExpandedDays={setExpandedDays}
+                          toggleCollapse={() =>
+                            setExpandedMonths((prev) => ({
+                              ...prev,
+                              [month.localId]: !prev[month.localId],
+                            }))
+                          }
+                          measure={() => {
+                            const el = monthRefs.current[month.localId];
+                            if (el) rowVirtualizer.measureElement(el);
+                          }}
+                          setCurrentPage={setCurrentPage}
+                          addMonth={handleAddMonth}
+                          updateMonths={(months, options) => safeUpdateMonths(months, options)}
+                          scrollToWeek={scrollToWeekSafe}
+                          onScrollToDay={(monthIndex, weekIndex, dayLocalId, options) => {
+                            const weekLocalId = allMonths?.[monthIndex]?.weeks?.[weekIndex]?.localId;
+                            if (weekLocalId) scrollToDay(monthIndex, weekLocalId, dayLocalId, options);
+                          }}
+                          onDuplicateMonth={handleDuplicateMonth}
+
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="w-4/5 ml-[25%] mr-[3%]" ref={workoutListRef}>
-          {months.map((month, monthIndex) => (
-            <MonthPlan
-              key={month?._id || monthIndex}
-              monthIndex={monthIndex}
-              month={month}
-              months={allMonths}
+
+        {monthCount >= filters.perPage && (
+          <div className="flex justify-center mt-4">
+            <Pagination
               currentPage={currentPage}
-              addMonth={handleAddMonth}
-              updateMonths={(months) => {
-                setAllMonths(months);
-                onSetMonths(months);
-              }}
+              lastPage={Math.ceil(allMonths.length / filters.perPage)}
+              maxLength={7}
+              setCurrentPage={setCurrentPage}
             />
-          ))}
-        </div>
+          </div>
+        )}
       </div>
-      {allMonths.length > 0 ? (
-        <div className="flex justify-center mt-6 px-4">
-          <Pagination
-            currentPage={currentPage}
-            lastPage={Math.ceil((allMonths?.length || 0) / (filters?.perPage || 10))}
-            maxLength={7}
-            setCurrentPage={setCurrentPage}
-          />
-        </div>
-      ) : null}
     </>
   );
+
 };

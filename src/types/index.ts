@@ -64,6 +64,13 @@ export interface UserSubscription {
   user_subscription_status: string;
 }
 
+interface DeviceInfo {
+  device?: string;
+  systemName?: string;
+  osVersion?: string;
+  appVersion?: string;
+  lastLogin?: Date;
+}
 export interface User extends BaseEntity {
   workoutsHistory: UserWorkout[];
   subscription: UserSubscription;
@@ -71,12 +78,17 @@ export interface User extends BaseEntity {
   email: string;
   role: number;
   uid: string;
+  deviceInfo:DeviceInfo;
 }
 export interface UsersResponse {
-  count: number;
   users: User[];
-
+  totalCount?: number;   
+  totalPages?: number;   
+  currentPage?: number;  
+  hasMore?: boolean;
+  lastId?: string;
 }
+
 export interface UserWorkoutHistory {
   monthTitle: string;
   monthIndex: number;
@@ -183,6 +195,7 @@ export interface UserWorkout extends BaseEntity {
   dayIndex: number;
   day: string;
   daySplit: number;
+  name?:string;
   exercises: DayExercise[];
 }
 
@@ -243,10 +256,10 @@ export interface ScreensResponse {
   imageProfile: string,
   imageMyProfle: string,
   imageSetting: string,
-  slides: {title: string, description: string}[];
+  slides: { title: string, description: string }[];
 }
 
-export interface Tutorial extends BaseEntity{
+export interface Tutorial extends BaseEntity {
   vimeoId: string;
   thumbnail: string;
   title: string;
@@ -262,10 +275,12 @@ export interface VersionResponse {
   android: {
     forceUpdate: boolean;
     version: string;
+    showPopUp:boolean;
   };
   ios: {
     forceUpdate: boolean;
     version: string;
+    showPopUp:boolean;
   };
   _id: string;
   id: string;
@@ -290,8 +305,11 @@ export interface Filters {
   perPage?: number;
   search?: string;
   sortBy?: string;
+  subscription?:string;
   sortOrder?: number;
   filter?: any;
+  lastId?: string;
+
 }
 
 export interface TitleFilters {
@@ -316,7 +334,7 @@ export interface Month extends WorkoutsBaseEntity {
   thumbnail: any;
   startDate: Date;
   endDate: Date;
-
+  localId: string;
   weeks: Week[];
 }
 export interface Week extends WorkoutsBaseEntity {
@@ -326,7 +344,7 @@ export interface Week extends WorkoutsBaseEntity {
   vimeoId: string;
   thumbnail: any;
   restdayId: string;
-
+  localId: string;
   days: Day[];
 }
 export interface Day extends WorkoutsBaseEntity {
@@ -341,12 +359,13 @@ export interface Day extends WorkoutsBaseEntity {
   thumbnailTwo: any;
   thumbnailThree: any;
   formats: string[];
-  
+  localId?: string;
   warmups: DayWarmup[];
   exercises: DayExercise[];
   circuits?: any[];
 }
 export interface ExtraExercise {
+  _id?: string;
   sets: number;
   reps: number;
   weight: number;
@@ -365,6 +384,7 @@ export interface DayExercise extends WorkoutsBaseEntity {
   formats?: string[];
   status: string;
   extra: ExtraExercise[];
+  localId?: string;
 }
 export interface DayWarmup extends WorkoutsBaseEntity {
   typeId: number;
@@ -372,6 +392,7 @@ export interface DayWarmup extends WorkoutsBaseEntity {
   title: string;
   guide: string;
   formats: string[];
+  localId?: string;
 }
 
 export interface Staff extends BaseEntity {
@@ -451,4 +472,13 @@ export interface Phases extends BaseEntity {
 export interface PhasesResponse {
   count: number;
   phases: Phases[];
+}
+export interface ToolsResponse {
+  toolsCount: number;
+  tools: Tools[];
+}
+export interface Tools extends BaseEntity {
+  title: string;
+  toolName: string;
+  visible:boolean;
 }

@@ -7,8 +7,6 @@ export const Field = ({ label, name, value, onChange, disabled = false, ...rest 
   const handleWheel = (e) => {
     if (rest.type === 'number') {
       e.target.blur();
-      e.preventDefault();
-      e.stopPropagation();
     }
   };
 
