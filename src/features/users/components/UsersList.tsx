@@ -135,6 +135,7 @@ export const UsersList = () => {
                       id={_id}
                       name={name}
                       email={email}
+                      uid={entry.uid}
                       onClose={() => setShowSubscriptionPopup(false)}
                       currentSubscription={{
                         subscription_type: currentType,
