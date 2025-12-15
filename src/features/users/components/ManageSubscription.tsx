@@ -10,6 +10,21 @@ import { formatDate } from '@/utils/format';
 import axios from 'axios';
 
 
+const formatLastUpdated = (date: Date) => {
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  const yyyy = date.getFullYear();
+
+  let hours = date.getHours();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+
+  const hh = String(hours).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+
+  return `${mm}/${dd}/${yyyy} ${hh}:${min}:${ss} ${ampm}`;
+};
 interface ReadOnlySubscriptionDisplayProps {
   type: string;
   price: number;
@@ -48,13 +63,7 @@ export const ReadOnlySubscriptionDisplay: React.FC<ReadOnlySubscriptionDisplayPr
     });
   };
 
-  const formatLastUpdated = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  };
+
 
   return (
     <div className="space-y-1">
@@ -139,7 +148,7 @@ export const EditableSubscriptionForm: React.FC<EditableSubscriptionFormProps> =
           <option value="yearly">Yearly</option>
         </select>
         <input
-          type="text"
+          type="number"
           value={price}
           onChange={(e) => onPriceChange(Number(e.target.value))}
           disabled={type === 'free'}
@@ -216,17 +225,9 @@ export const SubscriptionStatusOverlay: React.FC<SubscriptionStatusOverlayProps>
       subtitle: `This user has no active subscription in ${sourceName}`,
     },
     expired: {
-      title: 'Subscription Expired',
-      subtitle: `The subscription in ${sourceName} has expired`,
+      title: 'No Active Subscription',
+      subtitle: `There is no active subscription in ${sourceName}.`,
     },
-  };
-
-  const formatLastUpdated = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
   };
 
   const { title, subtitle } = content[status];
@@ -507,67 +508,68 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
   };
 
   const processRevenueCatSubscription = (data: any) => {
-    const today = new Date();
     const subscriber = data?.subscriber;
     if (!subscriber) {
       return freeResult();
     }
 
+    const now = Date.now();
     const subscriptionsMap = subscriber.subscriptions || {};
     const subscriptions = Object.values(subscriptionsMap) as any[];
 
     if (!subscriptions.length) {
       return freeResult();
     }
-    const subscription = subscriptions.sort(
-      (a, b) =>
-        new Date(b.expires_date).getTime() -
-        new Date(a.expires_date).getTime()
-    )[0];
 
-    const purchase_date = subscription?.purchase_date
-      ? toLocalDateTime(new Date(subscription.purchase_date))
-      : toLocalDateTime(today);
+    const activeSubscription = subscriptions
+      .filter((s) => {
+        if (!s.expires_date) return false;
+        if (s.refunded_at) return false;
+        const expiresAt = new Date(s.expires_date).getTime();
+        return expiresAt > now;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.expires_date).getTime() - new Date(a.expires_date).getTime()
+      )[0];
 
-    const end_date = subscription?.expires_date
-      ? toLocalDateTime(new Date(subscription.expires_date))
-      : toLocalDateTime(today);
-
-    const price = Number(subscription?.price?.amount ?? 0);
-    const currency = subscription?.price?.currency ?? 'USD';
-
-    let subscription_type: 'free' | 'monthly' | 'yearly' = 'free';
-
-    const productId = subscription?.product_identifier || '';
-    const productIdLower = productId.toLowerCase();
-
-    if (
-      subscription?.period_type === 'annual' ||
-      productIdLower.includes('year') ||
-      productIdLower.includes('annual')
-    ) {
-      subscription_type = 'yearly';
-    } else if (
-      subscription?.period_type === 'normal' ||
-      subscription?.period_type === 'trial' ||
-      productIdLower.includes('month')
-    ) {
-      subscription_type = 'monthly';
+    if (!activeSubscription) {
+      return freeResult();
     }
 
-    const expiresAt = subscription?.expires_date
-      ? new Date(subscription.expires_date).getTime()
-      : 0;
+    let subscription_type: 'free' | 'monthly' | 'yearly' = 'monthly';
+    const productId = (
+      activeSubscription.product_identifier ||
+      Object.keys(subscriptionsMap).find(
+        (key) => subscriptionsMap[key] === activeSubscription
+      ) ||
+      ''
+    ).toLowerCase();
 
-    const isActive = expiresAt > Date.now();
+    if (
+      activeSubscription.period_type === 'annual' ||
+      productId.includes('year') ||
+      productId.includes('annual')
+    ) {
+      subscription_type = 'yearly';
+    }
 
+    const purchase_date = activeSubscription.purchase_date
+      ? toLocalDateTime(new Date(activeSubscription.purchase_date))
+      : '';
+
+    const end_date = activeSubscription.expires_date
+      ? toLocalDateTime(new Date(activeSubscription.expires_date))
+      : '';
+    const price = Number(activeSubscription.price?.amount ?? 0);
+    const currency = activeSubscription.price?.currency ?? 'USD';
     return {
       purchase_date,
       end_date,
       price,
       currency,
       subscription_type,
-      isActive: isActive,
+      isActive: true,
     };
   };
 
@@ -577,51 +579,92 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     price: 0,
     currency: 'USD',
     subscription_type: 'free' as const,
-    status: 'inactive',
-
+    isActive: false,
   });
-  const processWordPressSubscription = (subscription: any) => {
-    const today = new Date();
+  
+  const toUTCDateTime = (date: Date): string => {
+    if (!date || isNaN(date.getTime())) return '';
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
 
-    const parseGMTDate = (dateStr: string) => {
-      if (!dateStr) return null;
-      const normalized = dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`;
-      return new Date(normalized);
+  const processWordPressSubscription = (subscription: any) => {
+    if (!subscription) {
+      return {
+        purchase_date: '',
+        end_date: '',
+        price: 0,
+        currency: 'USD',
+        subscription_type: 'free' as const,
+        isActive: false,
+        isExpired: false,
+      };
+    }
+
+    const parseGMTDate = (dateStr: string): Date | null => {
+      if (!dateStr || dateStr === '') return null;
+      return new Date(dateStr.endsWith('Z') ? dateStr : `${dateStr}Z`);
     };
 
-    const purchase_date = subscription?.last_payment_date_gmt
-      ? toLocalDateTime(parseGMTDate(subscription.last_payment_date_gmt))
-      : toLocalDateTime(today);
+    const now = Date.now();
 
-    let end_date: string;
-    if (subscription?.end_date_gmt && subscription.end_date_gmt !== "") {
-      end_date = toLocalDateTime(parseGMTDate(subscription.end_date_gmt));
-    } else if (subscription?.next_payment_date_gmt && subscription.next_payment_date_gmt !== "") {
-      end_date = toLocalDateTime(parseGMTDate(subscription.next_payment_date_gmt));
-    } else {
-      end_date = toLocalDateTime(today);
-    }
+    const purchaseDate = parseGMTDate(subscription.start_date_gmt) ||
+      parseGMTDate(subscription.last_payment_date_gmt) ||
+      parseGMTDate(subscription.date_paid_gmt);
 
-    const endDateTimestamp = new Date(end_date).getTime();
-    const currentTimestamp = Date.now();
-    const isExpired = endDateTimestamp < currentTimestamp;
+    const endDate = parseGMTDate(subscription.end_date_gmt) ||
+      parseGMTDate(subscription.next_payment_date_gmt);
+
+    const isActiveStatus = ['active', 'pending-cancel'].includes(subscription.status);
+    const isExpired = endDate ? endDate.getTime() < now : false;
+    const isActive = isActiveStatus && !isExpired;
 
     let price = 0;
-    if (subscription?.line_items?.length) {
+    if (subscription.line_items?.length) {
       price = subscription.line_items.reduce((total: number, item: any) => {
-        return total + parseFloat(item.subtotal || "0");
+        return total + parseFloat(item.subtotal || '0');
       }, 0);
+    } else if (subscription.total) {
+      price = parseFloat(subscription.total);
     }
 
-    const currency = subscription?.currency || "USD";
+    const currency = subscription.currency || 'USD';
+
     let subscription_type: 'free' | 'monthly' | 'yearly' = 'free';
 
-    if (subscription?.line_items?.length) {
+    if (subscription.line_items?.length) {
       for (const item of subscription.line_items) {
-        if (item.variation_id.toString() === process.env.REACT_APP_SUBSCRIPTION_YEAR_ID) {
+        const variationId = item.variation_id?.toString();
+        if (variationId === process.env.REACT_APP_SUBSCRIPTION_YEAR_ID) {
           subscription_type = 'yearly';
           break;
-        } else if (item.variation_id.toString() === process.env.REACT_APP_SUBSCRIPTION_MONTH_ID) {
+        } else if (variationId === process.env.REACT_APP_SUBSCRIPTION_MONTH_ID) {
+          subscription_type = 'monthly';
+          break;
+        }
+      }
+    }
+
+    if (subscription_type === 'free' && subscription.billing_period) {
+      const period = subscription.billing_period.toLowerCase();
+      if (period === 'year' || period === 'annual') {
+        subscription_type = 'yearly';
+      } else if (period === 'month') {
+        subscription_type = 'monthly';
+      }
+    }
+
+    if (subscription_type === 'free' && subscription.line_items?.length) {
+      for (const item of subscription.line_items) {
+        const name = (item.name || '').toLowerCase();
+        if (name.includes('year') || name.includes('annual')) {
+          subscription_type = 'yearly';
+          break;
+        } else if (name.includes('month')) {
           subscription_type = 'monthly';
           break;
         }
@@ -629,11 +672,12 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     }
 
     return {
-      purchase_date,
-      end_date,
+      purchase_date: purchaseDate ? toUTCDateTime(purchaseDate) : '',
+      end_date: endDate ? toUTCDateTime(endDate) : '',
       price,
       currency,
       subscription_type,
+      isActive,
       isExpired,
     };
   };
@@ -680,14 +724,40 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           (s: any) => s.status === 'active' || s.status === 'pending-cancel'
         );
 
+        if (!activeSubscription) {
+          const latestSubscription = data.sort((a: any, b: any) => {
+            const dateA = new Date(a.date_created_gmt || 0).getTime();
+            const dateB = new Date(b.date_created_gmt || 0).getTime();
+            return dateB - dateA;
+          })[0];
+
+          if (latestSubscription) {
+            setFetchState({
+              isFetching: false,
+              lastRefreshed: new Date(),
+              userNotFound: false,
+              isExpired: true,
+            });
+          } else {
+            setFetchState({
+              isFetching: false,
+              lastRefreshed: new Date(),
+              userNotFound: false,
+              isExpired: false,
+            });
+          }
+          resetToFreeSubscription();
+          return;
+        }
+
         const processed = processWordPressSubscription(activeSubscription);
 
-        if (!activeSubscription || processed?.isExpired) {
+        if (!processed.isActive) {
           setFetchState({
             isFetching: false,
             lastRefreshed: new Date(),
             userNotFound: false,
-            isExpired: processed?.isExpired || false,
+            isExpired: processed.isExpired,
           });
           resetToFreeSubscription();
           return;
@@ -709,10 +779,10 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
         });
 
       } else if (fetchSource === 'revenuecat') {
-        const data = await fetchFromRevenueCat(id);
+        const result = await fetchFromRevenueCat(id);
         if (currentSourceRef.current !== fetchSource) return;
 
-          if (!data.userExists) {
+        if (!result.userExists) {
           setFetchState({
             isFetching: false,
             lastRefreshed: new Date(),
@@ -723,13 +793,9 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           return;
         }
 
-        const processed = processRevenueCatSubscription(data);
+        const processed = processRevenueCatSubscription(result.data);
 
-
-        if (
-          processed.subscription_type === 'free' ||
-          processed.isActive === false
-        ) {
+        if (!processed.isActive) {
           setSubscriptionData({
             type: 'free',
             price: 0,
@@ -794,14 +860,6 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     },
   });
 
-  const formatDateTime = (date: Date) => {
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const min = String(date.getMinutes()).padStart(2, '0');
-    const ss = String(date.getSeconds()).padStart(2, '0');
-    return `${mm}/${dd} ${hh}:${min}:${ss}`;
-  };
   const changes = [
     { field: "subscriptionType", current: subscriptionData.type, original: originalValues.type },
     { field: "price", current: subscriptionData.price, original: originalValues.price },
@@ -819,7 +877,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       if (subscriptionData.price < 0) {
         errors.push('Price cannot be negative');
       }
-      if (subscriptionData.price === 0) {
+      if (subscriptionData.price === 0 && source ==="database") {
         errors.push('Price must be greater than 0 for paid plans');
       }
       if (!subscriptionData.startDate) {
@@ -852,7 +910,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       }
       : {
         subscription_type: subscriptionData.type,
-        price: subscriptionData.price.toString(),
+        price: `${subscriptionData.price.toString()} ${subscriptionData.currency}`,
         user_subscription_status: 'subscribed_user',
         purchase_date: subscriptionData.startDate,
         end_date: subscriptionData.endDate,
@@ -882,16 +940,16 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     <Dialog isOpen={isOpen} onClose={handleCancel} initialFocus={cancelButtonRef}>
       <div
         className="inline-block align-bottom bg-white rounded-lg px-0 pt-2 pb-1 text-left 
-        overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
+        overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-3"
       >
         <div className="sm:flex sm:items-start">
-          <div className="mt-1 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+          <div className="text-center sm:mt-0 sm:text-left w-full">
             <DialogTitle as="h3" className="text-md leading-6 font-medium text-gray-900 flex items-center space-x-2">
               <InformationCircleIcon className="h-5 w-5 text-blue-600" aria-hidden="true" />
               <strong className="text-md text-gray-800 mt-1">Manage Subscription</strong>
             </DialogTitle>
 
-            <div className="mt-2 border border-gray-200 rounded-lg overflow-hidden text-sm">
+            <div className="mt-1.5 border border-gray-200 rounded-lg overflow-hidden text-sm">
               <div className="flex items-start justify-between p-3 bg-gray-50">
                 <div>
                   <p className="font-semibold text-gray-900">{name}</p>
@@ -937,7 +995,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                 </>
               )}
             </div>
-            <div className="mt-2 flex items-center justify-between">
+            <div className="mt-1.5 flex items-center justify-between">
               <div className="flex space-x-2">
                 {[
                   { key: 'database', label: 'Database' },
@@ -1003,7 +1061,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                 </div>
               )}
             </div>
-            <div className={`mt-2 border-2 rounded-md p-2 space-y-1 bg-gray-50 min-h-[250px] flex flex-col ${source === 'database' ? 'border-red-500'
+            <div className={`mt-1.5 border-2 rounded-md p-1.5 space-y-1 bg-gray-50 min-h-[250px] flex flex-col ${source === 'database' ? 'border-red-500'
               : source === 'wordpress'
                 ? 'border-orange-500'
                 : 'border-purple-600'
@@ -1017,7 +1075,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                     <EditableSubscriptionForm
                       type={subscriptionData.type}
                       price={subscriptionData.price}
-                      currency={subscriptionData.currency}
+                      currency={subscriptionData.currency||"USD"}
                       startDate={subscriptionData.startDate}
                       endDate={subscriptionData.endDate}
                       duration={calculateDuration(subscriptionData.startDate, subscriptionData.endDate)}
@@ -1058,7 +1116,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                 )}
               </div>
               {validationErrors.length > 0 && hasChanges && (
-                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md">
+                <div className="mt-1.5 p-1.5 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm font-semibold text-red-700 mb-1">Validation Errors:</p>
                   <ul className="text-xs text-red-600 list-disc list-inside space-y-1">
                     {validationErrors.map((error, idx) => (
@@ -1070,7 +1128,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
               <div className="h-6">
 
                 {(hasChanges && !fetchState.userNotFound && !fetchState.isExpired && !fetchState.isFetching) && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 mt-1.5">
                     <div className="flex items-center space-x-2 whitespace-nowrap">
                       <input
                         id="acknowledge"
@@ -1096,7 +1154,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
                 )}
               </div>
 
-              <div className="flex justify-between mt-4">
+              <div className="flex justify-between mt-2">
                 <Button
                   type="button"
                   onClick={handleCancel}
