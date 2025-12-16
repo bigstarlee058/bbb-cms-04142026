@@ -25,15 +25,31 @@ const formatLastUpdated = (date: Date) => {
 
   return `${mm}/${dd}/${yyyy} ${hh}:${min}:${ss} ${ampm}`;
 };
-const toUTCDateTime = (date: Date): string => {
-    if (!date || isNaN(date.getTime())) return '';
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(date.getUTCDate()).padStart(2, '0');
-    const hours = String(date.getUTCHours()).padStart(2, '0');
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
+
+const toIsoUtc = (date: Date): string => {
+  if (!date || isNaN(date.getTime())) return '';
+  return date.toISOString();
+};
+
+const isoToLocalInput = (isoString: string): string => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const localInputToIso = (localString: string): string => {
+  if (!localString) return '';
+  const date = new Date(localString);
+  if (isNaN(date.getTime())) return '';
+  return date.toISOString();
+};
 interface ReadOnlySubscriptionDisplayProps {
   type: string;
   price: number;
@@ -144,23 +160,7 @@ export const EditableSubscriptionForm: React.FC<EditableSubscriptionFormProps> =
   onStartDateChange,
   onEndDateChange,
 }) => {
-  const utcToLocalInput = (utcString: string): string => {
-  if (!utcString) return '';
-  const date = new Date(utcString + 'Z');
-  if (isNaN(date.getTime())) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
-const localInputToUTC = (localString: string): string => {
-  if (!localString) return '';
-  const date = new Date(localString);
-  if (isNaN(date.getTime())) return '';
-  return toUTCDateTime(date);
-};
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-3">
@@ -193,8 +193,8 @@ const localInputToUTC = (localString: string): string => {
             <span className="w-40 font-semibold">New Purchase Date:</span>
             <input
               type="datetime-local"
-              value={utcToLocalInput(startDate)}
-              onChange={(e) => onStartDateChange(localInputToUTC(e.target.value))}
+              value={isoToLocalInput(startDate)}
+              onChange={(e) => onStartDateChange(localInputToIso(e.target.value))}
               className="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
@@ -203,8 +203,8 @@ const localInputToUTC = (localString: string): string => {
             <span className="w-40 font-semibold">New End Date:</span>
             <input
               type="datetime-local"
-              value={utcToLocalInput(endDate)}
-              onChange={(e) => onEndDateChange(localInputToUTC(e.target.value))}
+              value={isoToLocalInput(endDate)}
+              onChange={(e) => onEndDateChange(localInputToIso(e.target.value))}
               className="border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-red-500"
             />
           </div>
@@ -352,10 +352,10 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       return parseFloat(numericString.replace(/,/g, "")) || 0;
     })(),
     start: currentSubscription?.purchase_date
-      ? toUTCDateTime(new Date(currentSubscription.purchase_date))
+      ? toIsoUtc(new Date(currentSubscription.purchase_date))
       : '',
     end: currentSubscription?.end_date
-      ? toUTCDateTime(new Date(currentSubscription.end_date))
+      ? toIsoUtc(new Date(currentSubscription.end_date))
       : '',
     currency: currentSubscription?.price?.replace(/[^a-zA-Z]/g, "") ?? "USD",
   }), [currentSubscription]);
@@ -418,7 +418,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     if (justSwitchedSourceRef.current) return;
 
     const now = new Date();
-    const startDate = toUTCDateTime(now);
+    const startDate = toIsoUtc(now);
 
     if (subscriptionData.type === 'monthly') {
       const endDate = new Date(now);
@@ -428,7 +428,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
         ...prev,
         price: 29.95,
         startDate: startDate,
-        endDate: toUTCDateTime(endDate),
+        endDate: toIsoUtc(endDate),
         currency: 'USD',
       }));
     } else if (subscriptionData.type === 'yearly') {
@@ -439,7 +439,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
         ...prev,
         price: 299.95,
         startDate: startDate,
-        endDate: toUTCDateTime(endDate),
+        endDate: toIsoUtc(endDate),
         currency: 'USD',
       }));
     } else if (subscriptionData.type === 'free') {
@@ -573,11 +573,11 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     }
 
     const purchase_date = activeSubscription.purchase_date
-      ? toUTCDateTime(new Date(activeSubscription.purchase_date))
+      ? toIsoUtc(new Date(activeSubscription.purchase_date))
       : '';
 
     const end_date = activeSubscription.expires_date
-      ? toUTCDateTime(new Date(activeSubscription.expires_date))
+      ? toIsoUtc(new Date(activeSubscription.expires_date))
       : '';
     const price = Number(activeSubscription.price?.amount ?? 0);
     const currency = activeSubscription.price?.currency ?? 'USD';
@@ -682,8 +682,8 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     }
 
     return {
-      purchase_date: purchaseDate ? toUTCDateTime(purchaseDate) : '',
-      end_date: endDate ? toUTCDateTime(endDate) : '',
+      purchase_date: purchaseDate ? toIsoUtc(purchaseDate) : '',
+      end_date: endDate ? toIsoUtc(endDate) : '',
       price,
       currency,
       subscription_type,
@@ -869,14 +869,40 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       });
     },
   });
-
+const normalizeIso = (iso?: string) => {
+  if (!iso) return '';
+  return new Date(iso).setMilliseconds(0);
+};
   const changes = [
-    { field: "subscriptionType", current: subscriptionData.type, original: originalValues.type },
-    { field: "price", current: subscriptionData.price, original: originalValues.price },
-    { field: "customStart", current: subscriptionData.startDate, original: originalValues.start },
-    { field: "customEnd", current: subscriptionData.endDate, original: originalValues.end },
-  ]
-    .filter(({ current, original }) => current !== original);
+  {
+    field: "subscriptionType",
+    current: subscriptionData.type,
+    original: originalValues.type,
+    equal: subscriptionData.type === originalValues.type,
+  },
+  {
+    field: "price",
+    current: subscriptionData.price,
+    original: originalValues.price,
+    equal: subscriptionData.price === originalValues.price,
+  },
+  {
+    field: "customStart",
+    current: subscriptionData.startDate,
+    original: originalValues.start,
+    equal:
+      normalizeIso(subscriptionData.startDate) ===
+      normalizeIso(originalValues.start),
+  },
+  {
+    field: "customEnd",
+    current: subscriptionData.endDate,
+    original: originalValues.end,
+    equal:
+      normalizeIso(subscriptionData.endDate) ===
+      normalizeIso(originalValues.end),
+  },
+].filter(c => !c.equal);
 
   const hasChanges = changes.length > 0;
 
