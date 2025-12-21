@@ -1,4 +1,4 @@
-name: Build, Push Docker to ECR, Update ECS
+name: Build and Deploy on ECS CMS Service 
 
 on:
   workflow_dispatch:
