@@ -8,7 +8,7 @@ RUN npm ci
 
 # Build the app (frontend env baked at build time)
 COPY . .
-ARG REACT_APP_API_URL=https://backend.bootybybret.com/
+ARG REACT_APP_API_URL=https://backend.bootybybret.com/api
 ARG REACT_APP_WOOCOMMERCE_API_URL=https://app.bootybybret.com
 ARG REACT_APP_API_MOCKING=true
 ARG TSC_COMPILE_ON_ERROR=true
