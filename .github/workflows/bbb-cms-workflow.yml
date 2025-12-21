@@ -1,7 +1,9 @@
 name: Build and Deploy on ECS CMS Service 
 
 on:
-  push:
+  workflow_dispatch:
+    branches:
+      - main-n
 
 jobs:
   deploy:
