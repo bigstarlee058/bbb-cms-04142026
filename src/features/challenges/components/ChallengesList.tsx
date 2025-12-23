@@ -8,6 +8,7 @@ import { DeleteChallenge } from './DeleteChallenge';
 import { UpdateChallenge } from './UpdateChallenge';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
+import { ToggleHide } from './ToggleHide';
 
 export const ChallengesList = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,9 +70,9 @@ export const ChallengesList = () => {
             field: 'photo',
             Cell({ entry: { photo } }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={photo} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={photo} />
+                </div>);
             },
           },
           {
@@ -90,23 +91,15 @@ export const ChallengesList = () => {
             field: 'link',
           },
           {
-            title: 'Featured',
-            field: 'isFeatured',
-            Cell({ entry: { isFeatured } }) {
-              return (
-              <div className="justify-center items-center">
-                {isFeatured ? "Featured" : ""}
-              </div>);
-            },
-          },
-          {
-            title: 'Hide',
+            title: 'Visible',
             field: 'isHide',
-            Cell({ entry: { isHide } }) {
+            Cell({ entry: { isHide, _id } }) {
               return (
-              <div className="justify-center items-center">
-                {isHide ? "Hiden" : "Show"}
-              </div>);
+                <ToggleHide
+                  challengeId={_id}
+                  isHide={isHide}
+                />
+              );
             },
           },
           {

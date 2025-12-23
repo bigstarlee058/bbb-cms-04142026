@@ -7,7 +7,7 @@ import { updateChallenge } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createChallengeSchema } from '@/utils/yup';
-
+import { ToggleField } from './ToggleField';
 interface FormikState {
   title: string;
   description: string;
@@ -42,8 +42,8 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
   };
 
   const onSubmit = (state: FormikState) => {
-    const { title, image, description, link, buttonText, deleteImage, isFeatured, isHide } = state;
-    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isFeatured, isHide });
+    const { title, image, description, link, buttonText, deleteImage, isHide } = state;
+    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isHide });
   };
 
   const formik = useFormik({
@@ -79,32 +79,11 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
-          <div className="mb-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="isFeatured"
-                checked={formik.values.isFeatured}
-                onChange={(e) => formik.setFieldValue('isFeatured', e.target.checked)}
-                onBlur={formik.handleBlur}
-                className="h-4 w-4"
-              />
-              <span>Featured</span>
-            </label>
-          </div>
-          <div className="mb-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                name="isHide"
-                checked={formik.values.isHide}
-                onChange={(e) => formik.setFieldValue('isHide', e.target.checked)}
-                onBlur={formik.handleBlur}
-                className="h-4 w-4"
-              />
-              <span>Hide</span>
-            </label>
-          </div>
+          <ToggleField
+            label="Visible"
+            value={formik.values.isHide}
+            onChange={(v) => formik.setFieldValue('isHide', v)}
+          />
         </form>
       </FormDrawer>
     </Authorization>
