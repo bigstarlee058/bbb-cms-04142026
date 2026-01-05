@@ -39,7 +39,7 @@ const { BonusesRoutes } = lazyImport(() => import('@/features/bonuses'), 'Bonuse
 const { ProgramInfoRoutes } = lazyImport(() => import('@/features/program-info'), 'ProgramInfoRoutes');
 const { PumpDaysRoutes } = lazyImport(() => import('@/features/pumpdays'), 'PumpDaysRoutes');
 const { FaqsRoutes } = lazyImport(() => import('@/features/faqs'), 'FaqsRoutes');
-
+const { MoneyRoutes } = lazyImport(() => import('@/features/money'), 'MoneyRoutes');
 const ProtectedApp = () => {
   return (
     <WorkoutContextProvider>
@@ -110,6 +110,7 @@ export const protectedRoutes = [
       { path: 'program-info/*', element: <ProgramInfoRoutes /> },
       { path: 'pumpdays/*', element: <PumpDaysRoutes /> },
       { path: 'faqs/*', element: <FaqsRoutes /> },
+      { path: 'money/*', element: <MoneyRoutes /> },
       { path: '*', element: <Navigate to="/app" /> }
     ]
   }

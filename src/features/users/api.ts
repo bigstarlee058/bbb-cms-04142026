@@ -123,6 +123,7 @@ export const updateUserSubscription = async ({
     price: string;
     purchase_date: string | null;
     end_date: string | null;
+    update_source: 'admin' | 'wp' | 'rc';
   };
 }) => {
   try {
@@ -134,7 +135,7 @@ export const updateUserSubscription = async ({
     const result = (await axios.put('/users/manage_subscription', payload)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries(['get-user', userId]);
-      queryClient.invalidateQueries({ queryKey: ['get-users'] }); // 👈 refresh users list
+      queryClient.invalidateQueries({ queryKey: ['get-users'] });
       return 'Subscription updated successfully.';
     }
 
@@ -146,4 +147,15 @@ export const updateUserSubscription = async ({
     };
     return Promise.reject(error);
   }
+};
+export const fetchUserSubscription = async ({
+  userId,
+  source,
+}: {
+  userId: string;
+  source: 'wp' | 'rc';
+}) => {
+  return await axios.get('/users/subscription', {
+    params: { userId, source },
+  });
 };

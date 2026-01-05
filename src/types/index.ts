@@ -62,6 +62,8 @@ export interface UserSubscription {
   purchase_date: string;
   subscription_type: string;
   user_subscription_status: string;
+  update_source?: 'admin' | 'wp' | 'rc' | null;
+  update_date?: string | number | null;
 }
 
 interface DeviceInfo {
@@ -78,6 +80,8 @@ export interface User extends BaseEntity {
   email: string;
   role: number;
   uid: string;
+  rcUserId?:string;
+  singuptype:string;
   deviceInfo:DeviceInfo;
 }
 export interface UsersResponse {
@@ -309,7 +313,7 @@ export interface Filters {
   sortOrder?: number;
   filter?: any;
   lastId?: string;
-
+  source?: string
 }
 
 export interface TitleFilters {

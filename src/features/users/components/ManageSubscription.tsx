@@ -3,13 +3,18 @@ import * as React from 'react';
 import { Button } from '@/components/Elements/Button';
 import { Dialog, DialogTitle } from '@/components/Elements/Dialog';
 import { useDisclosure } from '@/hooks/useDisclosure';
-import { updateUserSubscription } from '../api';
+import { updateUserSubscription, fetchUserSubscription } from '../api';
 import { useMutation } from 'react-query';
 import { useNotificationStore } from '@/stores/notifications';
 import { formatDate } from '@/utils/format';
-import axios from 'axios';
-
-
+const SUBSCRIPTION_TYPES = [
+  { id: 'free', label: 'Free', value: 'free' },
+  { id: 'trial', label: 'Trial', value: 'trial' },
+  { id: 'weekly', label: 'Weekly', value: 'weekly' },
+  { id: 'monthly', label: 'Monthly', value: 'monthly' },
+  { id: 'quarterly', label: 'Quarterly', value: 'quarterly' },
+  { id: 'yearly', label: 'Yearly', value: 'yearly' },
+];
 const formatLastUpdated = (date: Date) => {
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const dd = String(date.getDate()).padStart(2, '0');
@@ -106,7 +111,7 @@ export const ReadOnlySubscriptionDisplay: React.FC<ReadOnlySubscriptionDisplayPr
             {source === 'wordpress' ? 'WordPress' : 'RevenueCat'} Subscription
           </span>
           <span className={`px-2 py-1 rounded text-xs font-semibold ${badgeBg}`}>
-            {type === 'free' ? 'Free' : type === 'monthly' ? 'Monthly' : 'Yearly'}
+            {type.charAt(0).toUpperCase() + type.slice(1)}
           </span>
         </div>
 
@@ -136,13 +141,13 @@ export const ReadOnlySubscriptionDisplay: React.FC<ReadOnlySubscriptionDisplayPr
   );
 };
 interface EditableSubscriptionFormProps {
-  type: 'free' | 'monthly' | 'yearly';
+  type: string;
   price: number;
   currency: string;
   startDate: string;
   endDate: string;
   duration: string;
-  onTypeChange: (type: 'free' | 'monthly' | 'yearly') => void;
+  onTypeChange: (type: string) => void;
   onPriceChange: (price: number) => void;
   onStartDateChange: (date: string) => void;
   onEndDateChange: (date: string) => void;
@@ -166,12 +171,14 @@ export const EditableSubscriptionForm: React.FC<EditableSubscriptionFormProps> =
       <div className="flex items-center space-x-3">
         <select
           value={type}
-          onChange={(e) => onTypeChange(e.target.value as 'free' | 'monthly' | 'yearly')}
+          onChange={(e) => onTypeChange(e.target.value)}
           className="border rounded-md p-2 w-1/2 focus:outline-none focus:ring-2 focus:ring-red-500"
         >
-          <option value="free">Free</option>
-          <option value="monthly">Monthly</option>
-          <option value="yearly">Yearly</option>
+          {SUBSCRIPTION_TYPES.map((subType) => (
+            <option key={subType.id} value={subType.value}>
+              {subType.label}
+            </option>
+          ))}
         </select>
         <input
           type="number"
@@ -288,10 +295,12 @@ interface SubscriptionProps {
   uid?: string;
   onClose?: () => void;
   currentSubscription?: {
-    subscription_type?: 'free' | 'monthly' | 'yearly';
+    subscription_type?: string;
     price?: string;
     purchase_date?: string | number;
     end_date?: string | number;
+    update_source?: 'admin' | 'wp' | 'rc' | null;
+    update_date?: string | number | null;
   };
 }
 
@@ -358,6 +367,8 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       ? toIsoUtc(new Date(currentSubscription.end_date))
       : '',
     currency: currentSubscription?.price?.replace(/[^a-zA-Z]/g, "") ?? "USD",
+    updateSource: currentSubscription?.update_source || null,
+    updateDate: currentSubscription?.update_date || null,
   }), [currentSubscription]);
   const [subscriptionData, setSubscriptionData] = React.useState({
     type: originalValues.type,
@@ -365,6 +376,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     startDate: originalValues.start,
     endDate: originalValues.end,
     currency: originalValues.currency,
+    updateSource: originalValues.updateSource,
   });
 
   const [fetchState, setFetchState] = React.useState({
@@ -376,7 +388,11 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
 
 
   const [acknowledged, setAcknowledged] = React.useState(false);
-  const [source, setSource] = React.useState<'database' | 'wordpress' | 'revenuecat'>('database');
+  const [source, setSource] = React.useState<'database' | 'wordpress' | 'revenuecat'>(
+    originalValues.updateSource === 'wp' ? 'wordpress'
+      : originalValues.updateSource === 'rc' ? 'revenuecat'
+        : 'database'
+  );
   const currentSourceRef = React.useRef(source);
   const hasDatabaseEditsRef = React.useRef(false);
   const justSwitchedSourceRef = React.useRef(false);
@@ -402,6 +418,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
         startDate: originalValues.start,
         endDate: originalValues.end,
         currency: originalValues.currency,
+        updateSource: originalValues.updateSource
       });
 
       setAcknowledged(false);
@@ -419,30 +436,8 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
 
     const now = new Date();
     const startDate = toIsoUtc(now);
-
-    if (subscriptionData.type === 'monthly') {
-      const endDate = new Date(now);
-      endDate.setMonth(endDate.getMonth() + 1);
-
-      setSubscriptionData(prev => ({
-        ...prev,
-        price: 29.95,
-        startDate: startDate,
-        endDate: toIsoUtc(endDate),
-        currency: 'USD',
-      }));
-    } else if (subscriptionData.type === 'yearly') {
-      const endDate = new Date(now);
-      endDate.setFullYear(endDate.getFullYear() + 1);
-
-      setSubscriptionData(prev => ({
-        ...prev,
-        price: 299.95,
-        startDate: startDate,
-        endDate: toIsoUtc(endDate),
-        currency: 'USD',
-      }));
-    } else if (subscriptionData.type === 'free') {
+    const type = subscriptionData.type;
+    if (type === 'free' ) {
       setSubscriptionData(prev => ({
         ...prev,
         price: 0,
@@ -450,85 +445,52 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
         endDate: '',
         currency: 'USD',
       }));
+      return;
     }
+    const endDate = new Date(now);
+    let defaultPrice = 0;
+
+    switch (type) {
+      case 'weekly':
+      case 'trial':
+        endDate.setDate(endDate.getDate() + 7);
+        defaultPrice = 9.99;
+        break;
+      case 'monthly':
+        endDate.setMonth(endDate.getMonth() + 1);
+        defaultPrice = 29.95;
+        break;
+      case 'quarterly':
+        endDate.setMonth(endDate.getMonth() + 3);
+        defaultPrice = 79.95;
+        break;
+      case 'yearly':
+        endDate.setFullYear(endDate.getFullYear() + 1);
+        defaultPrice = 299.95;
+        break;
+      default:
+        endDate.setMonth(endDate.getMonth() + 1);
+        defaultPrice = 29.95;
+    }
+
+    setSubscriptionData(prev => ({
+      ...prev,
+      price: defaultPrice,
+      startDate: startDate,
+      endDate: toIsoUtc(endDate),
+      currency: 'USD',
+    }));
   }, [subscriptionData.type, source]);
-  const fetchFromWordPress = async (customerId: string) => {
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_WOOCOMMERCE_API_URL}/wp-json/wc/v3/subscriptions?customer=${customerId}`,
-        {
-          auth: {
-            username: process.env.REACT_APP_WOOCOMMERCE_CONSUMER_KEY as string,
-            password: process.env.REACT_APP_WOOCOMMERCE_CONSUMER_SECRET as string,
-          },
-        }
-      );
-
-      return response.data;
-    } catch (error: any) {
-      console.error('Failed to fetch subscriptions from WordPress:', error);
-      throw new Error(
-        error?.response?.data?.message ||
-        'Unable to fetch subscriptions from WordPress'
-      );
-    }
-  };
-
-  const checkRevenueCatUserExists = async (userId: string): Promise<boolean> => {
-    try {
-     await axios.get(
-        `https://api.revenuecat.com/v2/projects/${process.env.REACT_APP_REVENUECAT_PROJECT_ID}/customers/${userId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${process.env.REACT_APP_REVENUECAT_API_KEY_V2}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return true;
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        return false;
-      }
-      throw error;
-    }
-  };
-
-  const fetchRevenueCatSubscription = async (userId: string) => {
-    try {
-      const response = await axios.get(
-        `https://api.revenuecat.com/v1/subscribers/${userId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${process.env.REACT_APP_REVENUECAT_API_KEY_V1}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error('Failed to fetch subscriptions from RevenueCat:', error);
-      throw new Error(
-        error?.response?.data?.message ||
-        'Unable to fetch subscriptions from RevenueCat'
-      );
-    }
-  };
-  const fetchFromRevenueCat = async (userId: string) => {
-    const userExists = await checkRevenueCatUserExists(userId);
-
-    if (!userExists) {
-      return { userExists: false, data: null };
-    }
-
-    const data = await fetchRevenueCatSubscription(userId);
-    return { userExists: true, data };
-  };
 
   const processRevenueCatSubscription = (data: any) => {
     const subscriber = data?.subscriber;
     if (!subscriber) {
-      return freeResult();
+      return freeResult({
+        purchase_date: originalValues.start,
+        end_date: originalValues.end,
+        price: originalValues.price,
+        currency: originalValues.currency,
+      });
     }
 
     const now = Date.now();
@@ -536,7 +498,12 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     const subscriptions = Object.values(subscriptionsMap) as any[];
 
     if (!subscriptions.length) {
-      return freeResult();
+      return freeResult({
+        purchase_date: originalValues.start,
+        end_date: originalValues.end,
+        price: originalValues.price,
+        currency: originalValues.currency,
+      });
     }
 
     const activeSubscription = subscriptions
@@ -552,10 +519,15 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       )[0];
 
     if (!activeSubscription) {
-      return freeResult();
+      return freeResult({
+        purchase_date: originalValues.start,
+        end_date: originalValues.end,
+        price: originalValues.price,
+        currency: originalValues.currency,
+      });
     }
 
-    let subscription_type: 'free' | 'monthly' | 'yearly' = 'monthly';
+    let subscription_type = "free"
     const productId = (
       activeSubscription.product_identifier ||
       Object.keys(subscriptionsMap).find(
@@ -565,11 +537,29 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     ).toLowerCase();
 
     if (
-      activeSubscription.period_type === 'annual' ||
       productId.includes('year') ||
       productId.includes('annual')
     ) {
       subscription_type = 'yearly';
+    } else if (
+      productId.includes('quarter') ||
+      productId.includes('3month')
+    ) {
+      subscription_type = 'quarterly';
+    } else if (
+      productId.includes('month')
+    ) {
+      subscription_type = 'monthly';
+    } else if (
+      productId.includes('week')
+    ) {
+      subscription_type = 'weekly';
+    } else if (
+      productId.includes('trial')
+    ) {
+      subscription_type = 'trial';
+    } else {
+      subscription_type = 'monthly';
     }
 
     const purchase_date = activeSubscription.purchase_date
@@ -591,24 +581,27 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     };
   };
 
-  const freeResult = () => ({
-    purchase_date: '',
-    end_date: '',
-    price: 0,
-    currency: 'USD',
+  const freeResult = (original?: {
+    purchase_date?: string;
+    end_date?: string;
+    price?: number;
+    currency?: string;
+  }) => ({
+    purchase_date: original?.purchase_date || '',
+    end_date: original?.end_date || '',
+    price: original?.price || 0,
+    currency: original?.currency || 'USD',
     subscription_type: 'free' as const,
     isActive: false,
   });
-  
-  
 
   const processWordPressSubscription = (subscription: any) => {
     if (!subscription) {
       return {
-        purchase_date: '',
-        end_date: '',
-        price: 0,
-        currency: 'USD',
+        purchase_date: originalValues.start,
+        end_date: originalValues.end,
+        price: originalValues.price,
+        currency: originalValues.currency,
         subscription_type: 'free' as const,
         isActive: false,
         isExpired: false,
@@ -644,7 +637,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
 
     const currency = subscription.currency || 'USD';
 
-    let subscription_type: 'free' | 'monthly' | 'yearly' = 'free';
+    let subscription_type = "free"
 
     if (subscription.line_items?.length) {
       for (const item of subscription.line_items) {
@@ -654,6 +647,9 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           break;
         } else if (variationId === process.env.REACT_APP_SUBSCRIPTION_MONTH_ID) {
           subscription_type = 'monthly';
+          break;
+        } else if (variationId === "54737") {
+          subscription_type = 'quarterly';
           break;
         }
       }
@@ -692,13 +688,14 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
     };
   };
   const resetToFreeSubscription = () => {
-    setSubscriptionData({
+    setSubscriptionData(prev => ({
       type: 'free',
       price: 0,
       startDate: '',
       endDate: '',
       currency: 'USD',
-    });
+      updateSource: prev.updateSource,
+    }));
     setFetchState(prev => ({
       ...prev,
       lastRefreshed: new Date(),
@@ -716,10 +713,15 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
 
     try {
       if (fetchSource === 'wordpress') {
-        const data = await fetchFromWordPress(uid);
+        const response = await fetchUserSubscription({
+          userId: uid,
+          source: 'wp',
+        });
+
         if (currentSourceRef.current !== fetchSource) return;
 
-        if (!data || data.length === 0) {
+        const data = response.data || [];
+        if (!data.length) {
           setFetchState({
             isFetching: false,
             lastRefreshed: new Date(),
@@ -730,48 +732,22 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           return;
         }
 
-        const activeSubscription = data.find(
+        const active = data.find(
           (s: any) => s.status === 'active' || s.status === 'pending-cancel'
         );
 
-        if (!activeSubscription) {
-          const latestSubscription = data.sort((a: any, b: any) => {
-            const dateA = new Date(a.date_created_gmt || 0).getTime();
-            const dateB = new Date(b.date_created_gmt || 0).getTime();
-            return dateB - dateA;
-          })[0];
-
-          if (latestSubscription) {
-            setFetchState({
-              isFetching: false,
-              lastRefreshed: new Date(),
-              userNotFound: false,
-              isExpired: true,
-            });
-          } else {
-            setFetchState({
-              isFetching: false,
-              lastRefreshed: new Date(),
-              userNotFound: false,
-              isExpired: false,
-            });
-          }
-          resetToFreeSubscription();
-          return;
-        }
-
-        const processed = processWordPressSubscription(activeSubscription);
-
-        if (!processed.isActive) {
+        if (!active) {
           setFetchState({
             isFetching: false,
             lastRefreshed: new Date(),
             userNotFound: false,
-            isExpired: processed.isExpired,
+            isExpired: true,
           });
           resetToFreeSubscription();
           return;
         }
+
+        const processed = processWordPressSubscription(active);
 
         setSubscriptionData({
           type: processed.subscription_type,
@@ -779,6 +755,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           startDate: processed.purchase_date,
           endDate: processed.end_date,
           currency: processed.currency,
+          updateSource: 'wp',
         });
 
         setFetchState({
@@ -787,12 +764,17 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           userNotFound: false,
           isExpired: false,
         });
+      }
 
-      } else if (fetchSource === 'revenuecat') {
-        const result = await fetchFromRevenueCat(id);
+      if (fetchSource === 'revenuecat') {
+        const response = await fetchUserSubscription({
+          userId: id,
+          source: 'rc',
+        });
+
         if (currentSourceRef.current !== fetchSource) return;
-
-        if (!result.userExists) {
+        const result = response.data;
+        if (!result?.userExists) {
           setFetchState({
             isFetching: false,
             lastRefreshed: new Date(),
@@ -806,19 +788,13 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
         const processed = processRevenueCatSubscription(result.data);
 
         if (!processed.isActive) {
-          setSubscriptionData({
-            type: 'free',
-            price: 0,
-            startDate: '',
-            endDate: '',
-            currency: 'USD',
-          });
           setFetchState({
             isFetching: false,
             lastRefreshed: new Date(),
             userNotFound: false,
             isExpired: true,
           });
+          resetToFreeSubscription();
           return;
         }
 
@@ -828,8 +804,8 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
           startDate: processed.purchase_date,
           endDate: processed.end_date,
           currency: processed.currency,
+          updateSource: 'rc',
         });
-
         setFetchState({
           isFetching: false,
           lastRefreshed: new Date(),
@@ -848,7 +824,7 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       addNotification({
         type: 'error',
         title: 'Refetch failed',
-        message: error?.message || 'Failed to refresh data',
+        message: error?.message || 'Failed to refresh subscription',
       });
     }
   };
@@ -869,40 +845,40 @@ export const ManageSubscription: React.FC<SubscriptionProps> = ({
       });
     },
   });
-const normalizeIso = (iso?: string) => {
-  if (!iso) return '';
-  return new Date(iso).setMilliseconds(0);
-};
+  const normalizeIso = (iso?: string) => {
+    if (!iso) return '';
+    return new Date(iso).setMilliseconds(0);
+  };
   const changes = [
-  {
-    field: "subscriptionType",
-    current: subscriptionData.type,
-    original: originalValues.type,
-    equal: subscriptionData.type === originalValues.type,
-  },
-  {
-    field: "price",
-    current: subscriptionData.price,
-    original: originalValues.price,
-    equal: subscriptionData.price === originalValues.price,
-  },
-  {
-    field: "customStart",
-    current: subscriptionData.startDate,
-    original: originalValues.start,
-    equal:
-      normalizeIso(subscriptionData.startDate) ===
-      normalizeIso(originalValues.start),
-  },
-  {
-    field: "customEnd",
-    current: subscriptionData.endDate,
-    original: originalValues.end,
-    equal:
-      normalizeIso(subscriptionData.endDate) ===
-      normalizeIso(originalValues.end),
-  },
-].filter(c => !c.equal);
+    {
+      field: "subscriptionType",
+      current: subscriptionData.type,
+      original: originalValues.type,
+      equal: subscriptionData.type === originalValues.type,
+    },
+    {
+      field: "price",
+      current: subscriptionData.price,
+      original: originalValues.price,
+      equal: subscriptionData.price === originalValues.price,
+    },
+    {
+      field: "customStart",
+      current: subscriptionData.startDate,
+      original: originalValues.start,
+      equal:
+        normalizeIso(subscriptionData.startDate) ===
+        normalizeIso(originalValues.start),
+    },
+    {
+      field: "customEnd",
+      current: subscriptionData.endDate,
+      original: originalValues.end,
+      equal:
+        normalizeIso(subscriptionData.endDate) ===
+        normalizeIso(originalValues.end),
+    },
+  ].filter(c => !c.equal);
 
   const hasChanges = changes.length > 0;
 
@@ -913,7 +889,7 @@ const normalizeIso = (iso?: string) => {
       if (subscriptionData.price < 0) {
         errors.push('Price cannot be negative');
       }
-      if (subscriptionData.price === 0 && source ==="database") {
+      if (subscriptionData.price === 0 && source === "database") {
         errors.push('Price must be greater than 0 for paid plans');
       }
       if (!subscriptionData.startDate) {
@@ -936,13 +912,22 @@ const normalizeIso = (iso?: string) => {
   const handleConfirm = () => {
     if (!canSubmit) return;
 
-    const subscription = subscriptionData.type === 'free'
+    const getUpdateSource = (): 'admin' | 'wp' | 'rc' => {
+      if (source === 'wordpress') return 'wp';
+      if (source === 'revenuecat') return 'rc';
+      return 'admin';
+    };
+
+    const isFreeType = subscriptionData.type === 'free';
+
+    const subscription = isFreeType
       ? {
-        subscription_type: 'free',
-        price: '0',
+        subscription_type: subscriptionData.type,
         user_subscription_status: 'free_user',
-        purchase_date: null,
-        end_date: null,
+        purchase_date: originalValues.start,
+        end_date: originalValues.end,
+        price: `${originalValues.price.toString()} ${originalValues.currency}`,
+        update_source: getUpdateSource(),
       }
       : {
         subscription_type: subscriptionData.type,
@@ -950,8 +935,8 @@ const normalizeIso = (iso?: string) => {
         user_subscription_status: 'subscribed_user',
         purchase_date: subscriptionData.startDate,
         end_date: subscriptionData.endDate,
+        update_source: getUpdateSource(),
       };
-
     mutate({ userId: id, subscription });
   };
 
@@ -965,12 +950,21 @@ const normalizeIso = (iso?: string) => {
     revenuecat: 'border-purple-600 bg-purple-600 text-white hover:bg-purple-600',
   };
   const currentType = originalValues?.type || 'free';
-  const isUpgrade =
-    (currentType === 'free' && subscriptionData?.type !== 'free') ||
-    (currentType === 'monthly' && subscriptionData?.type === 'yearly');
-  const isDowngrade =
-    (currentType === 'yearly' && subscriptionData?.type !== 'yearly') ||
-    (currentType !== 'free' && subscriptionData?.type === 'free');
+
+  const typeRank: Record<string, number> = {
+    free: 0,
+    trial: 1,
+    weekly: 2,
+    monthly: 3,
+    quarterly: 4,
+    yearly: 5,
+  };
+
+  const currentRank = typeRank[currentType] ?? 0;
+  const newRank = typeRank[subscriptionData?.type] ?? 0;
+
+  const isUpgrade = newRank > currentRank;
+  const isDowngrade = newRank < currentRank;
 
   return (
     <Dialog isOpen={isOpen} onClose={handleCancel} initialFocus={cancelButtonRef}>
@@ -991,45 +985,63 @@ const normalizeIso = (iso?: string) => {
                   <p className="font-semibold text-gray-900">{name}</p>
                   {email && <p className="text-gray-500 text-xs">{email}</p>}
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-semibold ${currentType === 'free'
-                  ? 'bg-gray-200 text-gray-700'
-                  : currentType === 'monthly'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-green-100 text-green-700'
+                <span className={`px-2 py-1 rounded text-xs font-semibold ${currentType === 'free' ? 'bg-gray-200 text-gray-700'
+                  : currentType === 'trial' ? 'bg-yellow-100 text-yellow-700'
+                    : currentType === 'weekly' ? 'bg-cyan-100 text-cyan-700'
+                      : currentType === 'monthly' ? 'bg-blue-100 text-blue-700'
+                        : currentType === 'quarterly' ? 'bg-indigo-100 text-indigo-700'
+                          : 'bg-green-100 text-green-700'
                   }`}>
-                  {currentType === 'free' ? 'Free' : currentType === 'monthly' ? 'Monthly' : 'Yearly'}
+                  {currentType.charAt(0).toUpperCase() + currentType.slice(1)}
                 </span>
               </div>
 
-              {currentType !== 'free' && (
-                <>
-                  <div className="flex border-t border-gray-200">
-                    <div className="flex-1 p-2 border-r border-gray-200">
-                      <p className="text-gray-500 text-xs">Price</p>
-                      <p className="font-medium text-gray-800">{originalValues.price} {originalValues.currency || "USD"}</p>
-                    </div>
-                    <div className="flex-1 p-2">
-                      <p className="text-gray-500 text-xs">Period</p>
-                      <p className="font-medium text-gray-800">{calculateDuration(originalValues.start, originalValues.end) || '—'}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-200 p-2 space-y-1">
-                    {currentSubscription?.purchase_date && (
-                      <div className="flex">
-                        <span className="text-gray-500 w-20">Purchased:</span>
-                        <span className="text-gray-800">{formatDate(currentSubscription.purchase_date)}</span>
-                      </div>
-                    )}
-                    {currentSubscription?.end_date && (
-                      <div className="flex">
-                        <span className="text-gray-500 w-20">Ends:</span>
-                        <span className="text-gray-800">{formatDate(currentSubscription.end_date)}</span>
-                      </div>
-                    )}
-                  </div>
-                </>
+              {(originalValues.updateSource || originalValues.updateDate) && (
+                <div className={`flex items-center justify-between px-3 py-1.5 text-xs ${originalValues.updateSource === 'admin' ? 'bg-red-50 border-t border-red-100'
+                  : originalValues.updateSource === 'wp' ? 'bg-orange-50 border-t border-orange-100'
+                    : 'bg-purple-50 border-t border-purple-100'
+                  }`}>
+                  <span className={`font-medium ${originalValues.updateSource === 'admin' ? 'text-red-600'
+                    : originalValues.updateSource === 'wp' ? 'text-orange-800'
+                      : 'text-purple-600'
+                    }`}>
+                    Updated via {originalValues.updateSource === 'admin' ? 'Admin'
+                      : originalValues.updateSource === 'wp' ? 'WordPress'
+                        : 'RevenueCat'}
+                  </span>
+                  {originalValues.updateDate && (
+                    <span className="text-gray-800">
+                      {formatDate(new Date(originalValues.updateDate))}
+                    </span>
+                  )}
+                </div>
               )}
+
+              <div className="flex border-t border-gray-200">
+                <div className="flex-1 p-2 border-r border-gray-200">
+                  <p className="text-gray-500 text-xs">Price</p>
+                  <p className="font-medium text-gray-800">{originalValues.price} {originalValues.currency || "USD"}</p>
+                </div>
+                <div className="flex-1 p-2">
+                  <p className="text-gray-500 text-xs">Period</p>
+                  <p className="font-medium text-gray-800">{calculateDuration(originalValues.start, originalValues.end) || '—'}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-200 p-2 space-y-1">
+                {currentSubscription?.purchase_date && (
+                  <div className="flex">
+                    <span className="text-gray-500 w-20">Purchased:</span>
+                    <span className="text-gray-800">{formatDate(currentSubscription.purchase_date)}</span>
+                  </div>
+                )}
+                {currentSubscription?.end_date && (
+                  <div className="flex">
+                    <span className="text-gray-500 w-20">Ends:</span>
+                    <span className="text-gray-800">{formatDate(currentSubscription.end_date)}</span>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="mt-1.5 flex items-center justify-between">
               <div className="flex space-x-2">
@@ -1076,6 +1088,7 @@ const normalizeIso = (iso?: string) => {
                         startDate: originalValues.start,
                         endDate: originalValues.end,
                         currency: originalValues.currency,
+                        updateSource: originalValues.updateSource
                       });
 
                       setAcknowledged(false);
@@ -1111,7 +1124,7 @@ const normalizeIso = (iso?: string) => {
                     <EditableSubscriptionForm
                       type={subscriptionData.type}
                       price={subscriptionData.price}
-                      currency={subscriptionData.currency||"USD"}
+                      currency={subscriptionData.currency || "USD"}
                       startDate={subscriptionData.startDate}
                       endDate={subscriptionData.endDate}
                       duration={calculateDuration(subscriptionData.startDate, subscriptionData.endDate)}
@@ -1136,8 +1149,6 @@ const normalizeIso = (iso?: string) => {
                   <SubscriptionStatusOverlay status="not_found" source={source} lastUpdated={fetchState.lastRefreshed} />
                 ) : fetchState.isExpired ? (
                   <SubscriptionStatusOverlay status="expired" source={source} lastUpdated={fetchState.lastRefreshed} />
-                ) : subscriptionData.type === 'free' ? (
-                  <SubscriptionStatusOverlay status="no_subscription" source={source} lastUpdated={fetchState.lastRefreshed} />
                 ) : (
                   <ReadOnlySubscriptionDisplay
                     type={subscriptionData.type}
