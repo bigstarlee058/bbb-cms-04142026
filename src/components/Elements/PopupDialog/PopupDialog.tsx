@@ -5,6 +5,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { Dialog, DialogTitle } from '@/components/Elements/Dialog';
 import { User, UserWorkoutHistory, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
+import { formatDate } from '@/utils/format';
 export type PopupDialogProps = {
   triggerButton: React.ReactElement;
   name: string;
@@ -38,6 +39,10 @@ export const PopupDialog = ({
   const [isUpdatingPw, setIsUpdatingPw] = React.useState(false);
   const [passwordSet, setPasswordSet] = React.useState(false);
   const [lastSetPassword, setLastSetPassword] = React.useState('');
+  const [tempPassword, setTempPassword] = React.useState('');
+  const [tempExpiresAt, setTempExpiresAt] = React.useState('');
+  const [isLoadingTemp, setIsLoadingTemp] = React.useState(false);
+  const [securityMode, setSecurityMode] = React.useState<'temp' | 'reset'>('reset');
   React.useEffect(() => {
     if (activeTab === 3) {
       generatePassword();
@@ -45,6 +50,43 @@ export const PopupDialog = ({
       setLastSetPassword('');
     }
   }, [activeTab]);
+  React.useEffect(() => {
+    if (securityMode === "temp" && activeTab === 3) {
+      fetchTempPassword();
+    }
+  }, [activeTab, securityMode])
+  const fetchTempPassword = async () => {
+    setIsLoadingTemp(true);
+    try {
+      const res = await axios.get(`/users/admin/${userData._id}/gtp`);
+      setTempPassword(res?.data?.tempPassword || '');
+      setTempExpiresAt(res?.data?.expiresAt || '');
+    } catch (e) {
+      setTempPassword('');
+      setTempExpiresAt('');
+    } finally {
+      setIsLoadingTemp(false);
+    }
+  };
+  const handleGenerateTempPassword = async () => {
+    setIsLoadingTemp(true);
+    try {
+      const res = await axios.post(`/users/admin/${userData._id}/gtp`);
+      setTempPassword(res.data?.tempPassword);
+      setTempExpiresAt(res.data?.expiresAt);
+      addNotification({
+        type: 'success',
+        title: 'Temporary password generated.',
+      });
+    } catch (e) {
+      addNotification({
+        type: 'error',
+        title: 'Failed to generate password',
+      });
+    } finally {
+      setIsLoadingTemp(false);
+    }
+  };
   const generatePassword = () => {
     const chars = "0123456789";
     let pass = "";
@@ -191,8 +233,8 @@ export const PopupDialog = ({
                       <div
                         key={ex.date + exIndex}
                         className={`p-4 rounded-lg border ${ex.status === 'Completed'
-                            ? 'bg-green-50 border-green-300'
-                            : 'bg-red-50 border-red-300'
+                          ? 'bg-green-50 border-green-300'
+                          : 'bg-red-50 border-red-300'
                           }`}
                       >
                         <h5 className="text-md font-medium text-gray-800">{ex.exerciseTitle}</h5>
@@ -236,76 +278,155 @@ export const PopupDialog = ({
     </div>,
 
     <div key="security" className="space-y-6 max-h-[300px] overflow-auto px-2 relative p-1">
-      <div className="bg-gray-50 border rounded-lg p-6 space-y-4">
+      <div className="flex gap-2 mb-4">
+        {[
+          { value: 'reset', label: 'Reset Password' },
+          { value: 'temp', label: 'Temporary Password' },
+        ].map(({ value, label }) => (
+          <button
+            key={value}
+            type="button"
+            onClick={() => setSecurityMode(value as 'reset' | 'temp')}
+            className={`flex-1 px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${securityMode === value
+              ? 'bg-[#9a354e] text-white border-[#9a354e]'
+              : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+              }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {securityMode === "temp" && (
+        <div className="mt-6 border rounded-lg p-6 space-y-4">
+          {isLoadingTemp ? (
+            <p>Loading...</p>
+          ) : tempPassword === '' ? (
+            <>
+              <p>You do not have a temporary password for this user.</p>
+              <button
+                onClick={handleGenerateTempPassword}
+                className="px-4 py-2 bg-[#9a354e] text-white rounded-md"
+              >
+                Generate Temporary Password
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between w-full mt-2">
+                <div
+                  onClick={() => {
+                    navigator.clipboard.writeText(tempPassword);
+                    setCopySuccess(true);
+                    setTimeout(() => setCopySuccess(false), 2000);
+                  }}
+                  className="flex items-center space-x-3 bg-[#9a354e] bg-opacity-10 border-2 border-[#9a354e]
+               rounded-lg px-4 py-2 cursor-pointer hover:bg-opacity-20 transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center space-x-2">
+                    <svg className="h-5 w-5 text-[#9a354e]" xmlns="http://www.w3.org/2000/svg" fill="none"
+                      viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-[#9a354e]">Temp:</span>
+                  </div>
 
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-medium leading-6 text-gray-900">Reset Password</h3>
+                  <div className="text-xl font-bold font-mono tracking-wider text-gray-900">
+                    {tempPassword}
+                  </div>
 
-          </div>
-          {passwordSet && lastSetPassword && (
-            <div
-              onClick={copyToClipboard}
-              className="flex items-center space-x-3 bg-[#9a354e] bg-opacity-10 border-2 border-[#9a354e] rounded-lg px-4 py-2 cursor-pointer hover:bg-opacity-20 transition-colors whitespace-nowrap"
-            >
-              <div className="flex items-center space-x-2">
-                <svg className="h-5 w-5 text-[#9a354e]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-sm font-medium text-[#9a354e]">Set:</span>
+                  <div className="flex items-center space-x-1 text-[#9a354e]">
+                    <ClipboardCopyIcon className="h-4 w-4" />
+                    <span className="text-xs font-medium">
+                      {copySuccess ? '✓' : 'Copy'}
+                    </span>
+                  </div>
+                </div>
+                <div className="mx-4 flex-1 text-center text-sm text-gray-600 whitespace-nowrap">
+                  Valid Until: {formatDate(tempExpiresAt)}
+                </div>
+                <button
+                  onClick={handleGenerateTempPassword}
+                  className="px-4 py-2 bg-[#9a354e] text-white rounded-md border border-[#9a354e]
+               hover:bg-[#802a3f] whitespace-nowrap transition-colors"
+                >
+                  Generate New
+                </button>
+
               </div>
-
-              <div className="text-xl font-bold font-mono tracking-wider text-gray-900">
-                {lastSetPassword}
-              </div>
-
-              <div className="flex items-center space-x-1 text-[#9a354e]">
-                <ClipboardCopyIcon className="h-4 w-4" />
-                <span className="text-xs font-medium">
-                  {copySuccess ? '✓' : 'Copy'}
-                </span>
-              </div>
-            </div>
+            </>
           )}
-        </div>
-        <div className="space-y-2">
 
-          <label className="block text-sm font-medium text-gray-700">Generate or enter a new password.</label>
-          <div className="flex rounded-md shadow-sm">
-            <input
-              type="text"
-              value={newPassword}
-              onChange={(e) => {
-                setNewPassword(e.target.value);
-                setCopySuccess(false);
-              }}
-              className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-[#9a354e] focus:border-[#9a354e] text-2xl font-bold font-mono tracking-wider text-center"
-              placeholder="New Password"
-              maxLength={21}
-            />
+        </div>
+      )}
+      {securityMode === "reset" && (
+        <div className="bg-gray-50 border rounded-lg p-6 space-y-4">
+
+          <div className="flex items-center justify-between gap-4">
+            {passwordSet && lastSetPassword && (
+              <div
+                onClick={copyToClipboard}
+                className="flex items-center space-x-3 bg-[#9a354e] bg-opacity-10 border-2 border-[#9a354e] rounded-lg px-4 py-2 cursor-pointer hover:bg-opacity-20 transition-colors whitespace-nowrap"
+              >
+                <div className="flex items-center space-x-2">
+                  <svg className="h-5 w-5 text-[#9a354e]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-medium text-[#9a354e]">Set:</span>
+                </div>
+
+                <div className="text-xl font-bold font-mono tracking-wider text-gray-900">
+                  {lastSetPassword}
+                </div>
+
+                <div className="flex items-center space-x-1 text-[#9a354e]">
+                  <ClipboardCopyIcon className="h-4 w-4" />
+                  <span className="text-xs font-medium">
+                    {copySuccess ? '✓' : 'Copy'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+
+            <label className="block text-sm font-medium text-gray-700">Generate or enter a new password.</label>
+            <div className="flex rounded-md shadow-sm">
+              <input
+                type="text"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setCopySuccess(false);
+                }}
+                className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md border border-gray-300 focus:ring-[#9a354e] focus:border-[#9a354e] text-2xl font-bold font-mono tracking-wider text-center"
+                placeholder="New Password"
+                maxLength={21}
+              />
+              <button
+                type="button"
+                onClick={generatePassword}
+                className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 rounded-r-md border border-gray-300 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-[#9a354e] focus:border-[#9a354e]"
+                title="Generate 8-digit PIN"
+              >
+                <RefreshIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                <span>Generate</span>
+              </button>
+            </div>
+          </div>
+          <div className="pt-4 border-t border-gray-200">
             <button
               type="button"
-              onClick={generatePassword}
-              className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 rounded-r-md border border-gray-300 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-[#9a354e] focus:border-[#9a354e]"
-              title="Generate 8-digit PIN"
+              onClick={handleUpdatePassword}
+              disabled={!newPassword || isUpdatingPw}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
+          ${!newPassword || isUpdatingPw ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#9a354e] hover:bg-[#802a3f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9a354e]'}`}
             >
-              <RefreshIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              <span>Generate</span>
+              {isUpdatingPw ? 'Updating...' : 'Update Password'}
             </button>
           </div>
         </div>
-        <div className="pt-4 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={handleUpdatePassword}
-            disabled={!newPassword || isUpdatingPw}
-            className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-          ${!newPassword || isUpdatingPw ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#9a354e] hover:bg-[#802a3f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9a354e]'}`}
-          >
-            {isUpdatingPw ? 'Updating...' : 'Update Password'}
-          </button>
-        </div>
-      </div>
+      )}
     </div>,
   ];
 
