@@ -60,14 +60,20 @@ jobs:
         run: |
           IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
+          aws ecs describe-task-definition \
+            --task-definition $TASK_FAMILY \
+            --query 'taskDefinition' \
+            --output json > task-definition.json
+
           jq --arg IMAGE "$IMAGE_URI" \
-            '.containerDefinitions[0].image = $IMAGE' \
-            ecs/task-definition.json > ecs/task-def-rendered.json
+            '.containerDefinitions[0].image = $IMAGE
+             | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+            task-definition.json > task-def-rendered.json
 
       - name: Register task definition
         run: |
           aws ecs register-task-definition \
-            --cli-input-json file://ecs/task-def-rendered.json
+            --cli-input-json file://task-def-rendered.json
 
       # -----------------------------
       # Update ECS service
