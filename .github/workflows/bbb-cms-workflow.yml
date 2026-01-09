@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-southeast-2
+      AWS_REGION: us-east-1
       AWS_ACCOUNT_ID: 389051277190
       ECR_REPOSITORY: bbb-cms
       ECS_CLUSTER: bbb-cluster
-      ECS_SERVICE: bbb-cms-td-service
+      ECS_SERVICE: bbb-cms-service
       TASK_FAMILY: bbb-cms-td
-      CONTAINER_NAME: bbb-cms
+      CONTAINER_NAME: bbb-cms-container
       KEEP_IMAGES: 3
 
     steps:
