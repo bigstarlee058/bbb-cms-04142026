@@ -1,19 +1,23 @@
-name: Build and Deploy on ECS CMS Service 
+name: Build and Deploy on ECS CMS Service
 
 on:
   workflow_dispatch:
+    branches:
+      - main-n
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: ap-southeast-2
+      AWS_REGION: us-east-1
       AWS_ACCOUNT_ID: 389051277190
       ECR_REPOSITORY: bbb-cms
-      IMAGE_TAG: latest
       ECS_CLUSTER: bbb-cluster
-      ECS_SERVICE: bbb-cms-td-service
+      ECS_SERVICE: bbb-cms-service
+      TASK_FAMILY: bbb-cms-td
+      CONTAINER_NAME: bbb-cms-container
+      KEEP_IMAGES: 3
 
     steps:
       - name: Checkout repository
@@ -25,6 +29,9 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set image tag
+        run: echo "IMAGE_TAG=${GITHUB_SHA}" >> $GITHUB_ENV
 
       - name: Login to Amazon ECR
         run: |
@@ -46,10 +53,66 @@ jobs:
           docker push \
           $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Force new ECS deployment
+      # -----------------------------
+      # Register new Task Definition
+      # -----------------------------
+      - name: Render task definition
+        run: |
+          IMAGE_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
+
+          aws ecs describe-task-definition \
+            --task-definition $TASK_FAMILY \
+            --query 'taskDefinition' \
+            --output json > task-definition.json
+
+          jq --arg IMAGE "$IMAGE_URI" \
+            '.containerDefinitions[0].image = $IMAGE
+             | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+            task-definition.json > task-def-rendered.json
+
+      - name: Register task definition
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://task-def-rendered.json
+
+      # -----------------------------
+      # Update ECS service
+      # -----------------------------
+      - name: Deploy new task definition
         run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
-            --region $AWS_REGION \
+            --task-definition $TASK_FAMILY \
             --force-new-deployment
+
+      # -----------------------------
+      # 🧹 Cleanup old ECR images
+      # -----------------------------
+      - name: Cleanup old ECR images
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
+          IMAGES=$(aws ecr describe-images \
+            --repository-name "$ECR_REPOSITORY" \
+            --region "$AWS_REGION" \
+            --query 'imageDetails[*].[imageDigest,imagePushedAt]' \
+            --output json)
+
+          SORTED=$(echo "$IMAGES" | jq 'sort_by(.[1]) | reverse')
+          TO_DELETE=$(echo "$SORTED" | jq -c ".[$KEEP_IMAGES:][] | {imageDigest: .[0]}")
+
+          if [ -z "$TO_DELETE" ]; then
+            echo "No images to delete 👍"
+            exit 0
+          fi
+
+          echo "$TO_DELETE" | while read -r image; do
+            aws ecr batch-delete-image \
+              --repository-name "$ECR_REPOSITORY" \
+              --region "$AWS_REGION" \
+              --image-ids "$image"
+          done
+
+          echo "ECR cleanup completed ✅"
