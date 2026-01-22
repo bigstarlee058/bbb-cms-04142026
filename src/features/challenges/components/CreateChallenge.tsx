@@ -9,7 +9,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createChallengeSchema } from '@/utils/yup';
 
 import { createChallenge } from '../api';
-
+import { ToggleField } from './ToggleField';
 interface FormikState {
   title: string;
   description: string;
@@ -17,7 +17,6 @@ interface FormikState {
   buttonText: string;
   deleteImage: boolean;
   image: any;
-  isFeatured: false;
   isHide: false;
 }
 
@@ -39,7 +38,6 @@ export const CreateChallenge = () => {
     link: '',
     buttonText: '',
     deleteImage: false,
-    isFeatured: false,
     isHide: false,
   };
   const formik = useFormik({
@@ -80,8 +78,11 @@ export const CreateChallenge = () => {
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
-          <Field type="checkbox" label="Featured" formik={formik} name="isFeatured" style={{maxWidth: "20px"}} />
-          <Field type="checkbox" label="Hide" formik={formik} name="isHide" style={{maxWidth: "20px"}} />
+          <ToggleField
+            label="Visible"
+            value={formik.values.isHide}
+            onChange={(v) => formik.setFieldValue('isHide', v)}
+          />
         </form>
       </FormDrawer>
     </Authorization>

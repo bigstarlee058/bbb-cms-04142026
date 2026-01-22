@@ -10,7 +10,7 @@ import { useFilteringStore } from '@/stores/filter';
 import { UserDetail } from '../UserDetail';
 import { ManageSubscription } from './ManageSubscription';
 export const UsersList = () => {
-  const { search, sortBy,subscription } = useFilteringStore();
+  const { search, sortBy,subscription ,source} = useFilteringStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
@@ -19,6 +19,7 @@ export const UsersList = () => {
     filter: {},
     sortBy: undefined,
     subscription:undefined,
+    source: undefined,
   });
 
   const { data, isLoading, isFetching, } = useQuery(
@@ -44,7 +45,10 @@ export const UsersList = () => {
   useEffect(() => {
     setFilters((prev) => ({ ...prev, page: currentPage }));
   }, [currentPage]);
-
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, source: source?.value, page: 1 }));
+    setCurrentPage(1);
+  }, [source]);
   if (isLoading) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -70,9 +74,9 @@ export const UsersList = () => {
           { title: 'Email', field: 'email' },
           {
             title: 'Source',
-            field: 'uid',
-            Cell({ entry: { uid } }) {
-              return <span>{uid == '-1' ? 'Mobile' : 'Wordpress'}</span>;
+            field: 'singuptype',
+            Cell({ entry: { singuptype } }) {
+              return <span>{singuptype ==="mobile"?"Mobile":"Wordpress"}</span>;
             },
           },
           {
@@ -93,20 +97,23 @@ export const UsersList = () => {
             title: 'Subscription',
             field: 'subscription',
             Cell({ entry }) {
-              const { subscription, _id, name, email } = entry;
+              const { subscription,rcUserId, _id, name, email } = entry;
               const isActive = subscription?.end_date
                 ? new Date(subscription.end_date) > new Date()
                 : false;
 
-              const currentType: 'free' | 'monthly' | 'yearly' = (() => {
+              const currentType: string = (() => {
                 if (!isActive) return 'free';
-                const type = subscription?.subscription_type || '';
-                if (type.toLowerCase().includes('month')) return 'monthly';
-                if (type.toLowerCase().includes('year')) return 'yearly';
+                const type = (subscription?.subscription_type || '').toLowerCase();
+                if (type.includes('trial')) return 'trial';
+                if (type.includes('week')) return 'weekly';
+                if (type.includes('month')) return 'monthly';
+                if (type.includes('quarter')) return 'quarterly';
+                if (type.includes('year')) return 'yearly';
                 return 'free';
               })();
 
-              const [subscriptionType, setSubscriptionType] = useState(currentType);
+              const [subscriptionType, setSubscriptionType] = useState<string>(currentType);
               const [showSubscriptionPopup, setShowSubscriptionPopup] = useState(false);
 
               const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -132,15 +139,18 @@ export const UsersList = () => {
 
                   {showSubscriptionPopup && (
                     <ManageSubscription
-                      id={_id}
+                      id={rcUserId||_id}
                       name={name}
                       email={email}
+                      uid={entry.uid}
                       onClose={() => setShowSubscriptionPopup(false)}
                       currentSubscription={{
                         subscription_type: currentType,
                         price: subscription?.price,
                         purchase_date: subscription?.purchase_date,
                         end_date: subscription?.end_date,
+                        update_source: subscription?.update_source,
+                        update_date: subscription?.update_date,
                       }}
                     />
                   )}

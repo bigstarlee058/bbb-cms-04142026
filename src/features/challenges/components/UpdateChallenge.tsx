@@ -1,13 +1,13 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
+import { Field, FormDrawer, Dropzone, Textarea } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation } from 'react-query';
 import { updateChallenge } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createChallengeSchema } from '@/utils/yup';
-
+import { ToggleField } from './ToggleField';
 interface FormikState {
   title: string;
   description: string;
@@ -15,42 +15,44 @@ interface FormikState {
   link: string;
   buttonText: string;
   deleteImage: boolean;
-  isFeatured: false;
-  isHide: false;
+  isFeatured: boolean;
+  isHide: boolean;
 }
 
 export const UpdateChallenge = ({ challengeId, challenges }) => {
   const { addNotification } = useNotificationStore();
+
   const { mutate, isLoading, isSuccess } = useMutation(updateChallenge, {
     onSuccess: (message: string) => {
-      addNotification({
-        type: 'success',
-        title: message
-      });
+      addNotification({ type: 'success', title: message });
     }
   });
 
-  const challengeData = challenges.challenges.find((ex) => ex._id === challengeId);
+  const challengeData = challenges?.challenges?.find((ex) => ex._id === challengeId);
 
   const initialValues: FormikState = {
-    title: challengeData?.title || '',
-    description: challengeData?.description || '',
-    link: challengeData?.link || '',
-    buttonText: challengeData?.buttonText || '',
-    image: challengeData?.photo || '',
+    title: challengeData?.title ?? '',
+    description: challengeData?.description ?? '',
+    link: challengeData?.link ?? '',
+    buttonText: challengeData?.buttonText ?? '',
+    image: challengeData?.photo ?? '',
     deleteImage: false,
-    isFeatured: challengeData?.isFeatured || false,
-    isHide: challengeData?.isHide || false,
+    isFeatured: !!challengeData?.isFeatured,
+    isHide: !!challengeData?.isHide,
   };
+
+  const onSubmit = (state: FormikState) => {
+    const { title, image, description, link, buttonText, deleteImage, isHide } = state;
+    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isHide });
+  };
+
   const formik = useFormik({
     initialValues,
+    enableReinitialize: true,
     validationSchema: createChallengeSchema,
-    onSubmit: (v) => onSubmit(v)
+    onSubmit
   });
-  const onSubmit = (state: FormikState) => {
-    const { title, image, description, link, buttonText, deleteImage, isFeatured, isHide } = state;
-    mutate({ challengeId, title, image, description, link, buttonText, deleteImage, isFeatured, isHide });
-  };
+
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <FormDrawer
@@ -68,6 +70,7 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
           <Textarea label="Description" formik={formik} name="description" />
           <Field label="Link" formik={formik} name="link" />
           <Field label="Button Text" formik={formik} name="buttonText" />
+
           <Dropzone
             label="Photo"
             name="image"
@@ -76,8 +79,11 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
-          <Field type="checkbox" label="Featured" formik={formik} name="isFeatured" style={{maxWidth: "20px"}} />
-          <Field type="checkbox" label="Hide" formik={formik} name="isHide" style={{maxWidth: "20px"}} />
+          <ToggleField
+            label="Visible"
+            value={formik.values.isHide}
+            onChange={(v) => formik.setFieldValue('isHide', v)}
+          />
         </form>
       </FormDrawer>
     </Authorization>

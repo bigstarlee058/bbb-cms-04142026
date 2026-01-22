@@ -36,7 +36,6 @@ export const createChallenge = async (payload: {
   description: string;
   link: string;
   buttonText: string;
-  isFeatured: boolean;
   isHide: boolean;
 }) => {
   try {
@@ -46,7 +45,6 @@ export const createChallenge = async (payload: {
     formData.append('description', payload.description);
     formData.append('link', payload.link);
     formData.append('buttonText', payload.buttonText);
-    formData.append('isFeatured', String(payload.isFeatured));
     formData.append('isHide', String(payload.isHide));
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/challenges/admin', formData)) as ResponseMessage;
@@ -75,7 +73,6 @@ export const updateChallenge = async (payload: {
   link: string;
   buttonText: string;
   deleteImage: Boolean;
-  isFeatured: boolean;
   isHide: boolean;
 }) => {
   try {
@@ -87,7 +84,6 @@ export const updateChallenge = async (payload: {
     formData.append('link', payload.link);
     formData.append('buttonText', payload.buttonText);
     formData.append('deleteImage', String(payload.deleteImage));
-    formData.append('isFeatured', String(payload.isFeatured));
     formData.append('isHide', String(payload.isHide));
     const result = (await axios.put('/challenges/admin', formData)) as ResponseMessage;
     if (result.result === true) {
@@ -118,5 +114,26 @@ export const deleteChallenge = async (challengeId: string) => {
       message: err as string,
     };
     return Promise.reject(error);
+  }
+};
+
+export const toggleChallengeVisible = async (
+  challengeId: string,
+  isHide: boolean
+) => {
+  try {
+    const result = (await axios.put('/challenges/admin/toggle-visible', {
+      challengeId,
+      isHide, // true = hidden, false = visible
+    })) as ResponseMessage;
+
+    if (result.result === true) {
+      queryClient.invalidateQueries('get-challenges');
+      return result.message;
+    }
+
+    return Promise.reject(result.message);
+  } catch (err: any) {
+    return Promise.reject(err);
   }
 };

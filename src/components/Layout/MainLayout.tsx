@@ -11,7 +11,7 @@ import {
   QuestionMarkCircleIcon,
   CheckCircleIcon,
   VideoCameraIcon,
-  ShoppingBagIcon,
+  CashIcon,
   ClockIcon,
   LightBulbIcon,
   GiftIcon,
@@ -80,6 +80,13 @@ const SideNavigation = () => {
       path: './users',
       icon: UsersIcon
     },
+    checkAccess({ allowedRoles: [ROLES.ADMIN] }) && {
+      title: 'Money',
+      icon: CashIcon,
+      submenu: [
+        { title: 'Upsells', path: './money/upsells', icon: GiftIcon },
+      ]
+    },
     {
       title: 'Modals',
       icon: CiSquareInfo,
@@ -96,7 +103,7 @@ const SideNavigation = () => {
     { title: 'Exercises', path: './exercises', icon: CiDumbbell },
     { title: 'Warmups', path: './warmups', icon: LiaDumbbellSolid },
     { title: 'Pump Days', path: './pumpdays', icon: WeightClockIcon },
-    { title: 'Equipment', path: './equipments', icon: ShoppingBagIcon },
+    { title: 'Equipment', path: './equipments', icon: CashIcon },
     { title: 'Rest Days', path: './restdays', icon: ClockIcon },
     { title: 'Categories', path: './categories', icon: CubeIcon },
     { title: 'Tags', path: './tags', icon: TagIcon },
@@ -355,17 +362,26 @@ const SortOption = [
   { label: 'Oldest Added', value: 'OldestAdded' }
 ];
 const subscriptionType = [
-  { label: 'all', value: '' },
+  { label: 'All', value: '' },
   { label: 'Free', value: 'free' },
+  { label: 'Trial', value: 'trial' },
+  { label: 'Weekly', value: 'week' },
   { label: 'Monthly', value: 'month' },
+  { label: 'Quarterly', value: 'quarter' },
   { label: 'Yearly', value: 'year' }
+];
+
+const userSource = [
+  { label: 'All', value: '' },
+  { label: 'Mobile', value: 'mobile' },
+  { label: 'WordPress', value: 'wordpress' }
 ];
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [monthCover, setMonthCover] = React.useState('');
 
   const { currentPage } = useUserStore();
-  const { setSearchBoxValue, setSortByValue, sortBy, subscription, setSubscriptionByValue } = useFilteringStore();
+  const { setSearchBoxValue, setSortByValue, sortBy, subscription, setSubscriptionByValue, source, setSourceByValue } = useFilteringStore();
   const { months } = useWorkoutContext();
   const { days } = usePumpDaysContext();
   const { pathname } = useLocation();
@@ -376,6 +392,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const handleSortOptionChange = (val: any) => {
     setSortByValue(val.label, val.value);
   };
+  const handleSourceOptionChange = (val: any) => {
+    setSourceByValue(val.label, val.value);
+  };
+
   const handleSubscriptionOptionChange = (val: any) => {
     setSubscriptionByValue(val.label, val.value);
   };
@@ -430,7 +450,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
           </button>
           <div
-            className={`flex-1 px-4 flex items-center ${currentPage == 'users' ||
+            className={`flex-1 px-2 flex items-center ${currentPage == 'users' ||
               currentPage == 'exercises' ||
               currentPage == 'warmups' ||
               currentPage == 'equipments' ||
@@ -450,7 +470,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                   <div className="p-1">
                     <SearchField setSearchQuery={(val) => setSearchBoxValue(val)} />
                   </div>
-                  <div className="p-4">
+                  <div className="p-2">
                     <ReactSelect
                       styles={reactSelectStylesConfig}
                       className="w-56 shrink hover:shrink-0 whitespace-nowrap"
@@ -462,26 +482,35 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                     />
                   </div>
                   {pathname.includes('users') && (
-                    <div className="p-1">
-                      <ReactSelect
-                        styles={reactSelectStylesConfig}
-                        className="w-56 shrink hover:shrink-0 whitespace-nowrap"
-                        placeholder="Subscription"
-                        name="subscription"
-                        options={subscriptionType}
-                        value={subscription}
-                        onChange={handleSubscriptionOptionChange}
-                      />
-                    </div>
+                    <>
+                      <div className="p-1">
+                        <ReactSelect
+                          styles={reactSelectStylesConfig}
+                          className="w-40 shrink hover:shrink-0 whitespace-nowrap"
+                          placeholder="Subscription"
+                          name="subscription"
+                          options={subscriptionType}
+                          value={subscription}
+                          onChange={handleSubscriptionOptionChange}
+                        />
+                      </div>
+                      <div className="p-1">
+                        <ReactSelect
+                          styles={reactSelectStylesConfig}
+                          className="w-40 shrink hover:shrink-0 whitespace-nowrap"
+                          placeholder="Source"
+                          name="source"
+                          options={userSource}
+                          value={source}
+                          onChange={handleSourceOptionChange}
+                        />
+                      </div>
+                      <div className="p-1"><ExportData /></div>
+                    </>
                   )}
                 </div>
               )}
             <div className="ml-4 flex items-center md:ml-6">
-              {pathname.includes('users') && (
-                <>
-                  <ExportData />
-                </>
-              )}
               {pathname.includes('workouts') && (
                 <>
                   <MonthCover initialMonthCover={monthCover} onSetMonthCover={onSetMonthCover} />

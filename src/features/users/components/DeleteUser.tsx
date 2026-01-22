@@ -14,7 +14,7 @@ export const DeleteUser = ({ id }: DeleteUserProps) => {
   const { user } = useAuthStore();
   const { addNotification } = useNotificationStore();
 
-  const { mutate, isSuccess, isLoading } = useMutation(deleteUser, {
+  const { mutate, isLoading } = useMutation(deleteUser, {
     onSuccess: (message: string) => {
       addNotification({
         type: 'success',

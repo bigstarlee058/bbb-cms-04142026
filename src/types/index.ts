@@ -10,6 +10,20 @@ export interface ResponseMessage {
   result: boolean;
   message: string;
 }
+export type UserEvent = {
+  _id: string;
+  userId: string;
+  source: 'wp' | 'rc' | 'admin';
+  action: string;
+  summary?: Record<string, any>;
+  details: string;
+  status: number;
+  success: boolean;
+  errorMessage?: string;
+  performedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 ////////////////////useless////////////////////
 export interface Tag extends BaseEntity {
   name: string;
@@ -62,6 +76,8 @@ export interface UserSubscription {
   purchase_date: string;
   subscription_type: string;
   user_subscription_status: string;
+  update_source?: 'admin' | 'wp' | 'rc' | null;
+  update_date?: string | number | null;
 }
 
 interface DeviceInfo {
@@ -78,6 +94,8 @@ export interface User extends BaseEntity {
   email: string;
   role: number;
   uid: string;
+  rcUserId?:string;
+  singuptype:string;
   deviceInfo:DeviceInfo;
 }
 export interface UsersResponse {
@@ -309,7 +327,7 @@ export interface Filters {
   sortOrder?: number;
   filter?: any;
   lastId?: string;
-
+  source?: string
 }
 
 export interface TitleFilters {
