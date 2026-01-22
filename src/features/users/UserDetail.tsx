@@ -12,22 +12,28 @@ type UserDetailProps = {
   id: string;
 };
 
-export const UserDetail = ({ id }: UserDetailProps) => {
-  const { user } = useAuthStore();
+const UserDetailPopup = ({ 
+  id, 
+  onClose 
+}: { 
+  id: string; 
+  onClose: () => void;
+}) => {
   const navigate = useNavigate();
   const { addNotification } = useNotificationStore();
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  const { data: userData, isLoading: isLoadingUser, refetch: refetchUser } = useQuery(
+  const { data: userData, isLoading: isLoadingUser } = useQuery(
     ['get-user', id],
     () => fetchUser(id),
-    { enabled: false, onError: (err: ErrorMessage) => {
+    { 
+      onError: (err: ErrorMessage) => {
         addNotification({ type: 'error', title: err.message });
         navigate('/app/users');
-    }}
+      }
+    }
   );
 
-  const { data: userWorkoutHistory, isLoading: isLoadingWorkout, refetch: refetchWorkout } = useQuery(
+  const { data: userWorkoutHistory, isLoading: isLoadingWorkout } = useQuery(
     ['get-user-history', id],
     () => fetchUserWorkout(id),
     { enabled: false, onError: (err: ErrorMessage) => {
@@ -35,14 +41,6 @@ export const UserDetail = ({ id }: UserDetailProps) => {
         navigate('/app/users');
     }}
   );
-
-  const handleOpen = async () => {
-    setIsPopupOpen(true);
-    await Promise.all([refetchUser(), refetchWorkout()]); // fetch data in background
-  };
-
-  if (user?.uid === id) return null;
-
   return (
     
     <PopupDialog
@@ -52,15 +50,31 @@ export const UserDetail = ({ id }: UserDetailProps) => {
       userData={userData || ({} as any)}
       workoutsHistory={userWorkoutHistory || []}
       isLoading={isLoadingUser || isLoadingWorkout}
-      isOpen={isPopupOpen}
-      onClose={() => setIsPopupOpen(false)}
-      triggerButton={
-        <Button
-          variant="danger"
-          startIcon={<EyeIcon className="h-4 w-4" />}
-          onClick={handleOpen}
-        />
-      }
+      isOpen={true}
+      onClose={onClose}
+      triggerButton={<span style={{ display: 'none' }} />}
     />
+  );
+};
+export const UserDetail = ({ id }: UserDetailProps) => {
+  const { user } = useAuthStore();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  if (user?.uid === id) return null;
+
+  return (
+    <>
+      <Button
+        variant="danger"
+        startIcon={<EyeIcon className="h-4 w-4" />}
+        onClick={() => setIsPopupOpen(true)}
+      />
+      {isPopupOpen && (
+        <UserDetailPopup
+          id={id}
+          onClose={() => setIsPopupOpen(false)}
+        />
+      )}
+    </>
   );
 };

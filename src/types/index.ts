@@ -10,6 +10,20 @@ export interface ResponseMessage {
   result: boolean;
   message: string;
 }
+export type UserEvent = {
+  _id: string;
+  userId: string;
+  source: 'wp' | 'rc' | 'admin';
+  action: string;
+  summary?: Record<string, any>;
+  details: string;
+  status: number;
+  success: boolean;
+  errorMessage?: string;
+  performedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 ////////////////////useless////////////////////
 export interface Tag extends BaseEntity {
   name: string;

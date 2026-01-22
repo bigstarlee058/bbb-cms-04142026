@@ -159,3 +159,30 @@ export const fetchUserSubscription = async ({
     params: { userId, source },
   });
 };
+
+export const fetchUserEvents = async ({
+  userId,
+  source,
+  action,
+  page = 1,
+  perPage = 10,
+}: {
+  userId: string;
+  source?: string;
+  action?: string;
+  page?: number;
+  perPage?: number;
+}) => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    perPage: perPage.toString(),
+    ...(source && { source }),
+    ...(action && { action }),
+  });
+
+  const response = await axios.get(
+    `/users/${userId}/events?${params.toString()}`
+  );
+  
+  return response.data;
+};
