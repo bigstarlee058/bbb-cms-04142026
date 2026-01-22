@@ -36,7 +36,7 @@ const UserDetailPopup = ({
   const { data: userWorkoutHistory, isLoading: isLoadingWorkout } = useQuery(
     ['get-user-history', id],
     () => fetchUserWorkout(id),
-    { enabled: false, onError: (err: ErrorMessage) => {
+    {  onError: (err: ErrorMessage) => {
         addNotification({ type: 'error', title: err.message });
         navigate('/app/users');
     }}
