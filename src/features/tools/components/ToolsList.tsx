@@ -7,17 +7,17 @@ import Pagination from '@/components/Elements/Pagination';
 import { useNotificationStore } from '@/stores/notifications';
 import { DeleteTool } from './DeleteTool';
 import { UpdateTool } from './UpdateTool';
-export const ToolsList = () => {
+export const ToolsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
   const queryClient = useQueryClient();
 
   const { data: toolsData, isLoading } = useQuery(['get-tools'], fetchTools);
-const { addNotification } = useNotificationStore();
+  const { addNotification } = useNotificationStore();
   const mutation = useMutation(updateVisibility, {
     onSuccess: (message: string) => {
       queryClient.invalidateQueries('get-tools');
-       addNotification({
+      addNotification({
         type: 'success',
         title: message,
       });
@@ -52,7 +52,13 @@ const { addNotification } = useNotificationStore();
         data={paginatedTools}
         columns={[
           { title: 'Name', field: 'toolName' },
-          { title: 'Title', field: 'title' },
+          {
+            title: 'Title',
+            field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
+          },
           {
             title: 'Visible',
             field: 'visible',
@@ -67,7 +73,7 @@ const { addNotification } = useNotificationStore();
                   />
                   <div
                     className={`relative w-11 h-6 rounded-full transition-colors 
-                      ${entry.visible ? 'bg-red-500 peer-checked:bg-[#9a354e]' : 'bg-gray-300 peer-checked:bg-green-500'}`}
+                      ${entry.visible ? 'bg-red-500 peer-checked:bg-bbb' : 'bg-gray-300 peer-checked:bg-green-500'}`}
                   >
                     <span
                       className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform 
@@ -75,7 +81,7 @@ const { addNotification } = useNotificationStore();
                     />
                   </div>
                   <span
-                    className={`ml-2 text-sm font-medium ${entry.visible ? 'text-[#9a354e]' : 'text-gray-900'}`}
+                    className={`ml-2 text-sm font-medium ${entry.visible ? 'text-bbb' : 'text-gray-900'}`}
                   >
                     {entry.visible ? 'Yes' : 'No'}
                   </span>
@@ -88,11 +94,11 @@ const { addNotification } = useNotificationStore();
             field: '_id',
             Cell({ entry: { _id } }) {
               return (
-              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2">
                   <UpdateTool toolId={_id} tools={toolsData} />
                   <DeleteTool id={_id} />
                 </div>
-                )
+              )
             },
           }
         ]}

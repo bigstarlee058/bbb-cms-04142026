@@ -23,9 +23,9 @@ export const Field = ({ label, formik, name, ...rest }: InputT) => {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
 
   return (
-    <div className={`form-group py-2 w-100 ${isInvalid ? 'invalid' : 'valid'} relative`}>
+    <div className={`form-group ${label?"py-2":""} w-100 ${isInvalid ? 'invalid' : 'valid'} relative`}>
       <div className="relative">
-        <label className="fieldLabel">{label}</label>
+        {label && (<label className="fieldLabel">{label}</label>)}
         <input
           placeholder={label}
           className="rounded-md shadow-2xl"

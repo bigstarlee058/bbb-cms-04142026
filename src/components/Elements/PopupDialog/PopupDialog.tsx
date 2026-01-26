@@ -737,7 +737,7 @@ export const PopupDialog = ({
               <button
                 key={index}
                 onClick={() => setActiveTab(index)}
-                className={`px-4 py-2 rounded-md ${activeTab === index ? 'bg-[#9a354e] text-white' : 'bg-gray-200'
+                className={`px-4 py-2 rounded-md ${activeTab === index ? 'bg-bbb text-white' : 'bg-gray-200'
                   }`}
               >
                 {tab}

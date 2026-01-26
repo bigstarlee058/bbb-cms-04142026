@@ -15,26 +15,27 @@ export const fetchPopupInfo = async () => {
   }
 };
 
-export const updatePopupInfo = async (payload : {
+export const updatePopupInfo = async (payload: {
   vimeo: string,
-  image: File,
-  deleteImage: boolean,
+  vimeoTranslations: Record<string, string>,
   title: string,
+  titleTranslations: Record<string, string>,
   description: string,
+  descriptionTranslations: Record<string, string>,
 }) => {
   try {
     const formData = new FormData();
     formData.append('vimeoId', payload.vimeo);
     formData.append('title', payload.title);
     formData.append('description', payload.description);
-    if (payload.image) {
-      formData.append('image', payload.image);
-    }
+    if (payload.vimeoTranslations) formData.append('vimeoTranslations', JSON.stringify(payload.vimeoTranslations));
+    if (payload.titleTranslations) formData.append('titleTranslations', JSON.stringify(payload.titleTranslations));
+    if (payload.descriptionTranslations) formData.append('descriptionTranslations', JSON.stringify(payload.descriptionTranslations));
     const updatedScreens = formData;
     const result = (await axios.put('/popupequipment', updatedScreens)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-popupequipment');
-      return 'Popup information successfully updated.';
+      return 'Workout Equipment PopUp successfully updated.';
     }
     return result.message;
   } catch (err: any) {

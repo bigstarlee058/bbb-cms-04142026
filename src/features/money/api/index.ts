@@ -1,5 +1,6 @@
 import { axios } from "@/lib/axios";
 import { TargetCriteria, UpsellResponse, UpsellsResponse } from "../types";
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const upsellApi = {
   getAll: async (): Promise<UpsellsResponse> => {
     const response = await axios.get("/money/upsells");
@@ -16,27 +17,7 @@ export const upsellApi = {
   },
 
 create: async (data: any) => {
-    const formData = new FormData();
-
-    Object.entries(data).forEach(([key, value]) => {
-        if (key === 'image') {
-            if (value instanceof File) {
-                formData.append('image', value);
-            } else if (typeof value === 'string' && value !== '') {
-                formData.append('image', value);
-            }
-        } 
-        else if (key === 'targetCriteria') {
-            formData.append(key, JSON.stringify(value));
-        }
-        else if (Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-        }
-        else if (value !== null && value !== undefined) {
-            formData.append(key, String(value));
-        }
-    });
-
+    const formData = buildFormDataWithImages(data, ['image']);
     const response = await axios.post('/money/upsells', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });
@@ -44,24 +25,7 @@ create: async (data: any) => {
 },
 
 update: async ({ upsellId, ...data }: any) => {
-    const formData = new FormData();
-
-    Object.entries(data).forEach(([key, value]) => {
-        if (key === 'image') {
-            if (value instanceof File) {
-                formData.append('image', value);
-            } else if (typeof value === 'string' && value !== '') {
-                formData.append('image', value);
-            }
-        }
-        else if (key === 'targetCriteria' || Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-        }
-        else if (value !== null && value !== undefined) {
-            formData.append(key, String(value));
-        }
-    });
-
+    const formData = buildFormDataWithImages(data, ['image']);
     const response = await axios.put(`/money/upsells/${upsellId}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     });

@@ -18,7 +18,7 @@ export const ToggleField = ({ label, value, onChange }: ToggleFieldProps) => {
       >
         <div
           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors
-            ${isEnabled ? 'bg-[#9a354e]' : 'bg-gray-300'}
+            ${isEnabled ? 'bg-bbb' : 'bg-gray-300'}
           `}
         >
           <span
@@ -30,7 +30,7 @@ export const ToggleField = ({ label, value, onChange }: ToggleFieldProps) => {
 
         <span
           className={`text-sm font-medium ${
-            isEnabled ? 'text-[#9a354e]' : 'text-gray-900'
+            isEnabled ? 'text-bbb' : 'text-gray-900'
           }`}
         >
           {isEnabled ? 'Yes' : 'No'}

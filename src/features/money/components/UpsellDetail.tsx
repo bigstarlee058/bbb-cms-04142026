@@ -1,6 +1,7 @@
 import { EyeIcon } from '@heroicons/react/outline';
 import { Button, Spinner } from '@/components/Elements';
 import { useState } from 'react';
+import {  useTranslations } from '@/components/Language';
 import { useQuery } from 'react-query';
 import { upsellApi } from '../api';
 import { Upsell } from '../types';
@@ -47,6 +48,7 @@ const DISMISS_BEHAVIOR_LABELS: Record<string, { text: string; color: string }> =
   days_30: { text: '30 Days', color: 'bg-yellow-100 text-yellow-700' },
   never: { text: 'Forever', color: 'bg-red-100 text-red-700' },
 };
+const TRANSLATABLE_FIELDS = ['title', 'subtitle', 'description', 'buttonText', 'buttonLink', 'image'];
 
 const calculateFinalPrice = (original: number, type: string, value: number): number => {
   const originalNum = Number(original) || 0;
@@ -59,7 +61,22 @@ const calculateFinalPrice = (original: number, type: string, value: number): num
 
 export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
   const [isOpen, setIsOpen] = useState(false);
+const {
+  selectedLang,
+  setSelectedLang,
+  getValue,
+  availableLanguages,
+} = useTranslations({
+  entity: upsell,
+  translatableFields: TRANSLATABLE_FIELDS,
+});
 
+const currentTitle = getValue('title');
+const currentSubtitle = getValue('subtitle');
+const currentDescription = getValue('description');
+const currentButtonText = getValue('buttonText');
+const currentButtonLink = getValue('buttonLink');
+const currentImage = getValue('image');
   const { data: usersCount, isLoading: isCountLoading } = useQuery(
     ['upsell-users-count', upsell._id],
     () =>
@@ -77,7 +94,10 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
   );
 
   const handleOpen = () => setIsOpen(true);
-  const handleClose = () => setIsOpen(false);
+  const handleClose = () => {
+    setIsOpen(false);
+    setSelectedLang(null);
+  };
 
   const { targetCriteria, timeType, startDate, endDate, durationDays, durationHours } = upsell;
   const finalPrice = calculateFinalPrice(upsell.originalPrice, upsell.discountType, upsell.discountValue);
@@ -97,8 +117,8 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
 
-          <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4">
-            <div className="bg-[#9a354e] text-white px-4 py-2.5 rounded-t-lg flex items-center justify-between">
+          <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-bbb text-white px-4 py-2.5 rounded-t-lg flex items-center justify-between z-10">
               <h3 className="font-semibold text-sm">Upsell Details</h3>
               <button
                 onClick={handleClose}
@@ -109,19 +129,51 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
             </div>
 
             <div className="p-4 space-y-3">
+              {availableLanguages.length > 0 && (
+                <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
+                  <span className="text-xs font-medium text-gray-600">Language:</span>
+                  <button
+                    onClick={() => setSelectedLang(null)}
+                    className={`px-2 py-1 text-xs font-medium rounded ${
+                      !selectedLang
+                        ? 'bg-bbb text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    EN
+                  </button>
+                  {availableLanguages.map((lang) => (
+                    <button
+                      key={lang.key}
+                      onClick={() => setSelectedLang(lang.key)}
+                      className={`px-2 py-1 text-xs font-medium rounded ${
+                        selectedLang === lang.key
+                          ? 'bg-bbb text-white'
+                          : 'bg-white text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {lang.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="flex gap-4 items-start">
                 <img
-                  src={upsell.image}
-                  alt={upsell.title}
+                  src={currentImage}
+                  alt={currentTitle}
                   className="w-16 h-16 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-gray-900">{upsell.title}</h4>
-                  {upsell.subtitle && (
-                    <p className="text-sm text-gray-500">{upsell.subtitle}</p>
+                  <h4 className="font-semibold text-gray-900">{currentTitle}</h4>
+                  {currentSubtitle && (
+                    <p className="text-sm text-gray-500">{currentSubtitle}</p>
                   )}
-                  {upsell.description && (
-                    <p className="text-xs text-gray-400 mt-0.5">{upsell.description}</p>
+                  {currentDescription && (
+                    <div
+                      className="text-xs text-gray-400 mt-0.5 prose prose-xs max-w-none"
+                      dangerouslySetInnerHTML={{ __html: currentDescription }}
+                    />
                   )}
                 </div>
               </div>
@@ -160,7 +212,7 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
                   <span
                     className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                       upsell.isActive
-                        ? 'bg-[#9a354e]/10 text-[#9a354e]'
+                        ? 'bg-bbb/10 text-bbb'
                         : 'bg-gray-100 text-gray-500'
                     }`}
                   >
@@ -179,18 +231,18 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
                       {upsell.currency} {Number(upsell.originalPrice).toFixed(2)}
                     </span>
                     <span className="text-gray-400">→</span>
-                    <span className="text-[#9a354e]">
+                    <span className="text-bbb">
                       -{upsell.discountType === 'percent'
                         ? `${upsell.discountValue}%`
                         : `${upsell.currency} ${Number(upsell.discountValue).toFixed(2)}`}
                     </span>
                     <span className="text-gray-400">→</span>
-                    <span className="font-bold text-[#9a354e]">
+                    <span className="font-bold text-bbb">
                       {upsell.currency} {finalPrice.toFixed(2)}
                     </span>
                   </div>
                   {savings > 0 && (
-                    <span className="text-xs text-[#9a354e] bg-[#9a354e]/10 px-2 py-0.5 rounded-full">
+                    <span className="text-xs text-bbb bg-bbb/10 px-2 py-0.5 rounded-full">
                       Save {upsell.currency} {savings.toFixed(2)}
                     </span>
                   )}
@@ -274,7 +326,7 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
                               {targetCriteria.subscriptionType.map((type: string) => (
                                 <span
                                   key={type}
-                                  className="px-1.5 py-0.5 text-xs font-medium bg-[#9a354e]/10 text-[#9a354e] rounded"
+                                  className="px-1.5 py-0.5 text-xs font-medium bg-bbb/10 text-bbb rounded"
                                 >
                                   {SUBSCRIPTION_TYPE_LABELS[type] || type}
                                 </span>
@@ -289,7 +341,7 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
                               {targetCriteria.subscriptionSource.map((source: string) => (
                                 <span
                                   key={source}
-                                  className="px-1.5 py-0.5 text-xs font-medium bg-[#9a354e]/10 text-[#9a354e] rounded"
+                                  className="px-1.5 py-0.5 text-xs font-medium bg-bbb/10 text-bbb rounded"
                                 >
                                   {SUBSCRIPTION_SOURCE_LABELS[source] || source}
                                 </span>
@@ -310,17 +362,17 @@ export const UpsellDetail = ({ upsell }: UpsellDetailProps) => {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">Text:</span>
-                    <span className="font-medium text-gray-900">{upsell.buttonText}</span>
+                    <span className="font-medium text-gray-900">{currentButtonText}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-gray-500">Link:</span>
                     <a
-                      href={upsell.buttonLink}
+                      href={currentButtonLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[#9a354e] hover:underline max-w-[200px] truncate"
+                      className="text-bbb hover:underline max-w-[200px] truncate"
                     >
-                      {upsell.buttonLink}
+                      {currentButtonLink}
                     </a>
                   </div>
                 </div>

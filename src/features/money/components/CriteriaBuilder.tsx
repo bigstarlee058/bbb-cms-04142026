@@ -76,8 +76,8 @@ export const CriteriaBuilder: React.FC<CriteriaBuilderProps> = ({ criteria, onCh
                             type="button"
                             onClick={() => onChange({ ...criteria, signupSource: value })}
                             className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${criteria.signupSource === value
-                                ? 'bg-[#9a354e] text-white border-[#9a354e]'
-                                : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+                                ? 'bg-bbb text-white border-bbb'
+                                : 'bg-white text-gray-600 border-gray-300 hover:border-bbb'
                                 }`}
                         >
                             {label}
@@ -95,8 +95,8 @@ export const CriteriaBuilder: React.FC<CriteriaBuilderProps> = ({ criteria, onCh
                             type="button"
                             onClick={() => onChange({ ...criteria, subscriptionStatus: value })}
                             className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-lg border transition-colors ${criteria.subscriptionStatus === value
-                                ? 'bg-[#9a354e] text-white border-[#9a354e]'
-                                : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+                                ? 'bg-bbb text-white border-bbb'
+                                : 'bg-white text-gray-600 border-gray-300 hover:border-bbb'
                                 }`}
                         >
                             {label}
@@ -145,22 +145,22 @@ export const CriteriaBuilder: React.FC<CriteriaBuilderProps> = ({ criteria, onCh
                 criteria.subscriptionStatus !== 'all') && (
                     <div className="flex flex-wrap gap-1 pt-2 border-t border-gray-200">
                         {criteria.subscriptionStatus && criteria.subscriptionStatus !== 'all' && (
-                            <span className="text-xs bg-[#9a354e]/10 text-[#9a354e] px-2 py-0.5 rounded">
+                            <span className="text-xs bg-bbb/10 text-bbb px-2 py-0.5 rounded">
                                 {SUBSCRIPTION_STATUS.find(s => s.value === criteria.subscriptionStatus)?.label}
                             </span>
                         )}
                         {criteria.subscriptionType.map(type => (
-                            <span key={type} className="text-xs bg-[#9a354e]/10 text-[#9a354e] px-2 py-0.5 rounded">
+                            <span key={type} className="text-xs bg-bbb/10 text-bbb px-2 py-0.5 rounded">
                                 {SUBSCRIPTION_TYPES.find(t => t.value === type)?.label}
                             </span>
                         ))}
                         {criteria.subscriptionSource.map(source => (
-                            <span key={source} className="text-xs bg-[#9a354e]/10 text-[#9a354e] px-2 py-0.5 rounded">
+                            <span key={source} className="text-xs bg-bbb/10 text-bbb px-2 py-0.5 rounded">
                                 {SUBSCRIPTION_SOURCES.find(s => s.value === source)?.label}
                             </span>
                         ))}
                         {criteria.signupSource && criteria.signupSource !== 'all' && (
-                            <span className="text-xs bg-[#9a354e]/10 text-[#9a354e] px-2 py-0.5 rounded">
+                            <span className="text-xs bg-bbb/10 text-bbb px-2 py-0.5 rounded">
                                 {SIGNUP_SOURCES.find(s => s.value === criteria.signupSource)?.label}
                             </span>
                         )}

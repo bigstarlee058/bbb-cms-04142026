@@ -95,6 +95,7 @@ const SideNavigation = () => {
         { title: 'New Version', path: './versionManage', icon: MenuAlt1Icon },
         { title: 'Workout Frequency', path: './popupWorkout', icon: MenuAlt1Icon },
         { title: 'Equipment Availability', path: './popupEquipment', icon: MenuAlt1Icon },
+        { title: 'New Join Users', path: './new-join-users', icon: MenuAlt1Icon },
       ]
     },
     // { title: 'Intro Tutorial', path: './backgroundTutorials', icon: MenuAlt1Icon },
@@ -136,9 +137,9 @@ const SideNavigation = () => {
               to={item.path}
               className={({ isActive }) =>
                 clsx(
-                  'text-gray-300 hover:bg-[#9a354e] hover:text-white',
+                  'text-gray-300 hover:bg-bbb hover:text-white',
                   'group flex items-center px-2 py-2 text-base font-medium rounded-md',
-                  { 'bg-[#9a354e] text-white': isActive }
+                  { 'bg-bbb text-white': isActive }
                 )
               }
             >
@@ -153,7 +154,7 @@ const SideNavigation = () => {
               <div
                 onClick={() => setActiveSubmenu((prev) => (prev === item.title ? '' : item.title))}
                 className={clsx(
-                  'text-gray-300 hover:bg-[#9a354e] hover:text-white cursor-pointer',
+                  'text-gray-300 hover:bg-bbb hover:text-white cursor-pointer',
                   'group flex items-center px-2 py-2 text-base font-medium rounded-md'
                 )}
               >
@@ -327,12 +328,12 @@ const Sidebar = () => {
   return (
     <div className="hidden md:flex md:flex-shrink-0">
       <div className="flex flex-col w-64">
-        <div className="flex flex-col h-0 flex-1 p-5 bg-[#9a354e]">
+        <div className="flex flex-col h-0 flex-1 p-5 bg-bbb">
           <div className="flex items-center h-16 flex-shrink-0 px-4">
             <Logo />
           </div>
           <div className="flex-1 flex flex-col overflow-y-auto">
-            <nav className="flex-1 px-2 py-4 bg-[#9a354e] space-y-1">
+            <nav className="flex-1 px-2 py-4 bg-bbb space-y-1">
               <SideNavigation />
             </nav>
           </div>

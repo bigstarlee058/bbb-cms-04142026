@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { DeleteUpsell } from './DeleteUpsell';
 import { Table, Spinner } from '@/components/Elements';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
@@ -10,12 +11,11 @@ import { useNotificationStore } from '@/stores/notifications';
 import { UpdateUpsell } from './UpdateUpsell';
 import { UpsellDetail } from './UpsellDetail';
 
-export const UpsellsList = () => {
+export const UpsellsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
   const queryClient = useQueryClient();
   const { addNotification } = useNotificationStore();
-
   const { data: upsellsData, isLoading } = useQuery(['upsells'], upsellApi.getAll);
 
   const toggleMutation = useMutation(
@@ -84,11 +84,11 @@ export const UpsellsList = () => {
             title: 'Image',
             field: 'image',
             width: 60,
-            Cell({ entry: { image, title } }) {
+            Cell({ entry }) {
               return (
                 <img
-                  src={image}
-                  alt={title}
+                  src={getValue(entry, 'image')}
+                  alt={getValue(entry, 'title')}
                   className="w-12 h-12 object-cover rounded"
                 />
               );
@@ -99,12 +99,12 @@ export const UpsellsList = () => {
             field: 'title',
             minwidth: 120,
             maxwidth: 150,
-            Cell({ entry: { title, subtitle } }) {
+            Cell({ entry }) {
               return (
                 <div>
-                  <div className="text-gray-900">{title}</div>
-                  {subtitle && (
-                    <div className=" text-gray-500">{subtitle}</div>
+                  <div className="text-gray-900">{getValue(entry,"title")}</div>
+                  {entry?.subtitle && (
+                    <div className=" text-gray-500">{getValue(entry,"subtitle")}</div>
                   )}
                 </div>
               );
@@ -126,13 +126,13 @@ export const UpsellsList = () => {
                   </span>
 
                   {discount > 0 && (
-                    <span className="text-[#9a354e]">
+                    <span className="text-bbb">
                       -{discountType === 'percent'
                         ? `${discount}%`
                         : `${curr} ${discount.toFixed(2)}`}
                     </span>
                   )}
-                  <span className="text-[#9a354e]">
+                  <span className="text-bbb">
                     {curr} {finalPrice.toFixed(2)}
                   </span>
                 </div>
@@ -162,9 +162,9 @@ export const UpsellsList = () => {
             width: 100,
             Cell({ entry: { dismissBehavior } }) {
               const labels: Record<string, { text: string; }> = {
-                session: { text: 'This Session'},
-                days_30: { text: '30 Days'},
-                never: { text: 'Forever'},
+                session: { text: 'This Session' },
+                days_30: { text: '30 Days' },
+                never: { text: 'Forever' },
               };
               const config = labels[dismissBehavior] || labels.session;
               return (
@@ -199,7 +199,7 @@ export const UpsellsList = () => {
                     onChange={() => handleToggleActive(entry._id, entry.isActive)}
                   />
                   <div
-                    className={`relative w-11 h-6 rounded-full transition-colors ${entry.isActive ? 'bg-[#9a354e]' : 'bg-gray-300'
+                    className={`relative w-11 h-6 rounded-full transition-colors ${entry.isActive ? 'bg-bbb' : 'bg-gray-300'
                       }`}
                   >
                     <span
@@ -208,7 +208,7 @@ export const UpsellsList = () => {
                     />
                   </div>
                   <span
-                    className={`ml-2 text-sm font-medium ${entry.isActive ? 'text-[#9a354e]' : 'text-gray-500'
+                    className={`ml-2 text-sm font-medium ${entry.isActive ? 'text-bbb' : 'text-gray-500'
                       }`}
                   >
                     {entry.isActive ? 'Yes' : 'No'}

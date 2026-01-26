@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
+import { Table, Spinner, } from '@/components/Elements';
 import { useQuery } from 'react-query';
 import { fetchTutorials } from '../api';
 import { Tutorial, Filters } from '@/types';
-import { EyeIcon } from '@heroicons/react/outline';
 import { DeleteTutorial } from './DeleteTutorial';
 import { UpdateTutorial } from './UpdateTutorial';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const TutorialsList = () => {
+export const TutorialsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -63,27 +62,34 @@ export const TutorialsList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({entry}){
+              return getValue(entry,'title')
+            }
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
-            Cell({ entry: { thumbnail } }) {
+            Cell({ entry }) {
               return (
               <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
+                <img className="h-24 object-contain" src={getValue(entry,'thumbnail')} />
               </div>);
             },
           }, 
           {
             title: 'Description',
             field: 'description',
-            Cell({ entry: { description } }) {
+            Cell({ entry }) {
+              const description  = getValue(entry,'description')
               return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
             }
           },
           {
             title: 'VimeoId',
             field: 'vimeoId',
+            Cell({ entry }) {
+              return getValue(entry,'vimeoId')
+            },
           },
           {
             title: '',

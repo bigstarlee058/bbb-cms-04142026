@@ -40,24 +40,21 @@ export const updateVisibility = async (payload: {
 export const createTool = async (payload: {
   title: string;
   toolName: string;
+  titleTranslations: Record<string, string>;
   visible: boolean;
 }) => {
   try {
-    const { title, toolName, visible } = payload
-    const result = (await axios.post('/tools', { title, toolName, visible })) as any;
-    console.log(result)
+
+    const { title, toolName, visible,titleTranslations } = payload
+    const result = (await axios.post('/tools', { title, toolName, titleTranslations,visible })) as any;
     if (result?._id) {
       queryClient.invalidateQueries('get-tools');
       return result;
     }
     return result.message;
   } catch (err: any) {
-    const error: ErrorMessage = {
-      status: true,
-      message: err as string,
-    };
-    console.log(error);
-    return Promise.reject(error);
+   const message = err?.response?.data?.message;
+    return Promise.reject(message || 'Unexpected error');
   }
 };
 export const deleteTool = async (toolId: string) => {
@@ -79,6 +76,7 @@ export const deleteTool = async (toolId: string) => {
 export const updateTool = async (payload: {
   toolId: string;
   title?: string;
+  titleTranslations: Record<string, string>;
   toolName?: string;
   visible?: boolean;
 }) => {

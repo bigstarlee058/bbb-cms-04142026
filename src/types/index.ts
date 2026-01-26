@@ -317,7 +317,16 @@ export interface PopupinfoResponse {
   title: string;
   description: string;
 }
-
+export interface NewJoinPopupResponse {
+  imgUrl?: any;
+  imgUrlTranslations?: Record<string, any>;
+  title: string;
+  titleTranslations: Record<string, string>;
+  description: string;
+  descriptionTranslations: Record<string, string>;
+  buttonText: string;
+  buttonTextTranslations: Record<string, string>;
+}
 export interface Filters {
   page?: number;
   perPage?: number;
@@ -497,6 +506,7 @@ export interface ToolsResponse {
 }
 export interface Tools extends BaseEntity {
   title: string;
+  titleTranslations:Record<string, string> ;
   toolName: string;
   visible:boolean;
 }
