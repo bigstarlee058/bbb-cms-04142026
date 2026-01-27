@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
+import { Table, Spinner } from '@/components/Elements';
 import { useQuery } from 'react-query';
 import { fetchTags } from '../api';
 import { Tags, Filters } from '@/types';
-import { EyeIcon } from '@heroicons/react/outline';
 import { DeleteTag } from './DeleteTag';
 import { UpdateTag } from './UpdateTag';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const TagsList = () => {
+export const TagsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -63,6 +62,9 @@ export const TagsList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Exercise Count',

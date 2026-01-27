@@ -2,22 +2,49 @@ import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
 import { Field, FormDrawer, Dropzone } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation } from 'react-query';
+import { useMutation,useQuery } from 'react-query';
 import { updateTag } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createTagsSchema } from '@/utils/yup';
-
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { prepareTranslations } from '@/utils/translationHelper';
+import { queryClient } from '@/lib/react-query';
+import { useEffect } from 'react';
 interface FormikState {
   title: string;
-  image?: any;
-  deleteImage: boolean;
+  titleTranslations: Record<string, string>;
 }
 
 export const UpdateTag = ({ tagId, tags }) => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    resetLanguages,
+    getFilteredTranslations,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['title'],
+  });
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
   const { mutate, isLoading, isSuccess } = useMutation(updateTag, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-tags');
+      resetLanguages();
+      formik.resetForm();
       addNotification({
         type: 'success',
         title: message,
@@ -26,20 +53,36 @@ export const UpdateTag = ({ tagId, tags }) => {
   });
 
   const tagData = tags.tags.find(ex => ex._id === tagId);
-
+  useEffect(() => {
+  if (!tags) return;
+  const validKeys = useLanguageStore.getState().languages.map(l => l.key);
+  const langs = Object.values(tagData || {})
+    .flatMap(o => (o && typeof o === 'object' ? Object.keys(o) : []))
+    .filter(k => validKeys.includes(k));
+  
+  setSelectedLanguages([...new Set(langs)]);
+}, [tagData, setSelectedLanguages]);
   const initialValues: FormikState = {
     title: tagData?.title || '',
-    image: tagData?.thumbnail || '',
-    deleteImage: false,
+    titleTranslations: tagData?.titleTranslations || {},
   };
   const formik = useFormik({
     initialValues,
     validationSchema: createTagsSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (state: FormikState) => {
-    const { title, image, deleteImage } = state;
-    mutate({ tagId, title, image, deleteImage });
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title'],
+      imageFields: [],
+    });
+    const payload = {
+      ...values, titleTranslations: translations?.titleTranslations
+    };
+    mutate({tagId,payload});
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -53,8 +96,18 @@ export const UpdateTag = ({ tagId, tags }) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-tag" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
         </form>
       </FormDrawer>
     </Authorization>

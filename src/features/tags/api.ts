@@ -1,7 +1,7 @@
 import { Tags, TagsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchTags = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/tags/admin/get`, {
@@ -30,17 +30,10 @@ export const fetchTag = async (tagId: string) => {
   }
 };
 
-export const createTag = async (payload: {
-  title: string;
-  image?: File;  // Assuming the image comes as a File object from the client
-}) => {
+export const createTag = async (payload:any) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    // Post the new tag data (including the image) to your backend
+    const formData = buildFormDataWithImages(payload, []);
     const result = (await axios.post('/tags/admin', formData)) as any;
-    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       queryClient.invalidateQueries('get-tags');
       return result.tag;
@@ -57,18 +50,10 @@ export const createTag = async (payload: {
 };
 
 
-export const updateTag = async (payload: {
-  tagId: string 
-  title: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: Boolean
-}) => {
+export const updateTag = async ({tagId,payload}) => {
   try {
-    const formData = new FormData();
-    formData.append('_id', payload.tagId);
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('deleteImage', String(payload.deleteImage));
+    const formData = buildFormDataWithImages(payload, []);
+      formData.append('_id', tagId);
     const result = (await axios.put('/tags/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-tags');
