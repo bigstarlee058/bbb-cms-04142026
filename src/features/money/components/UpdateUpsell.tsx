@@ -4,7 +4,7 @@ import { useMemo, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Dropzone } from '@/components/Form';
+import { FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { upsellApi } from '../api';

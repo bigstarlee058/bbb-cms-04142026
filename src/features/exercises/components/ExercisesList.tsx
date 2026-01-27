@@ -9,8 +9,7 @@ import { UpdateExercise } from './UpdateExercise';
 import { fetchCategoryTitles, fetchTagTitles, fetchEquipmentTitles, fetchExerciseTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
-
-export const ExercisesList = () => {
+export const ExercisesList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -64,15 +63,18 @@ export const ExercisesList = () => {
         columns={[
           {
             title: 'Title',
-            field: 'title'
+            field: 'title',
+            Cell({entry}){
+              return getValue(entry,'title')
+            }
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
-            Cell({ entry: { thumbnail } }) {
+            Cell({ entry}) {
               return (
                 <div className="justify-center items-center">
-                  <img className="h-24 object-contain" src={thumbnail} />
+                  <img className="h-24 object-contain" src={getValue(entry,'thumbnail')} />
                 </div>
               );
             }
@@ -80,10 +82,10 @@ export const ExercisesList = () => {
           {
             title: 'Video Thumbnail',
             field: 'videoThumbnail',
-            Cell({ entry: { videoThumbnail } }) {
+            Cell({ entry}) {
               return (
                 <div className="justify-center items-center">
-                  <img className="h-24 object-contain" src={videoThumbnail} />
+                  <img className="h-24 object-contain" src={getValue(entry,'videoThumbnail')} />
                 </div>
               );
             }
@@ -91,8 +93,8 @@ export const ExercisesList = () => {
           {
             title: 'Description',
             field: 'description',
-            Cell({ entry: { description } }) {
-              // return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
+            Cell({ entry }) {
+              const description= getValue(entry,'description');
               return (
                 <span
                   dangerouslySetInnerHTML={{
@@ -144,8 +146,8 @@ export const ExercisesList = () => {
           {
             title: 'Vimeo',
             field: 'vimeoId',
-            Cell({ entry: { vimeoId } }) {
-              return <p>{vimeoId}</p>;
+            Cell({ entry }) {
+              return <p>{getValue(entry,'vimeoId')}</p>;
             }
           },
           {

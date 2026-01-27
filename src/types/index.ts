@@ -242,6 +242,11 @@ export interface Exercise extends BaseEntity {
   tags: string[];
   usedEquipments: string[];
   relatedExercises: string[];
+  titleTranslations?: Record<string, string>;
+  descriptionTranslations?: Record<string, string>;
+  vimeoIdTranslations?: Record<string, string>;
+  thumbnailTranslations?: Record<string, string>;
+  videoThumbnailTranslations?: Record<string, string>;
 }
 export interface ExercisesResponse {
   count: number;

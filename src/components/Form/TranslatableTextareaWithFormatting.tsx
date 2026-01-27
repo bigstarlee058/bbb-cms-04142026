@@ -70,7 +70,7 @@ export const TranslatableTextareaWithFormatting = ({
   const hasSelectedOtherLanguages = selectedLanguages.length > 0;
 
   return (
-    <div className="mb-4">
+    <div className="mb-2 mt-2">
       {hasSelectedOtherLanguages && (
         <div className="flex flex-wrap gap-2 mb-2">
           <label

@@ -1,7 +1,7 @@
 import { Exercise, ErrorMessage, Filters, ExercisesResponse, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchExercises = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/exercises/admin/get`, { params: filters })) as ExercisesResponse;
@@ -28,31 +28,10 @@ export const fetchExercise = async (exerciseId: string) => {
   }
 };
 
-export const createExercise = async (payload: {
-  title: string;
-  description: string;
-  vimeoId: string;
-  image: File;
-  videoImage: File;
-  categories: [];
-  tags: [];
-  usedEquipments: [],
-  relatedExercises: [],
-}) => {
+export const createExercise = async (data:any) => {
     try {
-      const formData = new FormData();
-      formData.append('title', payload.title);
-      formData.append('image', payload.image);
-      formData.append('videoImage', payload.videoImage);
-      formData.append('description', payload.description);
-      formData.append('vimeoId', payload.vimeoId);
-      formData.append('categories', JSON.stringify(payload.categories));
-      formData.append('tags', JSON.stringify(payload.tags));
-      formData.append('usedEquipments', JSON.stringify(payload.usedEquipments));
-      formData.append('relatedExercises', JSON.stringify(payload.relatedExercises));
-      // Post the new category data (including the image) to your backend
+      const formData = buildFormDataWithImages(data, ['thumbnail','videoThumbnail']);
       const result = (await axios.post('/exercises/admin', formData)) as ResponseMessage;
-      // Invalidate cache or update your frontend state if needed
       if (result.result === true) {
         queryClient.invalidateQueries('get-exercises');
         return 'Exercise successfully created.';
@@ -74,37 +53,16 @@ export const createExercise = async (payload: {
     payload,
   }: {
     exerciseId: string;
-    payload: 
-    {
-      title: string;
-      description: string;
-      vimeoId: string;
-      image: File;
-      videoImage: File;
-      categories: [];
-      tags: [];
-      usedEquipments: [],
-      relatedExercises: [], 
-    };
+    payload: any;
   }) => {
     try {
-      const formData = new FormData();
+      const formData = buildFormDataWithImages(payload, ['thumbnail','videoThumbnail']);
       formData.append('_id', exerciseId);
-      formData.append('title', payload.title);
-      formData.append('image', payload.image);
-      formData.append('videoImage', payload.videoImage);
-      formData.append('description', payload.description);
-      formData.append('vimeoId', payload.vimeoId);
-      formData.append('categories', JSON.stringify(payload.categories));
-      formData.append('tags', JSON.stringify(payload.tags));
-      formData.append('usedEquipments', JSON.stringify(payload.usedEquipments));
-      formData.append('relatedExercises', JSON.stringify(payload.relatedExercises));
       const result = (await axios.put('/exercises/admin', formData)) as ResponseMessage;
       if (result.result === true) {
         queryClient.invalidateQueries('get-exercises');
         queryClient.invalidateQueries('get-exercise-titles');
         queryClient.invalidateQueries(['get-exercise', exerciseId]);
-        console.log('success');
         return 'Exercise successfully updated.';
       }
       return result.message;
