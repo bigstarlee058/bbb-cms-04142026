@@ -19,7 +19,6 @@ export const Exercises = () => {
   const { data: exercises, isLoading } = useQuery(['get-exercises'], () => fetchExercises({}));
   const { setCurrentPage } = useUserStore();
   const data = exercises?.exercises||[]
-  console.log(data)
   const {
     selectedLang,
     setSelectedLang,
@@ -30,7 +29,6 @@ export const Exercises = () => {
     data: data ? data : [],
     translatableFields: ['title', 'description', 'thumbnail', 'videoThumbnail', 'vimeoId'],
   });
-  console.log(availableLanguages,"availableLanguages,")
   useEffect(() => {
     setCurrentPage('equipments');
   }, []);

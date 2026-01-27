@@ -9,7 +9,7 @@ import { UpdateCategory } from './UpdateCategory';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const CategoriesList = () => {
+export const CategoriesList =  ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -63,14 +63,17 @@ export const CategoriesList = () => {
           {
             title: 'Title',
             field: 'title',
+             Cell({entry}){
+              return getValue(entry,'title')
+            }
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
-            Cell({ entry: { thumbnail } }) {
+            Cell({ entry}) {
               return (
               <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
+                <img className="h-24 object-contain" src={getValue(entry,'thumbnail')} />
               </div>);
             },
           },

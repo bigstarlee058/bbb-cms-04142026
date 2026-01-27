@@ -11,7 +11,6 @@ import { TitleResponse, Exercise } from '@/types';
 import { createCategory } from '@/features/categories/api';
 import { createTag } from '@/features/tags/api';
 import { useState, useEffect } from 'react';
-import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 import { useLanguageStore } from '@/stores/languages';
 import { fetchLanguages } from '@/lib/api';
 import { LanguageSelector } from '@/components/Language/LanguageSelector';
