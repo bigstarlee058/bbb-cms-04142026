@@ -2,6 +2,7 @@ import { useLanguageStore } from '@/stores/languages';
 
 export type LanguageSelectorVariant = 'checkbox' | 'chips';
 export type LanguageSelectorSize = 'sm' | 'md';
+export type LanguageSelectorLabelPosition = 'top' | 'inline';
 
 interface LanguageSelectorProps {
   selectedLanguages: string[];
@@ -10,7 +11,7 @@ interface LanguageSelectorProps {
   size?: LanguageSelectorSize;
   label?: string;
   showLabel?: boolean;
-  helperText?: string;
+  labelPosition?: LanguageSelectorLabelPosition;
   englishLocked?: boolean;
   className?: string;
   disabled?: boolean;
@@ -28,7 +29,7 @@ export const LanguageSelector = ({
   size = 'md',
   label = 'Available in languages:',
   showLabel = true,
-  helperText,
+  labelPosition = 'top',
   englishLocked = true,
   className = '',
   disabled = false,
@@ -42,7 +43,7 @@ export const LanguageSelector = ({
   const { checkbox: checkboxSize, text: textSize, chip: chipSize } = sizeClasses[size];
 
   const renderCheckboxVariant = () => (
-    <div className="flex flex-wrap gap-3 mb-4">
+    <div className={`flex flex-wrap gap-3 ${labelPosition === 'top' ? 'mb-2' : ''}`}>
       {englishLocked && (
         <label className="inline-flex items-center cursor-default opacity-75">
           <input
@@ -107,19 +108,33 @@ export const LanguageSelector = ({
     </div>
   );
 
-  return (
-    <div className={className}>
-      {showLabel && (
-        <label className={`block ${textSize} font-medium text-gray-700 mb-2`}>
-          {label}
-        </label>
-      )}
-      
+  const renderLabel = () => (
+    <span className={`${textSize} font-medium text-gray-700 ${labelPosition === 'inline' ? 'whitespace-nowrap' : ''}`}>
+      {label}
+    </span>
+  );
+
+  const renderContent = () => (
+    <>
       {variant === 'checkbox' && renderCheckboxVariant()}
       {variant === 'chips' && renderChipsVariant()}
-      
-      {helperText && (
-        <p className="mt-1.5 text-xs text-gray-500">{helperText}</p>
+    </>
+  );
+
+  return (
+    <div className={className}>
+      {labelPosition === 'top' ? (
+        <>
+          {showLabel && <label className={`block ${textSize} font-medium text-gray-700 mb-2`}>{label}</label>}
+          {renderContent()}
+        </>
+      ) : (
+        <div className="flex items-start gap-3 flex-wrap">
+          {showLabel && renderLabel()}
+          <div className="flex-1 min-w-0">
+            {renderContent()}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguageStore } from '@/stores/languages';
 import { CheckIcon } from '@heroicons/react/solid';
-import { Field } from './Field';
+import { Field } from '../custom/Field';
 
 interface WorkoutTranslatableInputProps {
   name: string;
@@ -26,12 +26,49 @@ export const WorkoutTranslatableInput = ({
 }: WorkoutTranslatableInputProps) => {
   const apiLanguages = useLanguageStore((state) => state.languages);
   const [activeLanguage, setActiveLanguage] = useState('en');
+  const [localValue, setLocalValue] = useState('');
+  const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    const currentValue = activeLanguage === 'en' ? value : (translations[activeLanguage] || '');
+    setLocalValue(currentValue);
+  }, [activeLanguage, value, translations]);
 
   useEffect(() => {
     if (activeLanguage !== 'en' && !selectedLanguages.includes(activeLanguage)) {
       setActiveLanguage('en');
     }
   }, [selectedLanguages, activeLanguage]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
+
+  const handleChange = (_: string, newValue: string) => {
+    setLocalValue(newValue);
+
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      const currentKey = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
+      onChange(currentKey, newValue);
+    }, 1000);
+  };
+
+  const handleLanguageChange = (langKey: string) => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    const currentKey = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
+    onChange(currentKey, localValue);
+    setActiveLanguage(langKey);
+  };
 
   const isFieldValid = (langKey: string) => {
     const fieldValue = langKey === 'en' ? value : translations[langKey];
@@ -42,15 +79,14 @@ export const WorkoutTranslatableInput = ({
   const hasSelectedOtherLanguages = selectedLanguages.length > 0;
   const activeLanguageData = apiLanguages.find((l) => l.key === activeLanguage);
 
-  const currentValue = activeLanguage === 'en' ? value : (translations[activeLanguage] || '');
   const currentKey = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
 
   return (
     <div>
       {hasOtherLanguages && hasSelectedOtherLanguages && (
-        <div className="flex flex-wrap gap-1 mb-1">
+        <div className="flex flex-wrap gap-2 mb-1">
           <label
-            className={`inline-flex items-center px-1 py-1 rounded text-xs cursor-pointer transition-all border ${
+            className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${
               activeLanguage === 'en'
                 ? 'bg-bbb border-bbb text-white'
                 : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -59,7 +95,7 @@ export const WorkoutTranslatableInput = ({
             <input
               type="radio"
               checked={activeLanguage === 'en'}
-              onChange={() => setActiveLanguage('en')}
+              onChange={() => handleLanguageChange('en')}
               className="sr-only"
             />
             <span className="font-medium">{label} (EN)</span>
@@ -79,7 +115,7 @@ export const WorkoutTranslatableInput = ({
             return (
               <label
                 key={langKey}
-                className={`inline-flex items-center px-1 py-1 rounded text-xs cursor-pointer transition-all border ${
+                className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${
                   activeLanguage === langKey
                     ? 'bg-bbb border-bbb text-white'
                     : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -88,7 +124,7 @@ export const WorkoutTranslatableInput = ({
                 <input
                   type="radio"
                   checked={activeLanguage === langKey}
-                  onChange={() => setActiveLanguage(langKey)}
+                  onChange={() => handleLanguageChange(langKey)}
                   className="sr-only"
                 />
                 <span className="font-medium">
@@ -111,8 +147,8 @@ export const WorkoutTranslatableInput = ({
         name={currentKey}
         label={hasSelectedOtherLanguages ? '' : label}
         placeholder={placeholder || (activeLanguage === 'en' ? `${label} in English` : `${label} in ${activeLanguageData?.name}`)}
-        value={currentValue}
-        onChange={onChange}
+        value={localValue}
+        onChange={handleChange}
       />
     </div>
   );

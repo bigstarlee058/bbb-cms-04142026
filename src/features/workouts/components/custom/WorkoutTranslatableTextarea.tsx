@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguageStore } from '@/stores/languages';
 import { CheckIcon } from '@heroicons/react/solid';
-import { Textarea } from './Textarea';
+import { Textarea } from '../custom/Textarea';
 
 interface WorkoutTranslatableTextareaProps {
   name: string;
@@ -28,12 +28,49 @@ export const WorkoutTranslatableTextarea = ({
 }: WorkoutTranslatableTextareaProps) => {
   const apiLanguages = useLanguageStore((state) => state.languages);
   const [activeLanguage, setActiveLanguage] = useState('en');
+  const [localValue, setLocalValue] = useState('');
+  const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    const currentValue = activeLanguage === 'en' ? value : (translations[activeLanguage] || '');
+    setLocalValue(currentValue);
+  }, [activeLanguage, value, translations]);
 
   useEffect(() => {
     if (activeLanguage !== 'en' && !selectedLanguages.includes(activeLanguage)) {
       setActiveLanguage('en');
     }
   }, [selectedLanguages, activeLanguage]);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, []);
+
+  const handleChange = (key: string, newValue: string) => {
+    setLocalValue(newValue);
+
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      const currentKey = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
+      onChange(currentKey, newValue);
+    }, 1000);
+  };
+
+  const handleLanguageChange = (langKey: string) => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    const currentKey = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
+    onChange(currentKey, localValue);
+    setActiveLanguage(langKey);
+  };
 
   const isFieldValid = (langKey: string) => {
     const fieldValue = langKey === 'en' ? value : translations[langKey];
@@ -44,7 +81,6 @@ export const WorkoutTranslatableTextarea = ({
   const hasSelectedOtherLanguages = selectedLanguages.length > 0;
   const activeLanguageData = apiLanguages.find((l) => l.key === activeLanguage);
 
-  const currentValue = activeLanguage === 'en' ? value : (translations[activeLanguage] || '');
   const currentKey = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
 
   return (
@@ -61,7 +97,7 @@ export const WorkoutTranslatableTextarea = ({
             <input
               type="radio"
               checked={activeLanguage === 'en'}
-              onChange={() => setActiveLanguage('en')}
+              onChange={() => handleLanguageChange('en')}
               className="sr-only"
             />
             <span className="font-medium">{label} (EN)</span>
@@ -90,7 +126,7 @@ export const WorkoutTranslatableTextarea = ({
                 <input
                   type="radio"
                   checked={activeLanguage === langKey}
-                  onChange={() => setActiveLanguage(langKey)}
+                  onChange={() => handleLanguageChange(langKey)}
                   className="sr-only"
                 />
                 <span className="font-medium">
@@ -112,8 +148,9 @@ export const WorkoutTranslatableTextarea = ({
       <Textarea
         name={currentKey}
         label={hasSelectedOtherLanguages ? '' : label}
-        value={currentValue}
-        onChange={onChange}
+        placeholder={placeholder || (activeLanguage === 'en' ? `${label} in English` : `${label} in ${activeLanguageData?.name}`)}
+        value={localValue}
+        onChange={handleChange}
         hasHeight={hasHeight}
       />
     </div>

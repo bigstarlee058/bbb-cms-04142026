@@ -266,7 +266,7 @@ const DayPlanComponent = ({
     }
   };
 
-  const updateDayTitle = (title) => {
+  const updateDayTitle = (_,title) => {
     const updatedDay = { ...day, title };
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
@@ -346,7 +346,9 @@ const DayPlanComponent = ({
     <>
       <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${day.localId}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
-          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay />
+          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} selectedLanguages={[]}  
+          titleTranslations={{}}
+          isPumpDay />
           <div className="flex gap-3">
             {isSevenDays ? (
               <Button

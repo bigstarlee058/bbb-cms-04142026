@@ -78,7 +78,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selecte
           file={month.thumbnail}
         />
       </div>
-      <div className="w-1/2 ml-4 mr-4">
+      <div className="ml-2 mr-2">
         <WorkoutTranslatableInput
           name="vimeoId"
           translationField="vimeoIdTranslations"

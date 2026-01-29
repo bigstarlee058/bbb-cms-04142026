@@ -239,7 +239,7 @@ export const DayPlan = ({
     }
   };
 
-  const updateDayTitle = (title) => {
+  const updateDayTitle = (_,title) => {
     const updatedDay = { ...day, title };
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
@@ -286,7 +286,7 @@ export const DayPlan = ({
     <>
       <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${dayIndex}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
-          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay />
+          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay titleTranslations={{}} selectedLanguages={[]} />
           <div className="flex gap-3">
             {isSevenDays ? (
               <Button

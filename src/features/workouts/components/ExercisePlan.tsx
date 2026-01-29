@@ -394,7 +394,7 @@ export const ExercisePlan = ({
               />
             </div>
           </div>
-          <div>
+          <div className='mt-2'>
             <WorkoutTranslatableInput
               name="guide"
               translationField="guideTranslations"

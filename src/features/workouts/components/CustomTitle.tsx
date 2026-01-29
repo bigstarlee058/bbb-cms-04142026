@@ -18,6 +18,7 @@ export const CustomTitle = ({
   const [title, setTitle] = useState('');
   const inputRef = useRef(null);
   const containerRef = useRef(null);
+  const debounceTimer = useRef(null);
 
   useEffect(() => {
     const currentValue = activeLanguage === 'en' ? customTitle : (titleTranslations[activeLanguage] || '');
@@ -43,30 +44,51 @@ export const CustomTitle = ({
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
     };
   }, [editingTitle, title, activeLanguage]);
 
   const handleTitleChange = (event) => {
-    setTitle(event.target.value);
+    const newValue = event.target.value;
+    setTitle(newValue);
+
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      const key = activeLanguage === 'en' ? 'title' : `${translationField}.${activeLanguage}`;
+      updateFunction(key, newValue);
+    }, 1000);
   };
 
   const saveTitle = () => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
     const key = activeLanguage === 'en' ? 'title' : `${translationField}.${activeLanguage}`;
     updateFunction(key, title);
     setEditingTitle(false);
-    setActiveLanguage('en');
   };
 
   const handleLanguageChange = (langKey) => {
-    const currentKey = activeLanguage === 'en' ? 'title' : `${translationField}.${activeLanguage}`;
-    updateFunction(currentKey, title);
+    if (editingTitle) {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+      const currentKey = activeLanguage === 'en' ? 'title' : `${translationField}.${activeLanguage}`;
+      updateFunction(currentKey, title);
+    }
     setActiveLanguage(langKey);
   };
 
   useEffect(() => {
-    if(editingTitle && inputRef.current)
+    if (editingTitle && inputRef.current)
       inputRef.current.focus();
   }, [editingTitle]);
+  
 
   const isFieldValid = (langKey) => {
     const fieldValue = langKey === 'en' ? customTitle : titleTranslations[langKey];
@@ -76,18 +98,24 @@ export const CustomTitle = ({
   const hasOtherLanguages = apiLanguages.length > 0;
   const hasSelectedOtherLanguages = selectedLanguages.length > 0;
 
-  const displayValue = activeLanguage === 'en' ? customTitle : (titleTranslations[activeLanguage] || customTitle);
+  const displayValue = (() => {
+    if (activeLanguage === 'en') {
+      return customTitle || 'Custom Title Here';
+    } else {
+      const translatedValue = titleTranslations[activeLanguage];
+      return translatedValue || `Custom Title Here (${activeLanguage.toUpperCase()})`;
+    }
+  })();
 
   return (
-    <div className="mb-2" ref={containerRef}>
-      {editingTitle && hasOtherLanguages && hasSelectedOtherLanguages && (
+    <div className="mb-3" ref={containerRef}>
+      {hasOtherLanguages && hasSelectedOtherLanguages && (
         <div className="flex flex-wrap gap-2 mb-2">
           <label
-            className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${
-              activeLanguage === 'en'
+            className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${activeLanguage === 'en'
                 ? 'bg-bbb border-bbb text-white'
                 : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
+              }`}
           >
             <input
               type="radio"
@@ -98,9 +126,8 @@ export const CustomTitle = ({
             <span className="font-medium">Title (EN)</span>
             {isFieldValid('en') && (
               <CheckIcon
-                className={`h-3 w-3 ml-1 ${
-                  activeLanguage === 'en' ? 'text-white' : 'text-green-600'
-                }`}
+                className={`h-3 w-3 ml-1 ${activeLanguage === 'en' ? 'text-white' : 'text-green-600'
+                  }`}
               />
             )}
           </label>
@@ -112,11 +139,10 @@ export const CustomTitle = ({
             return (
               <label
                 key={langKey}
-                className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${
-                  activeLanguage === langKey
+                className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${activeLanguage === langKey
                     ? 'bg-bbb border-bbb text-white'
                     : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -129,9 +155,8 @@ export const CustomTitle = ({
                 </span>
                 {isFieldValid(langKey) && (
                   <CheckIcon
-                    className={`h-3 w-3 ml-1 ${
-                      activeLanguage === langKey ? 'text-white' : 'text-green-600'
-                    }`}
+                    className={`h-3 w-3 ml-1 ${activeLanguage === langKey ? 'text-white' : 'text-green-600'
+                      }`}
                   />
                 )}
               </label>
@@ -141,23 +166,24 @@ export const CustomTitle = ({
       )}
 
       <div className="flex justify-between items-center">
-        <h2 className="text-md font-bold">
-          {!isPumpDay && `${type} ${index && index}`}
+
+        <h3 className="text-md">
+          {!isPumpDay && `${type} ${index && index}  :`}
           {editingTitle ? (
             <input
               type="text"
               value={title}
               onChange={handleTitleChange}
               onKeyDown={(e) => e.key === 'Enter' && saveTitle()}
-              className={`${!isPumpDay && "ml-7"} border rounded px-2 py-1`}
+              className={`${!isPumpDay && "ml-2"} border rounded px-2 py-1`}
               ref={inputRef}
             />
           ) : (
-            <span className= {`${!isPumpDay && "ml-7"} cursor-pointer`} onClick={() => setEditingTitle(true)}>
+            <span className={`${!isPumpDay && "ml-2"} cursor-pointer`} onClick={() => setEditingTitle(true)}>
               {displayValue || 'Custom Title Here'}
             </span>
           )}
-        </h2>
+        </h3>
       </div>
     </div>
   );

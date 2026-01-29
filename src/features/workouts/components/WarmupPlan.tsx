@@ -2,7 +2,7 @@ import { Button } from '@/components/Elements';
 import { DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
 import { TitleResponse } from '@/types';
 import { CustomTitle } from './CustomTitle';
-import { Field, Select, DeleteConfirmation } from './custom';
+import { Select, DeleteConfirmation } from './custom';
 import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
@@ -102,7 +102,7 @@ export const WarmupPlan = ({
     updateWarmup(monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup);
   };
 
-  const updateWarmupTitle = (title) => {
+  const updateWarmupTitle = (_,title) => {
     const updatedWarmup = { ...warmup, title };
     updateWarmup(monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup);
   };
@@ -216,6 +216,8 @@ export const WarmupPlan = ({
             type={'WARMUP'}
             index={warmup.typeId}
             customTitle={warmup.title}
+            titleTranslations={{}}
+            selectedLanguages={[]}
             updateFunction={updateWarmupTitle}
           />
           <div className="flex gap-3">

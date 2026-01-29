@@ -4,7 +4,6 @@ import { MonthDetail } from './MonthDetail';
 import { CustomTitle } from './CustomTitle';
 import { v4 as uuid } from 'uuid';
 import { useLanguageStore } from '@/stores/languages';
-import { fetchLanguages } from '@/lib/api';
 import { LanguageSelector } from '@/components/Language/LanguageSelector';
 import { useWorkoutContext } from '../WorkoutContext';
 
@@ -100,12 +99,6 @@ export const MonthPlan = React.memo(
       updateMonths(updatedMonths);
       setCurrentPage(newPage);
     }, [months, monthIndex, updateMonths, currentPage, setCurrentPage, perPage]);
-    const updateMonth = useCallback((monthIndex: number, updatedMonth: Month) => {
-      const updatedMonths = [...months];
-      updatedMonths[monthIndex] = updatedMonth;
-      updateMonths(updatedMonths);
-    }, [months, updateMonths]);
-
     const updateMonthTitle = (key, value) => {
       const keys = key.split('.');
       let updatedMonth = { ...month };
@@ -120,6 +113,12 @@ export const MonthPlan = React.memo(
       }
       updateMonth(realMonthIndex, updatedMonth);
     };
+
+    const updateMonth = useCallback((monthIndex: number, updatedMonth: Month) => {
+      const updatedMonths = [...months];
+      updatedMonths[monthIndex] = updatedMonth;
+      updateMonths(updatedMonths, { skipMeasure: true });
+    }, [months, updateMonths]);
     if (!months || !months[realMonthIndex]) {
       return (
         <div
@@ -137,13 +136,14 @@ export const MonthPlan = React.memo(
       <div
         ref={ref}
         key={month.localId}
-        className={`border p-2 rounded bg-white shadow month-${month.localId} mb-2`}
+        className={`border p-2 rounded bg-white shadow month-${month.localId} mb-4`}
         style={{ backgroundColor: '#E8E8E8' }}
       >
-        <div className="flex justify-center mb-1">
+        <div className="flex justify-center mb-2">
           <LanguageSelector
             selectedLanguages={selectedLanguages}
             onToggle={(langKey) => handleLanguageToggleForMonth(month.localId, langKey)}
+            labelPosition={'inline'}
           />
         </div>
         <div className="flex justify-between items-center mb-2 gap-3">
@@ -155,7 +155,7 @@ export const MonthPlan = React.memo(
             selectedLanguages={selectedLanguages}
             updateFunction={updateMonthTitle}
           />
-          <div className="flex gap-4">
+          <div className="flex gap-4 mt-4">
             <Button
               variant="danger"
               name="add month"
