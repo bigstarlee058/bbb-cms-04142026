@@ -25,6 +25,7 @@ interface Props {
   onScrollToMonth?: (monthIndex: number) => void;
   onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string, options?: { expandIfCollapsed?: boolean }) => void;
   scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
+  selectedLanguages: string[];
 }
 
 
@@ -50,6 +51,7 @@ const WeekPlanComponent = ({
   monthLocalId,
   onScrollToDay,
   scrollToWeek,
+  selectedLanguages
 }: Props) => {
   const weekKey = `${monthLocalId}-${week.localId}`;
   const isCollapsed = !(expandedWeeks?.[weekKey] ?? false);
@@ -174,6 +176,7 @@ const WeekPlanComponent = ({
             weekIndex={weekIndex}
             week={week}
             updateWeek={updateWeek}
+            selectedLanguages={selectedLanguages}
           />
         )}
 
@@ -203,6 +206,7 @@ const WeekPlanComponent = ({
             isWeekCollapsed={isCollapsed}
             onScrollToDay={onScrollToDay}
             scrollToWeek={scrollToWeek}
+            selectedLanguages={selectedLanguages}
           />
         ))}
       </div>

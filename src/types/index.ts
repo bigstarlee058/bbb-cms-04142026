@@ -361,8 +361,10 @@ export interface WorkoutsBaseEntity {
 export interface Month extends WorkoutsBaseEntity {
   index?: number;
   title: string;
+  titleTranslations: Record<string, string>;
   description: string;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   thumbnail: any;
   startDate: Date;
   endDate: Date;

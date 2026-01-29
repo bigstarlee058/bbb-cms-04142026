@@ -28,6 +28,7 @@ interface Props {
   setExpandedDays?: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
   scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
+  selectedLanguages: string[];
 }
 const DayPlanComponent = ({
   monthIndex,
@@ -47,6 +48,7 @@ const DayPlanComponent = ({
   expandedDays,
   onScrollToDay,
   scrollToWeek,
+  selectedLanguages
 }) => {
   const dayKey = `${months[monthIndex].localId}-${months[monthIndex].weeks[weekIndex].localId}-${day.localId}`;
 
@@ -377,6 +379,7 @@ const DayPlanComponent = ({
               updateDay={updateDay}
               isPumpDay={isPumpDay}
               days={days}
+              selectedLanguages={selectedLanguages}
             />
             {day.warmups.length < 1 ? (
               <Button
@@ -403,6 +406,7 @@ const DayPlanComponent = ({
                 isPumpDay={isPumpDay}
                 days={days}
                 updateDays={updateDays}
+                selectedLanguages={selectedLanguages}
               />
             ))}
             <div className="flex gap-6">
@@ -422,6 +426,7 @@ const DayPlanComponent = ({
                     isPumpDay={isPumpDay}
                     days={days}
                     updateDays={updateDays}
+                    selectedLanguages={selectedLanguages}
                   />
                 ))}
                 {day.exercises.length === 0 ? (

@@ -4,18 +4,20 @@ import { useState } from 'react';
 import { Month } from '@/types';
 import { DateRangePicker } from './custom';
 import Modal from 'react-modal';
-
 import { axios } from '@/lib/axios';
 import { useMonthCoverContext } from '../MonthCoverContext';
+import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
+
 Modal.setAppElement('#root');
 
 interface Props {
   monthIndex: number;
   month: Month;
   updateMonth: (monthIndex: Number, updatedMonth: Month) => void;
+  selectedLanguages: string[];
 }
 
-export const MonthDetail = React.memo(({ monthIndex, month, updateMonth }: Props) => {
+export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selectedLanguages }: Props) => {
   const [showDatePickerModal, setShowDatePickerModal] = useState(false);
   const [startDate, setStartDate] = useState<Date | undefined>(month.startDate);
   const [endDate, setEndDate] = useState<Date | undefined>(month.endDate);
@@ -36,9 +38,20 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth }: Props
   };
 
   const updateMonthDetail = (key, value) => {
-    const updatedMonth = { ...month, [key]: value };
+    const keys = key.split('.');
+    let updatedMonth = { ...month };
+    
+    if (keys.length === 1) {
+      updatedMonth = { ...month, [key]: value };
+    } else {
+      updatedMonth = {
+        ...month,
+        [keys[0]]: { ...month[keys[0]], [keys[1]]: value }
+      };
+    }
     updateMonth(monthIndex, updatedMonth);
   };
+
   const handleChange = (key, value) => {
     updateMonthDetail(key, value);
   };
@@ -66,7 +79,15 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth }: Props
         />
       </div>
       <div className="w-1/2 ml-4 mr-4">
-        <Field label="Vimeo Id" name="vimeoId" value={month.vimeoId} onChange={handleChange} />
+        <WorkoutTranslatableInput
+          name="vimeoId"
+          translationField="vimeoIdTranslations"
+          label="Vimeo Id"
+          selectedLanguages={selectedLanguages}
+          value={month.vimeoId || ''}
+          translations={month.vimeoIdTranslations || {}}
+          onChange={handleChange}
+        />
         <div className="flex flex-col mb-4">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-4">

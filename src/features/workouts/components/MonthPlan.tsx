@@ -1,9 +1,12 @@
-import React, { useCallback } from 'react';
-import { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Button } from '@/components/Elements';
 import { MonthDetail } from './MonthDetail';
 import { CustomTitle } from './CustomTitle';
 import { v4 as uuid } from 'uuid';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { useWorkoutContext } from '../WorkoutContext';
 
 import {
   DuplicateIcon,
@@ -14,7 +17,6 @@ import {
 import { WeekPlan } from './WeekPlan';
 import { Month, Week } from '@/types';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
-import _ from 'lodash';
 
 interface Props {
   monthIndex: number;
@@ -38,15 +40,45 @@ interface Props {
   onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string, options?: { expandIfCollapsed?: boolean }) => void;
   onDuplicateMonth?: (realMonthIndex: number) => void;
 }
+
 export const MonthPlan = React.memo(
   React.forwardRef<HTMLDivElement, Props>(({
     monthIndex, month, months, setCurrentPage, startIndex, currentPage,
     perPage, addMonth, scrollToMonth, updateMonths, measure,
-    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks, expandedDays, setExpandedDays, 
+    toggleCollapse, isCollapsed, setExpandedWeeks, expandedWeeks, expandedDays, setExpandedDays,
     scrollToWeek, onScrollToDay,
     onDuplicateMonth
   }, ref) => {
     const realMonthIndex = startIndex + monthIndex;
+    const languages = useLanguageStore((state) => state.languages);
+    const { selectedLanguagesByMonth, handleLanguageToggleForMonth, setSelectedLanguagesForMonth } = useWorkoutContext();
+    const selectedLanguages = selectedLanguagesByMonth[month.localId] || [];
+
+    useEffect(() => {
+      if (month && languages.length > 0) {
+        const existingLangs = new Set<string>();
+
+        if (month.titleTranslations) {
+          Object.keys(month.titleTranslations).forEach(key => {
+            if (month.titleTranslations[key]) existingLangs.add(key);
+          });
+        }
+
+        if (month.vimeoIdTranslations) {
+          Object.keys(month.vimeoIdTranslations).forEach(key => {
+            if (month.vimeoIdTranslations[key]) existingLangs.add(key);
+          });
+        }
+
+        const availableLangs = Array.from(existingLangs).filter(lang =>
+          languages.some(l => l.key === lang && l.inUse)
+        );
+
+        if (availableLangs.length > 0 && selectedLanguages.length === 0) {
+          setSelectedLanguagesForMonth(month.localId, availableLangs);
+        }
+      }
+    }, [month, languages]);
 
     const addWeek = useCallback(() => {
       const newWeek: Week = { title: '', description: '', vimeoId: '', thumbnail: '', restdayId: '', days: [], localId: uuid(), };
@@ -74,8 +106,18 @@ export const MonthPlan = React.memo(
       updateMonths(updatedMonths);
     }, [months, updateMonths]);
 
-    const updateMonthTitle = (title) => {
-      const updatedMonth = { ...month, title };
+    const updateMonthTitle = (key, value) => {
+      const keys = key.split('.');
+      let updatedMonth = { ...month };
+
+      if (keys.length === 1) {
+        updatedMonth = { ...month, [key]: value };
+      } else {
+        updatedMonth = {
+          ...month,
+          [keys[0]]: { ...month[keys[0]], [keys[1]]: value }
+        };
+      }
       updateMonth(realMonthIndex, updatedMonth);
     };
     if (!months || !months[realMonthIndex]) {
@@ -98,11 +140,19 @@ export const MonthPlan = React.memo(
         className={`border p-2 rounded bg-white shadow month-${month.localId} mb-2`}
         style={{ backgroundColor: '#E8E8E8' }}
       >
+        <div className="flex justify-center mb-1">
+          <LanguageSelector
+            selectedLanguages={selectedLanguages}
+            onToggle={(langKey) => handleLanguageToggleForMonth(month.localId, langKey)}
+          />
+        </div>
         <div className="flex justify-between items-center mb-2 gap-3">
           <CustomTitle
             type={'MONTH'}
             index={realMonthIndex + 1}
             customTitle={month.title}
+            titleTranslations={month.titleTranslations || {}}
+            selectedLanguages={selectedLanguages}
             updateFunction={updateMonthTitle}
           />
           <div className="flex gap-4">
@@ -137,12 +187,14 @@ export const MonthPlan = React.memo(
             />
           </div>
         </div>
+
         <div className={`collapse-content ${isCollapsed ? 'collapsed' : 'expanded'}`}>
           {!isCollapsed && (
             <MonthDetail
               monthIndex={realMonthIndex}
               month={month}
               updateMonth={updateMonth}
+              selectedLanguages={selectedLanguages}
             />
           )}
           {month.weeks.length < 1 ? (
@@ -176,10 +228,9 @@ export const MonthPlan = React.memo(
               onScrollToMonth={(monthIdx) => scrollToMonth?.(monthIdx)}
               scrollToWeek={scrollToWeek}
               onScrollToDay={onScrollToDay}
+              selectedLanguages={selectedLanguages}
             />
-
           ))}
-
         </div>
       </div>
     );
