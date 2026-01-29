@@ -11,7 +11,7 @@ export const Field = ({ label, name, value, onChange, disabled = false, ...rest 
   };
 
   return (
-    <div className={`form-group py-2 w-100 relative`}>
+    <div className={`form-group w-100 relative`}>
       <label className="fieldLabel">{label}</label>
       <input
         placeholder={label}

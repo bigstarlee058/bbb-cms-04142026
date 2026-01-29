@@ -1,25 +1,48 @@
 import { PlusIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
-
+import { useMutation, useQuery } from 'react-query';
+import { queryClient } from '@/lib/react-query';
+import { useEffect } from 'react';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone } from '@/components/Form';
+import { FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { createTagsSchema } from '@/utils/yup';
 
 import { createTag } from '../api';
-
+import { prepareTranslations } from '@/utils/translationHelper';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
 interface FormikState {
   title: string;
-  deleteImage: boolean;
-  image: any;
+  titleTranslations: Record<string, string>;
 }
 
 export const CreateTag = () => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    resetLanguages,
+    getFilteredTranslations,
+  } = useTranslations({
+    translationFields: ['title'],
+  });
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(createTag, {
     onSuccess: () => {
+      queryClient.invalidateQueries('get-categories');
+      resetLanguages();
       formik.resetForm();
       addNotification({
         type: 'success',
@@ -29,16 +52,25 @@ export const CreateTag = () => {
   });
   const initialValues: FormikState = {
     title: '',
-    image: '',
-    deleteImage: false,
+    titleTranslations: {},
   };
   const formik = useFormik({
     initialValues,
     validationSchema: createTagsSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (value: any) => {
-    mutate(value);
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title'],
+      imageFields: [],
+    });
+    const payload = {
+      ...values, titleTranslations: translations?.titleTranslations
+    };
+    mutate(payload);
   };
 
   return (
@@ -57,8 +89,18 @@ export const CreateTag = () => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="create-tag" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
         </form>
       </FormDrawer>
     </Authorization>

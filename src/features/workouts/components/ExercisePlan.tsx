@@ -2,6 +2,7 @@ import { Button } from '@/components/Elements';
 import { ChevronDownIcon, ChevronUpIcon, DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
 import { useEffect, useState } from 'react';
 import { Select, Field, DeleteConfirmation } from './custom';
+import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
 import { useQuery } from 'react-query';
 import { fetchExerciseTitles } from '../api';
 import { ExtraExercise, SelectOption, TitleResponse } from '@/types';
@@ -36,7 +37,8 @@ export const ExercisePlan = ({
   days = [],
   updateDays = (val) => {},
   isCircuit = false,
-  circuitIndex = 0
+  circuitIndex = 0,
+  selectedLanguages=[]
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
   const [isCollapsed, setIsCollapsed] = useState(true);
@@ -79,7 +81,7 @@ export const ExercisePlan = ({
     } else {
       originExercise = months[monthIndex].weeks[weekIndex].days[dayIndex].exercises[exerciseIndex];
     }
-    const newExercise = { ..._.cloneDeep(originExercise), formats: [] }; // Reset formats
+    const newExercise = { ..._.cloneDeep(originExercise), formats: [] };
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
     if (isPumpDay) {
@@ -162,11 +164,20 @@ export const ExercisePlan = ({
   };
 
   const updateExerciseDetail = (key, value) => {
-    const updatedExercise = { ...exercise, [key]: value };
+    const keys = key.split('.');
+    let updatedExercise = { ...exercise };
+    
+    if (keys.length === 1) {
+      updatedExercise = { ...exercise, [key]: value };
+    } else {
+      updatedExercise = {
+        ...exercise,
+        [keys[0]]: { ...exercise[keys[0]], [keys[1]]: value }
+      };
+    }
     updateExercise(monthIndex, weekIndex, dayIndex, exerciseIndex, updatedExercise);
   };
 
-  // Toggle the checked state of a checkbox
   const handleCheckboxClick = (index) => {
     const newCheckedStates = checkedStates.map((state, i) => (i === index ? !state : state));
     setCheckedStates(newCheckedStates);
@@ -179,7 +190,6 @@ export const ExercisePlan = ({
     updateExerciseDetail('formats', newFormats);
   };
 
-  // Check if a format is disabled in other exercises with the same typeId
   const isDisabled = (index) => {
     const format = ['A', 'B', 'C'][index];
     if (isPumpDay) {
@@ -210,7 +220,6 @@ export const ExercisePlan = ({
       .map((isChecked, index) => (isChecked ? allFormats[index] : ''))
       .filter(Boolean);
 
-    // Determine the next format that is not selected and not disabled
     const availableFormats = allFormats.filter((format, index) => {
       return !selectedFormats.includes(format) && !isDisabled(index);
     });
@@ -222,10 +231,8 @@ export const ExercisePlan = ({
     const nextFormat = availableFormats.length > 0 ? availableFormats[0] : null;
 
     if (nextFormat) {
-      // There are available formats, show the current type ID with the next available format
       return `Add Exercise ${exercise.typeId}${nextFormat}`;
     } else {
-      // All formats are selected or disabled, show the next type ID
       const nextTypeId = getNextTypeId();
       return `Add Exercise ${nextTypeId}`;
     }
@@ -237,7 +244,6 @@ export const ExercisePlan = ({
       .map((isChecked, index) => (isChecked ? allFormats[index] : ''))
       .filter(Boolean);
 
-    // Determine the next format that is not selected and not disabled
     const availableFormats = allFormats.filter((format, index) => {
       return !selectedFormats.includes(format) && !isDisabled(index);
     });
@@ -249,20 +255,14 @@ export const ExercisePlan = ({
     const nextFormat = getNextFormat();
 
     if (nextFormat) {
-      // There are available formats, add exercise with the current type ID and next available format
       addExercise(monthIndex, weekIndex, dayIndex, exercise.typeId, [nextFormat]);
     } else {
-      // All formats are selected or disabled, add exercise with the next type ID
       const nextTypeId = getNextTypeId();
       addExercise(monthIndex, weekIndex, dayIndex, nextTypeId, []);
     }
   };
 
-  // Determine the next type ID
   const getNextTypeId = () => {
-    // const typeIds = months.flatMap((month) =>
-    //   month.weeks.flatMap((week) => week.days.flatMap((day) => day.exercises.map((ex) => ex.typeId)))
-    // );
     let typeIds;
     if (isPumpDay) {
       if (isCircuit) {
@@ -394,15 +394,17 @@ export const ExercisePlan = ({
               />
             </div>
           </div>
-          <div>
-            <Field label="Guideline" name="guide" value={exercise.guide} onChange={handleChange} />
+          <div className='mt-2'>
+            <WorkoutTranslatableInput
+              name="guide"
+              translationField="guideTranslations"
+              label="Guideline"
+              selectedLanguages={selectedLanguages}
+              value={exercise.guide || ''}
+              translations={exercise.guideTranslations || {}}
+              onChange={handleChange}
+            />
           </div>
-          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <Field label="Sets" type="number" name="sets" value={exercise.sets} onChange={handleChange} />
-            <Field label="Reps" type="number" name="reps" value={exercise.reps} onChange={handleChange} />
-            <Field label="Weight" type="number" name="weight" value={exercise.weight} onChange={handleChange} />
-            <Field label="Rest" type="number" name="rest" value={exercise.rest} onChange={handleChange} />
-          </div> */}
           {exercise?.extra?.length && exercise.extra.length > 0 ? (
             <>
               {exercise.extra.map((extra: ExtraExercise, index: number) => (

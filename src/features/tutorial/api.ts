@@ -1,7 +1,7 @@
-import { ErrorMessage, ResponseMessage, TutorialResponse,  Filters, TagsResponse } from '@/types';
+import { ErrorMessage, ResponseMessage, TutorialResponse, Filters, TagsResponse } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchTags = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/tags/admin/get`, {
@@ -30,39 +30,30 @@ export const fetchTutorials = async (filters: Filters) => {
   }
 };
 
-export const createTutorial = async (payload: {
-  title: string;
-  vimeoId: string;
-  description: string;
-  image?: File;  
-  category?:number;
-}) => {
+export const createTutorial = async (payload: any) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('vimeoId', payload.vimeoId);
-    formData.append('description', payload.description);
-    formData.append('image', payload.image);
-    formData.append('category', payload.category.toString());
-    // Post the new tag data (including the image) to your backend
-    const result = (await axios.post('/tutorials/admin', formData)) as any;
-    // Invalidate cache or update your frontend state if needed
-    if (result.result === true) {
+    const formData = buildFormDataWithImages(payload, ['image']);
+
+    const response = await axios.post('/tutorials/admin', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    if (response.data.result === true) {
       queryClient.invalidateQueries('get-tutorials');
-      return result.tutorials;
+      return response.data.tutorials;
     }
-    return result.message;
+    return response.data.message;
   } catch (err: any) {
     const error: ErrorMessage = {
       status: true,
-      message: err as string,
+      message: err?.message || 'Failed to create tutorial',
     };
-    console.log(error);
     return Promise.reject(error);
   }
 };
 
-export const updateTutorials = async (payload : {
+
+export const updateTutorials = async (payload: {
   vimeo: string,
   image: File,
   deleteImage: boolean,
@@ -93,39 +84,27 @@ export const updateTutorials = async (payload : {
   }
 };
 
-export const updateTutorial = async (payload: {
-  tutorialId: string 
-  title: string;
-  vimeoId: string;
-  description: string;
-  category:number;
-  image: File; 
-  deleteImage: Boolean
-}) => {
+export const updateTutorial = async (payload: any) => {
   try {
-    const formData = new FormData();
-    formData.append('_id', payload.tutorialId);
-    formData.append('title', payload.title);
-    formData.append('description', payload.description);
-    formData.append('vimeoId', payload.vimeoId);
-    formData.append('image', payload.image);
-    formData.append('deleteImage', String(payload.deleteImage));
-    formData.append('category', payload.category.toString());
-    const result = (await axios.put('/tutorials/admin', formData)) as ResponseMessage;
-    if (result.result === true) {
+    const formData = buildFormDataWithImages(payload, ['image']);
+
+    const response = await axios.put('/tutorials/admin', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    if (response.data.result === true) {
       queryClient.invalidateQueries('get-tutorials');
-      return 'Tag successfully updated.';
+      return 'Tutorial successfully updated.';
     }
-    return result.message;
+    return response.data.message;
   } catch (err: any) {
     const error: ErrorMessage = {
       status: true,
-      message: err as string,
+      message: err?.message || 'Failed to update tutorial',
     };
     return Promise.reject(error);
   }
 };
-
 export const deleteTutorial = async (tutorialId: string) => {
   try {
     const result = (await axios.delete(`/tutorials/admin/${tutorialId}`)) as ResponseMessage;

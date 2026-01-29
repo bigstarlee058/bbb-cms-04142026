@@ -1,23 +1,33 @@
 import { PlusIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import * as Yup from 'yup';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone } from '@/components/Form';
+import { FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { upsellApi } from '../api';
 import { CriteriaBuilder } from './CriteriaBuilder';
 import { defaultTargetCriteria, TargetCriteria } from '../types';
-
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextareaWithFormatting } from '@/components/Form/TranslatableTextareaWithFormatting';
+import { TranslatableDropzone } from '@/components/Form/TranslatableDropzone';
+import { prepareTranslations } from '@/utils/translationHelper';
 interface FormikState {
     title: string;
+    titleTranslations: Record<string, string>;
     subtitle: string;
+    subtitleTranslations: Record<string, string>;
     description: string;
+    descriptionTranslations: Record<string, string>;
     image: string;
     dismissBehavior: 'session' | 'days_30' | 'never';
-    deleteImage: boolean;
+    imageTranslations: Record<string, any>;
     originalPrice: number;
     discountType: 'percent' | 'fixed';
     discountValue: number;
@@ -56,10 +66,13 @@ const createUpsellSchema = Yup.object().shape({
 
 const initialValues: FormikState = {
     title: '',
+    titleTranslations: {},
     subtitle: '',
+    subtitleTranslations: {},
     description: '',
+    descriptionTranslations: {},
     image: '',
-    deleteImage: false,
+    imageTranslations:{},
     originalPrice: 0,
     discountType: 'percent',
     discountValue: 0,
@@ -93,6 +106,23 @@ const calculateFinalPrice = (
 
 export const CreateUpsell = () => {
     const { addNotification } = useNotificationStore();
+    const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+    const setLanguages = useLanguageStore((state) => state.setLanguages);
+    const {
+        selectedLanguages,
+        handleLanguageToggle,
+        resetLanguages,
+        getFilteredTranslations,
+    } = useTranslations({
+        translationFields: ['title', 'subtitle', 'description', 'buttonText', 'image', 'buttonLink'],
+    });
+
+    useEffect(() => {
+        if (fetchedLanguages.length > 0) {
+            setLanguages(fetchedLanguages);
+        }
+    }, [fetchedLanguages, setLanguages]);
+
     const queryClient = useQueryClient();
     const { data: allUsersCount } = useQuery(
         ['allUsersCount'],
@@ -103,6 +133,7 @@ export const CreateUpsell = () => {
     const { mutate, isLoading, isSuccess } = useMutation(upsellApi.create, {
         onSuccess: () => {
             formik.resetForm();
+            resetLanguages();
             queryClient.invalidateQueries('upsells');
             addNotification({
                 type: 'success',
@@ -121,6 +152,13 @@ export const CreateUpsell = () => {
         initialValues,
         validationSchema: createUpsellSchema,
         onSubmit: (values) => {
+            const translations = prepareTranslations({
+                values,
+                translations: getFilteredTranslations(values, true),
+                selectedLanguages,
+                textFields: ['title', 'subtitle', 'description', 'buttonText', 'buttonLink'],
+                imageFields: ['image'],
+            });
             const payload = {
                 ...values,
                 finalPrice: calculateFinalPrice(
@@ -130,6 +168,7 @@ export const CreateUpsell = () => {
                 ),
                 startDate: values.startDate || null,
                 endDate: values.endDate || null,
+                ...translations,
             };
             mutate(payload);
         },
@@ -162,11 +201,15 @@ export const CreateUpsell = () => {
         if (isCriteriaCountLoading) return '...';
         return criteriaUsersCount?.count?.toLocaleString() || '0';
     };
-
+    const handleClose = () => {
+        formik.resetForm();
+        resetLanguages();
+    }
     return (
         <Authorization allowedRoles={[ROLES.ADMIN]}>
             <FormDrawer
                 isDone={isSuccess}
+                onClose={handleClose}
                 triggerButton={
                     <Button size="sm" variant="danger" startIcon={<PlusIcon className="h-4 w-4" />}>
                         Create Upsell
@@ -179,95 +222,60 @@ export const CreateUpsell = () => {
                     </Button>
                 }
             >
+                <LanguageSelector
+                    selectedLanguages={selectedLanguages}
+                    onToggle={handleLanguageToggle}
+                />
                 <form id="create-upsell" onSubmit={formik.handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                Title <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                            <TranslatableInput
+                                formik={formik}
                                 name="title"
-                                value={formik.values.title}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
-                                placeholder="Title"
+                                translationField="titleTranslations"
+                                label="Title"
+                                selectedLanguages={selectedLanguages}
                             />
-                            {formik.touched.title && formik.errors.title && (
-                                <p className="text-red-500 text-xs mt-0.5">{formik.errors.title}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                Subtitle
-                            </label>
-                            <input
-                                type="text"
+                            <TranslatableInput
+                                formik={formik}
                                 name="subtitle"
-                                value={formik.values.subtitle}
-                                onChange={formik.handleChange}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
-                                placeholder="Subtitle"
+                                translationField="subtitleTranslations"
+                                label="Subtitle"
+                                selectedLanguages={selectedLanguages}
                             />
                         </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                Button Text <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
+                        <div className="grid grid-cols-2 gap-3">
+                            <TranslatableInput
+                                formik={formik}
                                 name="buttonText"
-                                value={formik.values.buttonText}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
-                                placeholder="Get Started"
+                                translationField="buttonTextTranslations"
+                                label="Button Text"
+                                selectedLanguages={selectedLanguages}
                             />
-                            {formik.touched.buttonText && formik.errors.buttonText && (
-                                <p className="text-red-500 text-xs mt-0.5">{formik.errors.buttonText}</p>
-                            )}
+                            <TranslatableInput
+                                formik={formik}
+                                name="buttonLink"
+                                translationField="buttonLinkTranslations"
+                                label="Button Link"
+                                selectedLanguages={selectedLanguages}
+                            />
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                Button Link <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="buttonLink"
-                                value={formik.values.buttonLink}
-                                onChange={formik.handleChange}
-                                onBlur={formik.handleBlur}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
-                                placeholder="Enter the link"
+                            <TranslatableTextareaWithFormatting
+                                formik={formik}
+                                name="description"
+                                label="Description"
+                                selectedLanguages={selectedLanguages}
+                                placeholder="Enter description"
                             />
-                            {formik.touched.buttonLink && formik.errors.buttonLink && (
-                                <p className="text-red-500 text-xs mt-0.5">{formik.errors.buttonLink}</p>
-                            )}
                         </div>
                     </div>
-                    <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                            Description
-                        </label>
-                        <textarea
-                            name="description"
-                            value={formik.values.description}
-                            onChange={formik.handleChange}
-                            rows={2}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e] resize-none"
-                            placeholder="Description"
-                        />
-                    </div>
-                    <Dropzone
-                        label="Image"
-                        name="image"
+                    <TranslatableDropzone
                         formik={formik}
-                        defaultImg={formik.values.image}
-                        onDrop={(img) => formik.setFieldValue('image', img)}
-                        onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+                        name="image"
+                        translationField="imageTranslations"
+                        label="Image"
+                        selectedLanguages={selectedLanguages}
                     />
                     <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
                         <h4 className="text-xs font-semibold text-gray-700 uppercase tracking-wide mb-3">
@@ -287,7 +295,7 @@ export const CreateUpsell = () => {
                                     onBlur={formik.handleBlur}
                                     min="0"
                                     step="0.01"
-                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb"
                                 />
                             </div>
                             <div>
@@ -298,7 +306,7 @@ export const CreateUpsell = () => {
                                     name="discountType"
                                     value={formik.values.discountType}
                                     onChange={formik.handleChange}
-                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:ring-bbb focus:border-bbb"
                                 >
                                     <option value="percent">%</option>
                                     <option value="fixed">Fixed</option>
@@ -316,7 +324,7 @@ export const CreateUpsell = () => {
                                     onBlur={formik.handleBlur}
                                     min="0"
                                     max={formik.values.discountType === 'percent' ? 100 : undefined}
-                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb"
                                 />
                             </div>
                             <div>
@@ -329,7 +337,7 @@ export const CreateUpsell = () => {
                                     value={formik.values.currency}
                                     onChange={formik.handleChange}
                                     maxLength={3}
-                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e] uppercase"
+                                    className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb uppercase"
                                 />
                             </div>
                         </div>
@@ -339,19 +347,19 @@ export const CreateUpsell = () => {
                                     {formik.values.currency} {Number(formik.values.originalPrice || 0).toFixed(2)}
                                 </span>
                                 <span className="text-gray-400">→</span>
-                                <span className="text-[#9a354e]">
+                                <span className="text-bbb">
                                     -{formik.values.discountType === 'percent'
                                         ? `${formik.values.discountValue}%`
                                         : `${formik.values.currency} ${Number(formik.values.discountValue || 0).toFixed(2)}`
                                     }
                                 </span>
                                 <span className="text-gray-400">→</span>
-                                <span className="font-bold text-[#9a354e]">
+                                <span className="font-bold text-bbb">
                                     {formik.values.currency} {finalPrice.toFixed(2)}
                                 </span>
                             </div>
                             {savings > 0 && (
-                                <span className="text-xs text-[#9a354e] bg-[#9a354e]/10 px-2 py-1 rounded-full">
+                                <span className="text-xs text-bbb bg-bbb/10 px-2 py-1 rounded-full">
                                     Save {formik.values.currency} {savings.toFixed(2)}
                                 </span>
                             )}
@@ -372,8 +380,8 @@ export const CreateUpsell = () => {
                                     type="button"
                                     onClick={() => formik.setFieldValue('timeType', value)}
                                     className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${formik.values.timeType === value
-                                        ? 'bg-[#9a354e] text-white border-[#9a354e]'
-                                        : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+                                        ? 'bg-bbb text-white border-bbb'
+                                        : 'bg-white text-gray-600 border-gray-300 hover:border-bbb'
                                         }`}
                                 >
                                     {label}
@@ -390,7 +398,7 @@ export const CreateUpsell = () => {
                                         name="startDate"
                                         value={formik.values.startDate}
                                         onChange={formik.handleChange}
-                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb"
                                     />
                                 </div>
                                 <div>
@@ -400,7 +408,7 @@ export const CreateUpsell = () => {
                                         name="endDate"
                                         value={formik.values.endDate}
                                         onChange={formik.handleChange}
-                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb"
                                     />
                                 </div>
                             </div>
@@ -415,7 +423,7 @@ export const CreateUpsell = () => {
                                         value={formik.values.durationDays}
                                         onChange={formik.handleChange}
                                         min="0"
-                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb"
                                     />
                                 </div>
                                 <div>
@@ -427,7 +435,7 @@ export const CreateUpsell = () => {
                                         onChange={formik.handleChange}
                                         min="0"
                                         max="23"
-                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-[#9a354e] focus:border-[#9a354e]"
+                                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-bbb focus:border-bbb"
                                     />
                                 </div>
                             </div>
@@ -448,8 +456,8 @@ export const CreateUpsell = () => {
                                     type="button"
                                     onClick={() => formik.setFieldValue('dismissBehavior', value)}
                                     className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${formik.values.dismissBehavior === value
-                                        ? 'bg-[#9a354e] text-white border-[#9a354e]'
-                                        : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+                                        ? 'bg-bbb text-white border-bbb'
+                                        : 'bg-white text-gray-600 border-gray-300 hover:border-bbb'
                                         }`}
                                 >
                                     {label}
@@ -466,8 +474,8 @@ export const CreateUpsell = () => {
                                 type="button"
                                 onClick={() => formik.setFieldValue('targetType', 'all')}
                                 className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors flex items-center justify-center gap-2 ${formik.values.targetType === 'all'
-                                    ? 'bg-[#9a354e] text-white border-[#9a354e]'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+                                    ? 'bg-bbb text-white border-bbb'
+                                    : 'bg-white text-gray-600 border-gray-300 hover:border-bbb'
                                     }`}
                             >
                                 <span>All Users</span>
@@ -484,8 +492,8 @@ export const CreateUpsell = () => {
                                 type="button"
                                 onClick={() => formik.setFieldValue('targetType', 'criteria')}
                                 className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors flex items-center justify-center gap-2 ${formik.values.targetType === 'criteria'
-                                    ? 'bg-[#9a354e] text-white border-[#9a354e]'
-                                    : 'bg-white text-gray-600 border-gray-300 hover:border-[#9a354e]'
+                                    ? 'bg-bbb text-white border-bbb'
+                                    : 'bg-white text-gray-600 border-gray-300 hover:border-bbb'
                                     }`}
                             >
                                 <span>By Criteria</span>
@@ -520,7 +528,7 @@ export const CreateUpsell = () => {
                                 onChange={() => formik.setFieldValue('isActive', !formik.values.isActive)}
                             />
                             <div
-                                className={`relative w-11 h-6 rounded-full transition-colors ${formik.values.isActive ? 'bg-[#9a354e]' : 'bg-gray-300'
+                                className={`relative w-11 h-6 rounded-full transition-colors ${formik.values.isActive ? 'bg-bbb' : 'bg-gray-300'
                                     }`}
                             >
                                 <span
@@ -529,7 +537,7 @@ export const CreateUpsell = () => {
                                 />
                             </div>
                             <span
-                                className={`ml-2 text-sm font-medium ${formik.values.isActive ? 'text-[#9a354e]' : 'text-gray-500'
+                                className={`ml-2 text-sm font-medium ${formik.values.isActive ? 'text-bbb' : 'text-gray-500'
                                     }`}
                             >
                                 {formik.values.isActive ? 'Yes' : 'No'}

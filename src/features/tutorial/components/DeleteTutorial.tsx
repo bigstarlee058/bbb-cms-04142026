@@ -14,11 +14,11 @@ export const DeleteTutorial = ({ tutorialId }: DeleteTutorialProps) => {
   const { addNotification } = useNotificationStore();
   const { mutate, isSuccess, isLoading } = useMutation(deleteTutorial, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-tutorials');
       addNotification({
         type: 'success',
         title: message,
       });
-      queryClient.invalidateQueries('get-tags');
     },
   });
 
@@ -26,8 +26,8 @@ export const DeleteTutorial = ({ tutorialId }: DeleteTutorialProps) => {
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <ConfirmationDialog
         icon="danger"
-        title="Delete Tag"
-        body="Are you sure you want to delete this tag?"
+        title="Delete Tutorial"
+        body="Are you sure you want to delete this tutorial?"
         isDone={isSuccess}
         triggerButton={
           <Button variant="danger" startIcon={<TrashIcon className="h-4 w-4" />}></Button>
@@ -41,7 +41,7 @@ export const DeleteTutorial = ({ tutorialId }: DeleteTutorialProps) => {
               await mutate(tutorialId);
             }}
           >
-            Delete Tag
+            Delete Tutorial
           </Button>
         }
       />

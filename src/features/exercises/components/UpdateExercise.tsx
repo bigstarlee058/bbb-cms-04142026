@@ -1,8 +1,8 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, Textarea, Select, FormDrawer, Dropzone } from '@/components/Form';
+import {  Select, FormDrawer,} from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery ,useQueryClient} from 'react-query';
 import { updateExercise } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
@@ -10,22 +10,34 @@ import { createExerciseSchema } from '@/utils/yup';
 import { TitleResponse, Exercise } from '@/types';
 import { createCategory } from '@/features/categories/api';
 import { createTag } from '@/features/tags/api';
-import { useState } from 'react';
-import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
+import { useState, useEffect } from 'react';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextareaWithFormatting } from '@/components/Form/TranslatableTextareaWithFormatting';
+import { TranslatableDropzone } from '@/components/Form/TranslatableDropzone';
+import { prepareTranslations } from '@/utils/translationHelper';
 
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   categories: string[];
   tags: string[];
   guide: string;
   usedEquipments: string[];
   relatedExercises: string[];
-  image: any;
-  videoImage: any;
-  deleteImage: boolean;
-  deleteVideoImage: boolean;
+  thumbnail: string;
+  thumbnailTranslations: Record<string, any>;
+  videoThumbnail: any;
+  videoThumbnailTranslations: Record<string, any>;
+  deleteThumbnail: boolean;
+  deleteVideoThumbnail: boolean;
 }
 
 export const UpdateExercise = ({
@@ -48,8 +60,38 @@ export const UpdateExercise = ({
   onTagCreate: () => void;
 }) => {
   const { addNotification } = useNotificationStore();
+  const queryClient = useQueryClient();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    resetLanguages,
+    getFilteredTranslations,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description', 'thumbnail', 'videoThumbnail', 'vimeoId'],
+  });
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+  const exerciseData = exercises.exercises.find((ex) => ex._id === exerciseId);
+  useEffect(() => {
+    if (!exercises) return;
+    const apiLanguages = useLanguageStore.getState().languages.map(l => l.key);
+
+    const langs = Object.values(exerciseData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    setSelectedLanguages([...new Set(langs)]);
+  }, [exerciseData, setSelectedLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(updateExercise, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-exercises');
       addNotification({
         type: 'success',
         title: message
@@ -57,7 +99,7 @@ export const UpdateExercise = ({
     }
   });
 
-  const exerciseData = exercises.exercises.find((ex) => ex._id === exerciseId);
+  
   const exerciseTitles = exTitles && exTitles.filter((title) => title.id !== exerciseId);
   const equipmentTitles = eqTitles;
 
@@ -66,27 +108,47 @@ export const UpdateExercise = ({
 
   const initialValues: FormikState = {
     title: exerciseData?.title || '',
+    titleTranslations: exerciseData?.titleTranslations || {},
     description: exerciseData?.description || '',
+    descriptionTranslations: exerciseData?.descriptionTranslations || {},
     vimeoId: exerciseData?.vimeoId || '',
+    vimeoIdTranslations: exerciseData?.vimeoIdTranslations || {},
     categories: exerciseData?.categories || [],
     tags: exerciseData?.tags || [],
     guide: exerciseData?.guide || '',
     usedEquipments: exerciseData?.usedEquipments || [],
     relatedExercises: exerciseData?.relatedExercises || [],
-    image: exerciseData?.thumbnail,
-    videoImage: exerciseData?.videoThumbnail,
-    deleteImage: false,
-    deleteVideoImage: false
+    thumbnail: exerciseData?.thumbnail || '',
+    thumbnailTranslations: exerciseData?.thumbnailTranslations || {},
+    videoThumbnail: exerciseData?.videoThumbnail || '',
+    videoThumbnailTranslations: exerciseData?.videoThumbnailTranslations || {},
+    deleteThumbnail: false,
+    deleteVideoThumbnail: false
   };
   const formik = useFormik({
     initialValues,
     validationSchema: createExerciseSchema,
     onSubmit: (v) => onSubmit(v)
   });
-  const onSubmit = (value: any) => {
-    mutate({ exerciseId, payload: value });
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description', 'vimeoId'],
+      imageFields: [ 'thumbnail', 'videoThumbnail'],
+    });
+    const payload = {
+      ...values,
+      ...translations,
+      deleteImage: values.deleteImage || false,
+      deleteImageTranslations: values.deleteImageTranslations || [],
+    };
+
+    mutate({ exerciseId, payload });
     onCategoryCreate();
     onTagCreate();
+    queryClient.invalidateQueries(['get-exercise', exerciseId]);
   };
 
   return (
@@ -101,24 +163,38 @@ export const UpdateExercise = ({
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-exercise" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
-          <Dropzone
-            label="Video Thumbnail"
-            name="videoImage"
-            formik={formik}
-            defaultImg={formik.values.videoImage}
-            onDrop={(img) => formik.setFieldValue('videoImage', img)}
-            onDelete={() => formik.setValues({ ...formik.values, videoImage: '', deleteVideoImage: true })}
-          />
+          <div className="row">
+            <TranslatableInput
+              formik={formik}
+              name="title"
+              translationField="titleTranslations"
+              label="Title"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+          <div className="row">
+            <TranslatableDropzone
+              formik={formik}
+              name="thumbnail"
+              translationField="thumbnailTranslations"
+              label="Thumbnail"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+          <div className="row">
+            <TranslatableDropzone
+              formik={formik}
+              name="videoThumbnail"
+              translationField="videoThumbnailTranslations"
+              label="Video Thumbnail"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
           <Select
             isMulti
             formik={formik}
@@ -139,7 +215,7 @@ export const UpdateExercise = ({
             onCreateOption={async (category: string) => {
               const data = await createCategory({ title: category });
               formik.setFieldValue('categories', [...formik.values.categories, data.id]);
-              setCategoryTitles((prev) => ([...prev, {title: category, id: data.id}]))
+              setCategoryTitles((prev) => ([...prev, { title: category, id: data.id }]))
             }}
           />
           <Select
@@ -162,12 +238,28 @@ export const UpdateExercise = ({
             onCreateOption={async (tag: string) => {
               const data = await createTag({ title: tag });
               formik.setFieldValue('tags', [...formik.values.tags, data.id]);
-              setTaTitles((prev) => ([...prev, {title: tag, id: data.id}]))
+              setTaTitles((prev) => ([...prev, { title: tag, id: data.id }]))
             }}
           />
-          <Field label="Vimeo" formik={formik} name="vimeoId" />
-          {/* <Textarea label="Description" formik={formik} name="description" /> */}
-          <TextareaWithFormatting label="Description" formik={formik} name="description" />
+          <div className="row">
+            <TranslatableInput
+              formik={formik}
+              name="vimeoId"
+              translationField="vimeoIdTranslations"
+              label="Vimeo Id"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+
+          <div className="row">
+            <TranslatableTextareaWithFormatting
+              formik={formik}
+              name="description"
+              label="Description"
+              selectedLanguages={selectedLanguages}
+              placeholder="Enter description"
+            />
+          </div>
           <Select
             isMulti
             formik={formik}

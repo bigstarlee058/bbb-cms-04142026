@@ -11,7 +11,7 @@ import { PopupEquipment } from '@/features/popup-equipment/PopupEquipment';
 import { WorkoutContextProvider } from '@/features/workouts/WorkoutContext';
 import { MonthCoverContextProvider } from '@/features/workouts/MonthCoverContext';
 import { PumpDaysContextProvider } from '@/features/pumpdays/PumpDaysContext';
-
+import { PopupNewJoin } from '@/features/popup-new-join-users/PopupNewJoin';
 const { Dashboard } = lazyImport(() => import('@/features/misc'), 'Dashboard');
 const { Profile } = lazyImport(() => import('@/features/users'), 'Profile');
 const { ScreensRoutes } = lazyImport(() => import('@/features/screens'), 'ScreensRoutes');
@@ -40,6 +40,7 @@ const { ProgramInfoRoutes } = lazyImport(() => import('@/features/program-info')
 const { PumpDaysRoutes } = lazyImport(() => import('@/features/pumpdays'), 'PumpDaysRoutes');
 const { FaqsRoutes } = lazyImport(() => import('@/features/faqs'), 'FaqsRoutes');
 const { MoneyRoutes } = lazyImport(() => import('@/features/money'), 'MoneyRoutes');
+const {PopupNewJoinRoutes} =lazyImport(() => import('@/features/popup-new-join-users'), 'PopupNewJoinRoutes');
 const ProtectedApp = () => {
   return (
     <WorkoutContextProvider>
@@ -88,6 +89,10 @@ export const protectedRoutes = [
       {
         element: <PopupEquipmentRoutes />,
         children: [{ path: 'popupEquipment', element: <PopupEquipment /> }]
+      },
+      {
+        element: <PopupNewJoinRoutes />,
+        children: [{ path: 'new-join-users', element: <PopupNewJoin /> }]
       },
       { path: 'users/*', element: <UsersRoutes /> },
       { path: 'tutorials/*', element: <TutorialsRoutes /> },

@@ -1,9 +1,9 @@
-import { PencilIcon, PlusIcon } from '@heroicons/react/outline';
+import { PencilIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
 import { useMutation } from 'react-query';
 
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone } from '@/components/Form';
+import { FormDrawer, Field } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { updateScreensSchema } from '@/utils/yup';

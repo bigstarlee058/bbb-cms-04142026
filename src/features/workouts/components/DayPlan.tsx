@@ -28,6 +28,7 @@ interface Props {
   setExpandedDays?: React.Dispatch<React.SetStateAction<{ [key: string]: boolean }>>;
   onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string) => void;
   scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
+  selectedLanguages: string[];
 }
 const DayPlanComponent = ({
   monthIndex,
@@ -47,6 +48,7 @@ const DayPlanComponent = ({
   expandedDays,
   onScrollToDay,
   scrollToWeek,
+  selectedLanguages
 }) => {
   const dayKey = `${months[monthIndex].localId}-${months[monthIndex].weeks[weekIndex].localId}-${day.localId}`;
 
@@ -264,7 +266,7 @@ const DayPlanComponent = ({
     }
   };
 
-  const updateDayTitle = (title) => {
+  const updateDayTitle = (_,title) => {
     const updatedDay = { ...day, title };
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
@@ -344,7 +346,9 @@ const DayPlanComponent = ({
     <>
       <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${day.localId}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
-          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay />
+          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} selectedLanguages={[]}  
+          titleTranslations={{}}
+          isPumpDay />
           <div className="flex gap-3">
             {isSevenDays ? (
               <Button
@@ -377,6 +381,7 @@ const DayPlanComponent = ({
               updateDay={updateDay}
               isPumpDay={isPumpDay}
               days={days}
+              selectedLanguages={selectedLanguages}
             />
             {day.warmups.length < 1 ? (
               <Button
@@ -403,6 +408,7 @@ const DayPlanComponent = ({
                 isPumpDay={isPumpDay}
                 days={days}
                 updateDays={updateDays}
+                selectedLanguages={selectedLanguages}
               />
             ))}
             <div className="flex gap-6">
@@ -422,6 +428,7 @@ const DayPlanComponent = ({
                     isPumpDay={isPumpDay}
                     days={days}
                     updateDays={updateDays}
+                    selectedLanguages={selectedLanguages}
                   />
                 ))}
                 {day.exercises.length === 0 ? (

@@ -1,17 +1,24 @@
+import { useEffect } from 'react';
 import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone } from '@/components/Form';
+import { FormDrawer, Dropzone } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { updateScreensSchema } from '@/utils/yup';
 import { updateScreens } from './api';
-import { Textarea } from '@/components/Form';
-import { DeleteConfirmation } from '../workouts/components/custom';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { queryClient } from '@/lib/react-query';
 
 interface FormikState {
-  vimeo: string;
+  vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   image?: any;
   imageLogin?: any;
   imageSignup?: any;
@@ -56,14 +63,41 @@ interface FormikState {
   slides: {
     title: string;
     description: string;
+    titleTranslations: Record<string, string>;
+    descriptionTranslations: Record<string, string>;
   }[];
 }
 
 export const UpdateScreens = ({ screenData }) => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['vimeoId', 'slides'],
+  });
+  useEffect(() => {
+    const apiLanguages = useLanguageStore.getState().languages.map(l => l.key);
 
+    const langs = Object.values(screenData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    setSelectedLanguages([...new Set(langs)]);
+  }, [screenData, setSelectedLanguages]);
   const initialValues: FormikState = {
-    vimeo: screenData?.vimeoId || '',
+    vimeoId: screenData?.vimeoId || '',
+    vimeoIdTranslations: screenData?.vimeoIdTranslations || {},
     image: screenData?.imgUrl || '',
     imageLogin: screenData?.imageLogin || '',
     imageSignup: screenData?.imageSignup || '',
@@ -104,16 +138,19 @@ export const UpdateScreens = ({ screenData }) => {
     deleteImageProfile: false,
     deleteImageMyProfile: false,
     deleteImageSetting: false,
-    slides: screenData?.slides || [{ title: '', description: '' }]
+    slides: screenData?.slides || [{ title: '', description: '', titleTranslations: {}, descriptionTranslations: {} }]
   };
   const formik = useFormik({
     initialValues,
     validationSchema: updateScreensSchema,
-    onSubmit: (v) => onSubmit(v)
+    onSubmit: (v) => onSubmit(v),
   });
 
   const { mutate, isLoading, isSuccess } = useMutation(updateScreens, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-screens');
+      formik.resetForm();
+      resetLanguages();
       addNotification({
         type: 'success',
         title: message
@@ -122,15 +159,27 @@ export const UpdateScreens = ({ screenData }) => {
   });
 
   const onSubmit = (state: FormikState) => {
-    const { vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageTutorial, imageSubscription, imageProfile, imageMyProfle, imageSetting,
-      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs,  deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides } = state;
-    mutate({ vimeo, image, imageLogin,  imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageTutorial, imageSubscription, imageProfile, imageMyProfle, imageSetting,
-      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides });
+    const { vimeoId, image, imageLogin, imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageTutorial, imageSubscription, imageProfile, imageMyProfle, imageSetting,
+      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting } = state;
+    const translations = getFilteredTranslations(state, true);
+    const vimeoIdTranslations = translations?.vimeoIdTranslations;
+    const slides = Array.isArray(translations?.slidesTranslations)
+      ? translations.slidesTranslations
+      : [];
+    mutate({
+      vimeoId, vimeoIdTranslations, image, imageLogin, imageSignup, imageForgot, imageEmailConfirm, imageDashboard, imageStreakCalendar, imageMonthView, imageToday, imageTools, imageExerciseLibrary, imageGraphs, imageAchievement, imageApparel, imageFAQs, imageTutorial, imageSubscription, imageProfile, imageMyProfle, imageSetting,
+      deleteImage, deleteImageLogin, deleteImageSignup, deleteImageForgot, deleteImageEmailConfirm, deleteImageDashboard, deleteImageStreakCalendar, deleteImageMonthView, deleteImageToday, deleteImageTools, deleteImageExerciseLibrary, deleteImageGraphs, deleteImageAchievement, deleteImageApparel, deleteImageFAQs, deleteImageProfile, deleteImageMyProfile, deleteImageSetting, slides
+    });
   };
 
   const onAddSlide = () => {
     if (formik.values.slides.length === 3) return;
-    const newSlides = [...formik.values.slides, { title: '', description: '' }];
+    const newSlides = [...formik.values.slides, {
+      title: '',
+      description: '',
+      titleTranslations: {},
+      descriptionTranslations: {}
+    }];
     formik.setFieldValue('slides', newSlides);
   };
 
@@ -155,8 +204,19 @@ export const UpdateScreens = ({ screenData }) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-screens" onSubmit={formik.handleSubmit}>
-          <Field disabled label="Vimeo" formik={formik} name="vimeo" />
+          <TranslatableInput
+            formik={formik}
+            name="vimeoId"
+            translationField="vimeoIdTranslations"
+            label="Vimeo Id"
+            selectedLanguages={selectedLanguages}
+          />
+
           <div className="flex justify-between items-end">
             <label className="fieldLabel">Slides</label>
             <Button
@@ -172,8 +232,11 @@ export const UpdateScreens = ({ screenData }) => {
                 <label className="fieldLabel">Slide</label>
                 <Button variant="danger" startIcon={<TrashIcon className="h-4 w-4" />} onClick={() => onDeleteSlide(index)}></Button>
               </div>
-              <Field label="Title" formik={formik} name={`slides[${index}].title`} />
-              <Textarea label="Description" formik={formik} name={`slides[${index}].description`} />
+              <TranslatableInput label="Title" formik={formik} name={`slides[${index}].title`} translationField={`slides[${index}]titleTranslations`} selectedLanguages={selectedLanguages} />
+              <TranslatableTextarea label="Description" formik={formik} name={`slides[${index}].description`}
+                translationField={`slides[${index}]descriptionTranslations`}
+                selectedLanguages={selectedLanguages}
+              />
             </div>
           ))}
 

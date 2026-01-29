@@ -15,15 +15,21 @@ export const defaultTargetCriteria: TargetCriteria = {
 export interface Upsell {
     _id: string;
     title: string;
+    titleTranslations?: Record<string, string>;
     subtitle?: string;
+    subtitleTranslations?: Record<string, string>;
     description?: string;
+    descriptionTranslations?: Record<string, string>;
     image: string;
+    imageTranslations?: Record<string, string>;
     originalPrice: number;
     discountType: "percent" | "fixed";
     discountValue: number;
     currency: string;
     buttonText: string;
+    buttonTextTranslations?: Record<string, string>;
     buttonLink: string;
+    buttonLinkTranslations?: Record<string, string>;
     timeType: "always" | "date_range" | "duration";
     startDate?: string | null;
     endDate?: string | null;

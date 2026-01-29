@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/Elements';
 import { DuplicateIcon, PlusIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/outline';
 import { CustomTitle } from './CustomTitle';
@@ -25,6 +25,7 @@ interface Props {
   onScrollToMonth?: (monthIndex: number) => void;
   onScrollToDay?: (monthIndex: number, weekIndex: number, dayLocalId: string, options?: { expandIfCollapsed?: boolean }) => void;
   scrollToWeek?: (monthIndex: number, weekLocalId: string) => void;
+  selectedLanguages: string[];
 }
 
 
@@ -50,18 +51,19 @@ const WeekPlanComponent = ({
   monthLocalId,
   onScrollToDay,
   scrollToWeek,
+  selectedLanguages
 }: Props) => {
   const weekKey = `${monthLocalId}-${week.localId}`;
   const isCollapsed = !(expandedWeeks?.[weekKey] ?? false);
 
   const toggleCollapse = () => {
-  const weekKey = `${monthLocalId}-${week.localId}`;
+    const weekKey = `${monthLocalId}-${week.localId}`;
 
-  setExpandedWeeks((prev) => ({
-    ...prev,
-    [weekKey]: !prev?.[weekKey],
-  }));
-};
+    setExpandedWeeks((prev) => ({
+      ...prev,
+      [weekKey]: !prev?.[weekKey],
+    }));
+  };
   if (!months[monthIndex]?.weeks[weekIndex]) return null;
 
   const addDay = (monthIndex: number, weekIndex: number, newTypeId: number, newFormats: string[]) => {
@@ -131,15 +133,16 @@ const WeekPlanComponent = ({
     updateMonths(updatedMonths, { skipMeasure: true })
   };
 
-  const updateWeekTitle = (title) => {
-    const updatedWeek = { ...week, title };
+  const updateWeekTitle = (_,value) => {
+    const updatedWeek = { ...week, title:value };
     updateWeek(monthIndex, weekIndex, updatedWeek);
   };
   const isSevenDays = showAddDay(week.days);
   return (
     <div className={`my-4 border p-4 rounded shadow week-${week.localId}`} style={{ backgroundColor: '#CDBDDC' }}>
       <div className="flex mb-2 justify-between items-center">
-        <CustomTitle type={'WEEK'} index={weekIndex + 1} customTitle={week.title} updateFunction={updateWeekTitle} />
+        <CustomTitle type={'WEEK'} index={weekIndex + 1} customTitle={week.title} updateFunction={updateWeekTitle} titleTranslations={{}}
+          selectedLanguages={[]} />
         <div className="flex gap-3">
           {isFourWeeksOrLess ? (
             <Button
@@ -174,6 +177,7 @@ const WeekPlanComponent = ({
             weekIndex={weekIndex}
             week={week}
             updateWeek={updateWeek}
+            selectedLanguages={selectedLanguages}
           />
         )}
 
@@ -203,6 +207,7 @@ const WeekPlanComponent = ({
             isWeekCollapsed={isCollapsed}
             onScrollToDay={onScrollToDay}
             scrollToWeek={scrollToWeek}
+            selectedLanguages={selectedLanguages}
           />
         ))}
       </div>

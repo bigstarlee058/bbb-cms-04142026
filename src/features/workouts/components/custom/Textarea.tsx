@@ -1,12 +1,12 @@
 
 
-export const Textarea = ({ label, name, value, onChange, hasHeight }) => {
+export const Textarea = ({ label, name, value, onChange, hasHeight ,placeholder}) => {
 
   return (
     <div className={`form-group py-2 valid`}>
       <label className="fieldLabel">{label}</label>
       <textarea
-        placeholder={label}
+        placeholder={placeholder}
         name={name}
         className={`rounded-lg ${hasHeight ? 'h-[600px]' : 'h-[210px]'}`}
         value={value}

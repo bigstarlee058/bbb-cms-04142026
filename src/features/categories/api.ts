@@ -1,7 +1,7 @@
 import { Category, CategoriesResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchCategories = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/categories/admin/get`, {
@@ -30,17 +30,10 @@ export const fetchCategory = async (categoryId: string) => {
   }
 };
 
-export const createCategory = async (payload: {
-  title: string;
-  image?: File;  // Assuming the image comes as a File object from the client
-}) => {
+export const createCategory = async (data:any) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    // Post the new category data (including the image) to your backend
+    const formData = buildFormDataWithImages(data, ['image']);
     const result = (await axios.post('/categories/admin', formData)) as any;
-    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       queryClient.invalidateQueries('get-categories');
       return result.category;
@@ -57,18 +50,16 @@ export const createCategory = async (payload: {
 };
 
 
-export const updateCategory = async (payload: {
-  categoryId: string 
-  title: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: Boolean
-}) => {
+export const updateCategory = async ({
+    categoryId,
+    payload,
+  }: {
+    categoryId: string;
+    payload: any;
+  }) => {
   try {
-    const formData = new FormData();
-    formData.append('_id', payload.categoryId);
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('deleteImage', String(payload.deleteImage));
+    const formData = buildFormDataWithImages(payload, ['image']);
+      formData.append('_id', categoryId);
     const result = (await axios.put('/categories/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-categories');

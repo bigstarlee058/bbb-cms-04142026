@@ -16,7 +16,8 @@ export const fetchScreens = async () => {
 };
 
 export const updateScreens = async (payload : {
-  vimeo: string,
+  vimeoId: string,
+  vimeoIdTranslations: Record<string, string>,
   image: File;
   imageLogin: File;
   imageSignup: File;
@@ -57,12 +58,15 @@ export const updateScreens = async (payload : {
   deleteImageSetting: boolean;
   slides: {
     title: string,
+    titleTranslations: Record<string, string>;
+    descriptionTranslations: Record<string, string>;
     description: string
   }[]
 }) => {
   try {
     const formData = new FormData();
-    formData.append('vimeoId', payload.vimeo);
+    formData.append('vimeoId', payload.vimeoId);
+    formData.append('vimeoIdTranslations', JSON.stringify(payload.vimeoIdTranslations));
     formData.append('slides', JSON.stringify(payload.slides));
     if (payload.imageLogin) {
       formData.append('imageLogin', payload.imageLogin);

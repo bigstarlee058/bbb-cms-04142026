@@ -2,18 +2,29 @@ import { Field, Textarea, Dropzone, Select } from './custom';
 import { useQuery } from 'react-query';
 import { fetchPumpDayTitles, fetchRestdayTitles } from '../api';
 import { TitleResponse } from '@/types';
-// import { fetchPumpDayTitles } from '@/features/pump-days/api';
+import { WorkoutTranslatableTextarea } from './custom/WorkoutTranslatableTextarea';
 
-export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
+export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek, selectedLanguages }) => {
   const { data: titles, isLoading } = useQuery('get-restday-titles', () => fetchRestdayTitles({ filterString: '' }));
   const { data: pumpDayTitles, isLoading: isPumpDayLoading } = useQuery('get-pump-day-titles', () =>
     fetchPumpDayTitles({ filterString: '' })
   );
 
   const updateWeekDetail = (key, value) => {
-    const updatedWeek = { ...week, [key]: value };
+    const keys = key.split('.');
+    let updatedWeek = { ...week };
+    
+    if (keys.length === 1) {
+      updatedWeek = { ...week, [key]: value };
+    } else {
+      updatedWeek = {
+        ...week,
+        [keys[0]]: { ...week[keys[0]], [keys[1]]: value }
+      };
+    }
     updateWeek(monthIndex, weekIndex, updatedWeek);
   };
+
   const handleChange = (key, value) => {
     updateWeekDetail(key, value);
   };
@@ -21,16 +32,18 @@ export const WeekDetail = ({ monthIndex, weekIndex, week, updateWeek }) => {
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" name="description" value={week.description} onChange={handleChange} hasHeight = {false} />
+        <WorkoutTranslatableTextarea
+          name="description"
+          translationField="descriptionTranslations"
+          label="Description"
+          selectedLanguages={selectedLanguages}
+          value={week.description || ''}
+          translations={week.descriptionTranslations || {}}
+          onChange={handleChange}
+          hasHeight={false}
+        />
       </div>
       <div className="w-1/2 ml-4 mr-4 mt-6 space-y-2">
-        {/* <Dropzone
-          defaultImg={week.thumbnail}
-          onDrop={(img) => {handleChange('thumbnail', img)}}
-          onDelete={() => {handleChange('thumbnail', null)}}
-          file={week.thumbnail}
-        /> */}
-        {/* <Field label="Vimeo Id" name="vimeoId" value={week.vimeoId} onChange={handleChange}/> */}
         <Select
           label="Rest Day"
           options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}

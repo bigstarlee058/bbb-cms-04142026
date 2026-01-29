@@ -12,6 +12,7 @@ type FormDrawerProps = {
   title: string;
   children: React.ReactNode;
   size?: DrawerProps['size'];
+  onClose?: () => void;
 };
 
 export const FormDrawer = ({
@@ -21,9 +22,13 @@ export const FormDrawer = ({
   triggerButton,
   submitButton,
   size = 'md',
+  onClose,
 }: FormDrawerProps) => {
   const { close, open, isOpen } = useDisclosure();
-
+  const handleClose = React.useCallback(() => {
+    close();
+    onClose?.();
+  }, [close, onClose]);
   React.useEffect(() => {
     if (isDone) {
       close();
@@ -35,12 +40,12 @@ export const FormDrawer = ({
       {React.cloneElement(triggerButton, { onClick: open })}
       <Drawer
         isOpen={isOpen}
-        onClose={close}
+        onClose={handleClose}
         title={title}
         size={size}
         renderFooter={() => (
           <>
-            <Button variant="inverse" size="sm" onClick={close}>
+            <Button variant="inverse" size="sm" onClick={handleClose}>
               Cancel
             </Button>
             {submitButton}

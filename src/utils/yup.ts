@@ -36,8 +36,8 @@ export const createExerciseSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   // description: Yup.string().max(255).required(),
   vimeoId: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Thumbnail is required'),
-  videoImage: Yup.mixed().required('Video Thumbnail is required'),
+  thumbnail: Yup.mixed().required('Thumbnail is required'),
+  videoThumbnail: Yup.mixed().required('Video Thumbnail is required'),
 });
 
 export const createEquipmentSchema = Yup.object().shape({
@@ -109,7 +109,7 @@ export const createQuizSchema = Yup.object().shape({
 });
 
 export const updateScreensSchema = Yup.object().shape({
-  vimeo: Yup.string().max(255).required(),
+  vimeoId: Yup.string().max(255).required(),
   image: Yup.mixed().required('Image is required'),
 });
 
@@ -118,14 +118,9 @@ export const updateVersionSchema = Yup.object().shape({
   iosVersion: Yup.string().max(255).required(),
   androidForceUpdate: Yup.boolean(),
   iosForceUpdate: Yup.boolean(),
-  updateTitle: Yup.string().max(255).required(),
-  updateMessage: Yup.string().max(1000).required(),
+  update_title: Yup.string().max(255).required(),
+  update_message: Yup.string().max(1000).required(),
 });
-
-export const updatePopupInfoSchema = Yup.object().shape({
-  
-});
-
 export const createSettingsSchema = Yup.object().shape({
   image: Yup.mixed().required('Image is required'),
 });
@@ -171,4 +166,22 @@ export const createToolSchema = Yup.object().shape({
       /^[a-zA-Z][a-zA-Z0-9_-]*$/,
       'Tool name must start with a letter and contain only letters, numbers, hyphens, and underscores (no spaces)'
     ),
+  titleTranslations: Yup.object().test(
+    'translations-required',
+    'All selected translations are required',
+    function (value) {
+      if (!value) return true;
+      const entries = Object.entries(value);
+      for (const [key, val] of entries) {
+        if (val !== undefined && typeof val === 'string' && val.trim() === '') {
+          return this.createError({
+            path: `titleTranslations.${key}`,
+            message: 'Title is required',
+          });
+        }
+      }
+      return true;
+    }
+  ),
+  visible: Yup.boolean(),
 });

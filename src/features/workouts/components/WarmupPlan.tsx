@@ -2,7 +2,8 @@ import { Button } from '@/components/Elements';
 import { DuplicateIcon, PlusIcon } from '@heroicons/react/outline';
 import { TitleResponse } from '@/types';
 import { CustomTitle } from './CustomTitle';
-import { Field, Select, DeleteConfirmation } from './custom';
+import { Select, DeleteConfirmation } from './custom';
+import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
 import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { fetchWarmupTitles } from '../api';
@@ -20,11 +21,13 @@ export const WarmupPlan = ({
   updateMonths,
   isPumpDay = false,
   updateDays = (val) => {},
-  days = []
+  days = [],
+  selectedLanguages=[]
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
 
   const { data: titles, isLoading } = useQuery('get-warmup-titles', () => fetchWarmupTitles({ filterString: '' }));
+  
   useEffect(() => {
     if (warmup.formats) {
       const newCheckedStates = ['A', 'B', 'C'].map((format) => warmup.formats.includes(format));
@@ -46,7 +49,7 @@ export const WarmupPlan = ({
 
   const duplicateWarmup = (monthIndex, weekIndex, dayIndex, warmupIndex) => {
     const originWarmup = months[monthIndex].weeks[weekIndex].days[dayIndex].warmups[warmupIndex];
-    const newWarmup = { ..._.cloneDeep(originWarmup), formats: [] }; // Reset formats
+    const newWarmup = { ..._.cloneDeep(originWarmup), formats: [] };
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
     if (isPumpDay) {
@@ -85,16 +88,25 @@ export const WarmupPlan = ({
   };
 
   const updateWarmupDetail = (key, value) => {
-    const updatedWarmup = { ...warmup, [key]: value };
+    const keys = key.split('.');
+    let updatedWarmup = { ...warmup };
+    
+    if (keys.length === 1) {
+      updatedWarmup = { ...warmup, [key]: value };
+    } else {
+      updatedWarmup = {
+        ...warmup,
+        [keys[0]]: { ...warmup[keys[0]], [keys[1]]: value }
+      };
+    }
     updateWarmup(monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup);
   };
 
-  const updateWarmupTitle = (title) => {
+  const updateWarmupTitle = (_,title) => {
     const updatedWarmup = { ...warmup, title };
     updateWarmup(monthIndex, weekIndex, dayIndex, warmupIndex, updatedWarmup);
   };
 
-  // Toggle the checked state of a checkbox
   const handleCheckboxClick = (index) => {
     const newCheckedStates = checkedStates.map((state, i) => (i === index ? !state : state));
     setCheckedStates(newCheckedStates);
@@ -107,7 +119,6 @@ export const WarmupPlan = ({
     updateWarmupDetail('formats', newFormats);
   };
 
-  // Check if a format is disabled in other warmups with the same typeId
   const isDisabled = (index) => {
     const format = ['A', 'B', 'C'][index];
     if (isPumpDay) {
@@ -131,7 +142,6 @@ export const WarmupPlan = ({
       .map((isChecked, index) => (isChecked ? allFormats[index] : ''))
       .filter(Boolean);
 
-    // Determine the next format that is not selected and not disabled
     const availableFormats = allFormats.filter((format, index) => {
       return !selectedFormats.includes(format) && !isDisabled(index);
     });
@@ -144,10 +154,8 @@ export const WarmupPlan = ({
     const nextFormat = availableFormats.length > 0 ? availableFormats[0] : null;
 
     if (nextFormat) {
-      // There are available formats, show the current type ID with the next available format
       return `Add Warmup ${warmup.typeId}${nextFormat}`;
     } else {
-      // All formats are selected or disabled, show the next type ID
       const nextTypeId = getNextTypeId();
       return `Add Warmup ${nextTypeId}`;
     }
@@ -159,7 +167,6 @@ export const WarmupPlan = ({
       .map((isChecked, index) => (isChecked ? allFormats[index] : ''))
       .filter(Boolean);
 
-    // Determine the next format that is not selected and not disabled
     const availableFormats = allFormats.filter((format, index) => {
       return !selectedFormats.includes(format) && !isDisabled(index);
     });
@@ -171,28 +178,20 @@ export const WarmupPlan = ({
     const nextFormat = getNextFormat();
 
     if (nextFormat) {
-      // There are available formats, add warmup with the current type ID and next available format
       addWarmup(monthIndex, weekIndex, dayIndex, warmup.typeId, [nextFormat]);
     } else {
-      // All formats are selected or disabled, add warmup with the next type ID
       const nextTypeId = getNextTypeId();
       addWarmup(monthIndex, weekIndex, dayIndex, nextTypeId, []);
     }
   };
 
-  // Determine the next type ID
   const getNextTypeId = () => {
     let typeIds;
     if (isPumpDay) {
-      // typeIds = days.flatMap((day) => day.warmups.map((ex) => ex.typeId));
       typeIds = days[dayIndex].warmups.flatMap((warmup) => warmup.typeId);
     } else {
-      // typeIds = months.flatMap((month) =>
-      //   month.weeks.flatMap((week) => week.days.flatMap((day) => day.warmups.map((ex) => ex.typeId)))
-      // );
       typeIds = [...months][monthIndex].weeks[weekIndex].days[dayIndex].warmups.flatMap((warmup) => warmup.typeId);
     }
-
 
     const maxTypeId = Math.max(0, ...typeIds);
     return maxTypeId + 1;
@@ -204,12 +203,12 @@ export const WarmupPlan = ({
         className={`p-4 bg-gray-500 rounded shadow-md mt-4`}
         style={
           warmup.typeId === 1
-            ? { backgroundColor: '#E0F67F' } // Original light yellow for typeId 1
+            ? { backgroundColor: '#E0F67F' }
             : warmup.typeId === 2
-            ? { backgroundColor: '#D4E96A' } // Bolder yellow for typeId 2
+            ? { backgroundColor: '#D4E96A' }
             : warmup.typeId === 3
-            ? { backgroundColor: '#C0D45C' } // Even bolder yellow for typeId 3
-            : { backgroundColor: '#C0D45C' } // Default to the boldest yellow
+            ? { backgroundColor: '#C0D45C' }
+            : { backgroundColor: '#C0D45C' }
         }
       >
         <div className="flex mb-2 justify-between items-center">
@@ -217,6 +216,8 @@ export const WarmupPlan = ({
             type={'WARMUP'}
             index={warmup.typeId}
             customTitle={warmup.title}
+            titleTranslations={{}}
+            selectedLanguages={[]}
             updateFunction={updateWarmupTitle}
           />
           <div className="flex gap-3">
@@ -268,8 +269,16 @@ export const WarmupPlan = ({
             />
           </div>
         </div>
-        <div>
-          <Field label="Guideline" name="guide" value={warmup.guide} onChange={handleChange} />
+        <div className='mt-3'> 
+          <WorkoutTranslatableInput
+            name="guide"
+            translationField="guideTranslations"
+            label="Guideline"
+            selectedLanguages={selectedLanguages}
+            value={warmup.guide || ''}
+            translations={warmup.guideTranslations || {}}
+            onChange={handleChange}
+          />
         </div>
       </div>
       {(!isPumpDay && warmupIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].warmups.length - 1) ||

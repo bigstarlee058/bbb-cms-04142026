@@ -1,12 +1,12 @@
-import { useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import Vimeo from '@u-wave/react-vimeo';
-import { Spinner, Button } from '@/components/Elements';
+import { Spinner } from '@/components/Elements';
 import { ContentLayout } from '@/components/Layout';
 import { ErrorMessage } from '@/types';
 import { fetchScreens } from './api';
 import { useNotificationStore } from '@/stores/notifications';
 import { UpdateScreens } from './UpdateScreens';
+import { LanguageSwitcher, useListTranslations } from '@/components/Language';
 
 export const BackgroundScreens = () => {
   const { addNotification } = useNotificationStore();
@@ -18,7 +18,16 @@ export const BackgroundScreens = () => {
       });
     }
   });
-
+  const {
+    selectedLang,
+    setSelectedLang,
+    availableLanguages,
+    hasTranslations,
+    getValue,
+  } = useListTranslations({
+    data: data ? [data] : [],
+    translatableFields: ['title','vimeoId', 'description'],
+  });
   if (isLoading || !data) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
@@ -28,31 +37,35 @@ export const BackgroundScreens = () => {
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>; // Handle the error properly
+    return <div>Error: {error.message}</div>;
   }
-
   return (
-    <>
+    <ContentLayout title="">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8 py-6">
-        <div className="flex justify-end">
+        <div className="flex justify-between items-center">
+          <h2>Backgroun Screens</h2>
+          <div>
+            {hasTranslations && (
+              <LanguageSwitcher
+                availableLanguages={availableLanguages}
+                selectedLang={selectedLang}
+                onLanguageChange={setSelectedLang}
+              />
+            )}
+          </div>
           <UpdateScreens screenData={data} />
         </div>
       </div>
-      <ContentLayout title="Welcome Page Background Video">
-        <div className="mt-6 flex flex-col space-y-16">
-          <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-hidden sm:rounded-lg">
-            <Vimeo className="h-full w-full" video={data.vimeoId} autoplay={false} />
-          </div>
-        </div>
-      </ContentLayout>
+      <ContentLayout title="Welcome Video"><Vimeo className="h-full w-full" video={data.vimeoId} autoplay={false} /></ContentLayout>
+      
       <ContentLayout title="Welcome Page Welcome Note">
-        <div className="mt-6 flex flex-col space-y-16">
+        <div className="mt-2">
           <div className="flex flex-wrap items-center px-4 py-5 sm:px-6 bg-white shadow-md overflow-hidden sm:rounded-lg">
-            {data.slides.map(({ title, description }, index) => (
+            {data.slides.map((slide, index) => (
               <div key={index} className="w-full sm:w-1/2 md:w-1/3 p-4">
                 <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                  <h3 className="text-md font-semibold text-gray-800 mb-2">{title}</h3>
-                  <p className="text-gray-600">{description}</p>
+                  <h3 className="text-md font-semibold text-gray-800 mb-2">{getValue(slide, 'title')}</h3>
+                  <p className="text-gray-600">{getValue(slide, 'description')}</p>
                 </div>
               </div>
             ))}
@@ -60,7 +73,7 @@ export const BackgroundScreens = () => {
         </div>
       </ContentLayout>
       <ContentLayout title="Screens Background Image">
-        <div className="mt-6 flex flex-col space-y-16">
+        <div className="mt-1 flex flex-col space-y-16">
           <div className="flex items-center px-4 py-5 sm:px-6 bg-white shadow overflow-x-auto sm:rounded-lg">
             <div className='flex-shrink-0 flex flex-col items-center text-center mx-2 w-[150px]'>
               <div className='h-[50px] flex items-center justify-center leading-[16px]'>Signin Screen</div>
@@ -141,6 +154,6 @@ export const BackgroundScreens = () => {
           </div>
         </div>
       </ContentLayout>
-    </>
+    </ContentLayout>
   );
 };

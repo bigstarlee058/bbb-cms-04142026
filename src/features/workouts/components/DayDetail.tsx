@@ -1,5 +1,7 @@
 import { useNotificationStore } from '@/stores/notifications';
 import { Field, Dropzone, Textarea, Select } from './custom';
+import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
+import { WorkoutTranslatableTextarea } from './custom/WorkoutTranslatableTextarea';
 import { useEffect } from 'react';
 import { SelectOption } from '@/types';
 
@@ -44,7 +46,8 @@ export const DayDetail = ({
   updateStates,
   updateDay,
   isPumpDay = false,
-  days = []
+  days = [],
+  selectedLanguages=[]
 }) => {
   const { addNotification } = useNotificationStore();
 
@@ -86,7 +89,17 @@ export const DayDetail = ({
   };
 
   const updateDayDetail = (key, value) => {
-    const updatedDay = { ...day, [key]: value };
+    const keys = key.split('.');
+    let updatedDay = { ...day };
+    
+    if (keys.length === 1) {
+      updatedDay = { ...day, [key]: value };
+    } else {
+      updatedDay = {
+        ...day,
+        [keys[0]]: { ...day[keys[0]], [keys[1]]: value }
+      };
+    }
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
 
@@ -97,7 +110,16 @@ export const DayDetail = ({
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2">
-        <Textarea label="Description" name="description" value={day.description} onChange={handleChange} hasHeight = {isPumpDay? false: true} />
+        <WorkoutTranslatableTextarea
+          name="description"
+          translationField="descriptionTranslations"
+          label="Description"
+          selectedLanguages={selectedLanguages}
+          value={day.description || ''}
+          translations={day.descriptionTranslations || {}}
+          onChange={handleChange}
+          hasHeight={isPumpDay ? false : true}
+        />
       </div>
       <div className="w-1/2 ml-4 mr-4 mt-6">
         <Dropzone
@@ -110,7 +132,15 @@ export const DayDetail = ({
           }}
           file={day.thumbnail}
         />
-        <Field label="Vimeo Id One" name="vimeoId" value={day.vimeoId} onChange={handleChange} />
+        <WorkoutTranslatableInput
+          name="vimeoId"
+          translationField="vimeoIdTranslations"
+          label="Vimeo Id One"
+          selectedLanguages={selectedLanguages}
+          value={day.vimeoId || ''}
+          translations={day.vimeoIdTranslations || {}}
+          onChange={handleChange}
+        />
         <Dropzone
           defaultImg={day.thumbnailOne}
           onDrop={(img) => {
@@ -123,7 +153,15 @@ export const DayDetail = ({
         />
         
         {!isPumpDay && (
-          <Field label="Vimeo Id Two" name="vimeoIdTwo" value={day.vimeoIdTwo} onChange={handleChange} />
+          <WorkoutTranslatableInput
+            name="vimeoIdTwo"
+            translationField="vimeoIdTwoTranslations"
+            label="Vimeo Id Two"
+            selectedLanguages={selectedLanguages}
+            value={day.vimeoIdTwo || ''}
+            translations={day.vimeoIdTwoTranslations || {}}
+            onChange={handleChange}
+          />
         )}
         {!isPumpDay && (
           <Dropzone
@@ -138,7 +176,15 @@ export const DayDetail = ({
           />
         )}
         {!isPumpDay && (
-          <Field label="Vimeo Id Three" name="vimeoIdThree" value={day.vimeoIdThree} onChange={handleChange} />
+          <WorkoutTranslatableInput
+            name="vimeoIdThree"
+            translationField="vimeoIdThreeTranslations"
+            label="Vimeo Id Three"
+            selectedLanguages={selectedLanguages}
+            value={day.vimeoIdThree || ''}
+            translations={day.vimeoIdThreeTranslations || {}}
+            onChange={handleChange}
+          />
         )}
         {!isPumpDay && (
           <Dropzone
@@ -152,19 +198,6 @@ export const DayDetail = ({
             file={day.thumbnailThree}
           />
         )}
-        {/* {!isPumpDay && (
-          <Select
-            label="Day Order"
-            options={DAY_ORDERS}
-            value={{ label: `Day ${day.typeId}`, value: day.typeId }}
-            className="w-[300px]"
-            onChange={({ value }: SelectOption) => {
-              if (parseInt(value) !== day.typeId) {
-                updateDayDetail('typeId', parseInt(value));
-              }
-            }}
-          />
-        )} */}
         {!isPumpDay && (
           <div className="flex mt-3">
             <div className="flex items-center">
@@ -184,7 +217,6 @@ export const DayDetail = ({
             </div>
           </div>
         )}
-        
       </div>
     </div>
   );

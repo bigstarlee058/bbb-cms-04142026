@@ -157,8 +157,10 @@ export const WorkoutList = () => {
   const handleAddMonth = () => {
     const newMonth: Month = {
       title: '',
+      titleTranslations:{},
       description: '',
       vimeoId: '',
+      vimeoIdTranslations:{},
       thumbnail: null,
       startDate: null,
       endDate: null,

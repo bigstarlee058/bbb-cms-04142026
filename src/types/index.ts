@@ -242,6 +242,11 @@ export interface Exercise extends BaseEntity {
   tags: string[];
   usedEquipments: string[];
   relatedExercises: string[];
+  titleTranslations?: Record<string, string>;
+  descriptionTranslations?: Record<string, string>;
+  vimeoIdTranslations?: Record<string, string>;
+  thumbnailTranslations?: Record<string, string>;
+  videoThumbnailTranslations?: Record<string, string>;
 }
 export interface ExercisesResponse {
   count: number;
@@ -317,7 +322,16 @@ export interface PopupinfoResponse {
   title: string;
   description: string;
 }
-
+export interface NewJoinPopupResponse {
+  imgUrl?: any;
+  imgUrlTranslations?: Record<string, any>;
+  title: string;
+  titleTranslations: Record<string, string>;
+  description: string;
+  descriptionTranslations: Record<string, string>;
+  buttonText: string;
+  buttonTextTranslations: Record<string, string>;
+}
 export interface Filters {
   page?: number;
   perPage?: number;
@@ -347,8 +361,10 @@ export interface WorkoutsBaseEntity {
 export interface Month extends WorkoutsBaseEntity {
   index?: number;
   title: string;
+  titleTranslations: Record<string, string>;
   description: string;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   thumbnail: any;
   startDate: Date;
   endDate: Date;
@@ -497,6 +513,7 @@ export interface ToolsResponse {
 }
 export interface Tools extends BaseEntity {
   title: string;
+  titleTranslations:Record<string, string> ;
   toolName: string;
   visible:boolean;
 }

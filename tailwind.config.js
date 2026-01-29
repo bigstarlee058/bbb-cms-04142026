@@ -3,9 +3,11 @@ module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
+      colors:{bbb: '#9a354e'},
       textColor: {
         primary: '#000',
         secondary: '#C3C6D1',
+        bbb: '#9a354e',
         danger: '#FF675B',
         label: '#C7C7C7',
         dark: '#858997',
