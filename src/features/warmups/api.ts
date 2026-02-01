@@ -27,21 +27,14 @@ export const fetchWarmup = async (warmupId: string) => {
     return Promise.reject(error);
   }
 };
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const createWarmup = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('videoImage', payload.videoImage);
-    formData.append('description', payload.description);
-    formData.append('vimeoId', payload.vimeoId);
-    formData.append('equipments', JSON.stringify(payload.equipments));
-    formData.append('length', payload.length);
+    const formData = buildFormDataWithImages(payload, []);
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/warmups/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-warmups');
+      queryClient.invalidateQueries(['get-warmups']);
       return 'Warmup successfully created.';
     }
     return result.message;
@@ -56,19 +49,11 @@ export const createWarmup = async (payload) => {
 
 export const updateWarmup = async ({ warmupId, payload }) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, []);
       formData.append('_id', warmupId);
-      formData.append('title', payload.title);
-      formData.append('image', payload.image);
-      formData.append('videoImage', payload.videoImage);
-      formData.append('description', payload.description);
-      formData.append('vimeoId', payload.vimeoId);
-      formData.append('length', payload.length);
-      formData.append('equipments', JSON.stringify(payload.equipments));
       const result = (await axios.put('/warmups/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-warmups');
-      queryClient.invalidateQueries(['get-warmup', warmupId]);
+      queryClient.invalidateQueries(['get-warmups']);
       return 'Warmup successfully updated.';
     }
     return result.message;

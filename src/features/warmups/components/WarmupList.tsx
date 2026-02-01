@@ -11,7 +11,7 @@ import { fetchEquipmentTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const WarmupList = () => {
+export const WarmupList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const {search, sortBy} = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
@@ -23,7 +23,7 @@ export const WarmupList = () => {
     data: warmupData,
     isLoading,
     refetch,
-  } = useQuery(['get-warmups'], () => fetchWarmups(filters));
+  } = useQuery(['get-warmups', filters], () => fetchWarmups(filters));
   const { data: titles } = useQuery('get-equipment-titles', () =>
     fetchEquipmentTitles({ filterString: '' })
   );
@@ -67,6 +67,9 @@ export const WarmupList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return getValue(entry, 'title');
+            },
           },
           {
             title: 'Thumbnail',
@@ -96,7 +99,8 @@ export const WarmupList = () => {
           {
             title: 'Description',
             field: 'description',
-            Cell({ entry: { description } }) {
+            Cell({ entry }) {
+              const description = getValue(entry, 'description');
               return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
             }
           },
@@ -115,6 +119,9 @@ export const WarmupList = () => {
           {
             title: 'Vimeo',
             field: 'vimeoId',
+            Cell({ entry }) {
+              return getValue(entry, 'vimeoId');
+            },
           },
           {
             title: 'Created On',
