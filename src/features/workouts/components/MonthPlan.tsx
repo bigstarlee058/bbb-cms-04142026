@@ -57,17 +57,25 @@ export const MonthPlan = React.memo(
       if (month && languages.length > 0) {
         const existingLangs = new Set<string>();
 
-        if (month.titleTranslations) {
-          Object.keys(month.titleTranslations).forEach(key => {
-            if (month.titleTranslations[key]) existingLangs.add(key);
-          });
-        }
+        const collectTranslationKeys = (obj: any) => {
+          if (!obj || typeof obj !== 'object') return;
 
-        if (month.vimeoIdTranslations) {
-          Object.keys(month.vimeoIdTranslations).forEach(key => {
-            if (month.vimeoIdTranslations[key]) existingLangs.add(key);
+          Object.keys(obj).forEach(key => {
+            if (key.endsWith('Translations') && obj[key] && typeof obj[key] === 'object') {
+              Object.keys(obj[key]).forEach(langKey => {
+                if (obj[key][langKey]) {
+                  existingLangs.add(langKey);
+                }
+              });
+            } else if (Array.isArray(obj[key])) {
+              obj[key].forEach(item => collectTranslationKeys(item));
+            } else if (typeof obj[key] === 'object' && obj[key] !== null && !(obj[key] instanceof File)) {
+              collectTranslationKeys(obj[key]);
+            }
           });
-        }
+        };
+
+        collectTranslationKeys(month);
 
         const availableLangs = Array.from(existingLangs).filter(lang =>
           languages.some(l => l.key === lang && l.inUse)

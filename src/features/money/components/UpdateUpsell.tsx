@@ -83,7 +83,6 @@ export const UpdateUpsell = ({ upsellId, upsells }) => {
     const {
         selectedLanguages,
         handleLanguageToggle,
-        resetLanguages,
         getFilteredTranslations,
         setSelectedLanguages,
     } = useTranslations({

@@ -1,6 +1,6 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, FormDrawer, Dropzone } from '@/components/Form';
+import {  FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation,useQuery } from 'react-query';
 import { updateTag } from '../api';

@@ -9,7 +9,10 @@ import { WarmupPlan } from './WarmupPlan';
 import { DeleteConfirmation } from './custom/DeleteConfirmation';
 import _ from 'lodash';
 import { CircuitPlan } from './CircuitPlan';
-
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { v4 as uuid } from 'uuid';
+import { usePumpDaysContext } from '../../pumpdays/PumpDaysContext';
+import { useLanguageStore } from '@/stores/languages';
 export const DayPlan = ({
   monthIndex,
   weekIndex,
@@ -27,12 +30,51 @@ export const DayPlan = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
+  const { selectedLanguagesByDay, handleLanguageToggleForDay, setSelectedLanguagesForDay } = isPumpDay
+    ? usePumpDaysContext()
+    : { selectedLanguagesByDay: {}, handleLanguageToggleForDay: () => { }, setSelectedLanguagesForDay: () => { } };
 
+  const selectedLanguages = isPumpDay ? (selectedLanguagesByDay[day.localId] || []) : [];
+  const languages = useLanguageStore((state) => state.languages);
   if (!isPumpDay && !months[monthIndex]?.weeks[weekIndex]?.days[dayIndex]) return null;
 
   useEffect(() => {
     if (!isPumpDay && isWeekCollapsed) setIsCollapsed(true);
   }, [isWeekCollapsed]);
+
+  useEffect(() => {
+    if (isPumpDay && day && languages.length > 0) {
+      const existingLangs = new Set<string>();
+
+      const collectTranslationKeys = (obj: any) => {
+        if (!obj || typeof obj !== 'object') return;
+
+        Object.keys(obj).forEach(key => {
+          if (key.endsWith('Translations') && obj[key] && typeof obj[key] === 'object') {
+            Object.keys(obj[key]).forEach(langKey => {
+              if (obj[key][langKey]) {
+                existingLangs.add(langKey);
+              }
+            });
+          } else if (Array.isArray(obj[key])) {
+            obj[key].forEach(item => collectTranslationKeys(item));
+          } else if (typeof obj[key] === 'object' && obj[key] !== null && !(obj[key] instanceof File)) {
+            collectTranslationKeys(obj[key]);
+          }
+        });
+      };
+
+      collectTranslationKeys(day);
+
+      const availableLangs = Array.from(existingLangs).filter(lang =>
+        languages.some(l => l.key === lang && l.inUse)
+      );
+
+      if (availableLangs.length > 0 && selectedLanguages.length === 0) {
+        setSelectedLanguagesForDay(day.localId, availableLangs);
+      }
+    }
+  }, [day, languages, isPumpDay]);
 
   const addExercise = (
     monthIndex: number,
@@ -112,7 +154,9 @@ export const DayPlan = ({
         typeId: newTypeId,
         warmupId: '',
         title: '',
+        titleTranslations: {},
         guide: '',
+        guideTranslations: {},
         formats: newFormats
       };
       updatedDays[dayIndex].warmups.push(newWarmup);
@@ -123,7 +167,9 @@ export const DayPlan = ({
         typeId: newTypeId,
         warmupId: '',
         title: '',
+        titleTranslations: {},
         guide: '',
+        guideTranslations: {},
         formats: newFormats
       };
       updatedMonths[monthIndex].weeks[weekIndex].days[dayIndex].warmups.push(newWarmup);
@@ -136,8 +182,6 @@ export const DayPlan = ({
     weekIndex: number,
     dayIndex: number,
     updatedDay: Day,
-    isTypeIdUpdate?: boolean,
-    typeId?: number
   ) => {
     if (isPumpDay) {
       const updatedDays = [...days];
@@ -160,6 +204,7 @@ export const DayPlan = ({
     // const newDay = _.cloneDeep(originDay);
     const newDay = { ..._.cloneDeep(originDay), formats: [] }; // Reset formats
     delete newDay._id;
+    newDay.localId = uuid();
     newDay.exercises.map((exercise) => {
       delete exercise._id;
     });
@@ -239,8 +284,18 @@ export const DayPlan = ({
     }
   };
 
-  const updateDayTitle = (_,title) => {
-    const updatedDay = { ...day, title };
+  const updateDayTitle = (key, value) => {
+    const keys = key.split('.');
+    let updatedDay = { ...day };
+
+    if (keys.length === 1) {
+      updatedDay = { ...day, [key]: value };
+    } else {
+      updatedDay = {
+        ...day,
+        [keys[0]]: { ...day[keys[0]], [keys[1]]: value }
+      };
+    }
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
 
@@ -285,8 +340,25 @@ export const DayPlan = ({
   return (
     <>
       <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${dayIndex}`} style={{ backgroundColor: '#EAC0AB' }}>
+        {isPumpDay && (
+          <div className="flex justify-center mb-2">
+            <LanguageSelector
+              selectedLanguages={selectedLanguages}
+              onToggle={(langKey) => handleLanguageToggleForDay(day.localId, langKey)}
+              labelPosition={'inline'}
+            />
+          </div>
+        )}
         <div className="flex mb-2 justify-between items-center">
-          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} isPumpDay titleTranslations={{}} selectedLanguages={[]} />
+          <CustomTitle
+            type={'DAY'}
+            index={day.typeId || 1}
+            customTitle={day.title}
+            updateFunction={updateDayTitle}
+            isPumpDay
+            titleTranslations={day.titleTranslations || {}}
+            selectedLanguages={selectedLanguages}
+          />
           <div className="flex gap-3">
             {isSevenDays ? (
               <Button
@@ -318,6 +390,7 @@ export const DayPlan = ({
             updateDay={updateDay}
             isPumpDay={isPumpDay}
             days={days}
+            selectedLanguages={selectedLanguages}
           />
           {day.warmups.length < 1 ? (
             <Button
@@ -344,6 +417,7 @@ export const DayPlan = ({
               isPumpDay={isPumpDay}
               days={days}
               updateDays={updateDays}
+              selectedLanguages={selectedLanguages}
             />
           ))}
           <div className="flex gap-6">
@@ -363,6 +437,7 @@ export const DayPlan = ({
                   isPumpDay={isPumpDay}
                   days={days}
                   updateDays={updateDays}
+                  selectedLanguages={selectedLanguages}
                 />
               ))}
               {day.exercises.length === 0 ? (
@@ -386,6 +461,7 @@ export const DayPlan = ({
                     days={days}
                     updateDays={updateDays}
                     addCircuit={addCircuit}
+                    selectedLanguages={selectedLanguages}
                   />
                 ))}
                 {day.circuits && day.circuits.length === 0 && (

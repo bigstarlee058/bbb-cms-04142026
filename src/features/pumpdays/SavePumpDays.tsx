@@ -4,11 +4,13 @@ import { updatePumpDays } from '@/features/workouts/api';
 import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
 import SaveIcon from "@/lib/icons/SaveIcon";
-import { useState } from "react";
+import { cleanupNestedTranslations } from "@/utils/translationHelper";
+import { usePumpDaysContext } from './PumpDaysContext';
 
 export const SavePumpDays = ({allDays}) => {
   // Access the client
   const queryClient = useQueryClient();
+  const { selectedLanguagesByDay } = usePumpDaysContext();
   const { addNotification } = useNotificationStore();
   // const [isSuccess, setIsSuccess] = useState(false);
   const { mutate, isSuccess, isLoading } = useMutation(updatePumpDays, {
@@ -23,6 +25,44 @@ export const SavePumpDays = ({allDays}) => {
       console.error('Error updating pump days:', err);
     },
   });
+
+  const autoFillMissingTranslations = (obj: any, selectedLangs: string[]): any => {
+    if (!obj || typeof obj !== 'object' || obj instanceof File) return obj;
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => autoFillMissingTranslations(item, selectedLangs));
+    }
+
+    const updated = { ...obj };
+
+    Object.keys(updated).forEach(key => {
+      if (key.endsWith('Translations')) {
+        const baseKey = key.replace('Translations', '');
+        const baseValue = updated[baseKey];
+
+        if (baseValue && typeof updated[key] === 'object') {
+          updated[key] = { ...updated[key] };
+          selectedLangs.forEach(lang => {
+            if (!updated[key][lang]) {
+              updated[key][lang] = baseValue;
+            }
+          });
+        }
+      } else if (typeof updated[key] === 'object' && updated[key] !== null) {
+        updated[key] = autoFillMissingTranslations(updated[key], selectedLangs);
+      }
+    });
+
+    return updated;
+  };
+
+  const cleanupDaysData = (days: any[]) => {
+    return days.map(day => {
+      const selectedLanguages = selectedLanguagesByDay[day.localId] || [];
+      const autoFilled = autoFillMissingTranslations(day, selectedLanguages);
+      return cleanupNestedTranslations(autoFilled, selectedLanguages);
+    });
+  };
 
   const handleSavePumpDays = () => {
     // setIsSuccess(false);
@@ -49,7 +89,8 @@ export const SavePumpDays = ({allDays}) => {
         title: 'Exercise data is not exist',
       });
     } else {
-      mutate(allDays);
+      const cleanedDays = cleanupDaysData(allDays);
+      mutate(cleanedDays);
     }
     // setIsSuccess(true);
   };
