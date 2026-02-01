@@ -8,6 +8,7 @@ import { Day } from '@/types';
 import { usePumpDaysContext } from './PumpDaysContext';
 import { fetchPumpDays } from '../workouts/api';
 import { useQuery } from 'react-query';
+import { v4 as uuid } from 'uuid';
 
 export const PumpDayList = () => {
   const [days, setDays] = useState([]);
@@ -15,9 +16,12 @@ export const PumpDayList = () => {
 
   const {
     data: pumpDays,
-  } = useQuery(['get-workouts'], () => fetchPumpDays(), {
+  } = useQuery(['get-pump-days'], () => fetchPumpDays(), {
     onSuccess: (data) => {
-      const days = data.pumpDays;
+      const days = data.pumpDays.map(day => ({
+        ...day,
+        localId: day.localId || uuid()
+      }));
       setDays(days);
       onSetDays(days);
     },
@@ -28,10 +32,13 @@ export const PumpDayList = () => {
 
   const addDay = (newTypeId: number, newFormats: string[]) => {
     const newDay: Day = {
+      localId: uuid(),
       typeId: newTypeId,
       title: '',
+      titleTranslations:{},
       description: '',
       vimeoId: '',
+      vimeoIdTranslations:{},
       vimeoIdTwo: '',
       vimeoIdThree: '',
       thumbnail: null,

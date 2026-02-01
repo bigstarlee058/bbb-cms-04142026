@@ -384,8 +384,11 @@ export interface Week extends WorkoutsBaseEntity {
 export interface Day extends WorkoutsBaseEntity {
   typeId: number;
   title: string;
+  titleTranslations?:Record<string, string>;
   description: string;
+  descriptionTranslations?:Record<string, string>;
   vimeoId: string;
+  vimeoIdTranslations?:Record<string, string>;
   vimeoIdTwo: string;
   vimeoIdThree: string;
   thumbnail: any;
@@ -424,7 +427,9 @@ export interface DayWarmup extends WorkoutsBaseEntity {
   typeId: number;
   warmupId: string;
   title: string;
+  titleTranslations:Record<string, string>;
   guide: string;
+  guideTranslations:Record<string, string>;
   formats: string[];
   localId?: string;
 }

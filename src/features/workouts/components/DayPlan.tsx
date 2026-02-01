@@ -137,7 +137,9 @@ const DayPlanComponent = ({
         typeId: newTypeId,
         warmupId: '',
         title: '',
+        titleTranslations:{},
         guide: '',
+        guideTranslations:{},
         formats: newFormats,
         localId: uuid()
       };
@@ -149,7 +151,9 @@ const DayPlanComponent = ({
         typeId: newTypeId,
         warmupId: '',
         title: '',
+        titleTranslations:{},
         guide: '',
+        guideTranslations:{},
         formats: newFormats,
         localId: uuid()
       };

@@ -5,6 +5,9 @@ import { Day } from "@/types";
 interface PumpDaysContextType {
   days: Day[];
   onSetDays: (months: Day[]) => void;
+  selectedLanguagesByDay: Record<string, string[]>;
+  setSelectedLanguagesForDay: (dayLocalId: string, langs: string[]) => void;
+  handleLanguageToggleForDay: (dayLocalId: string, langKey: string) => void;
 }
 
 // Create the context with a default value
@@ -21,9 +24,36 @@ export const PumpDaysContextProvider: React.FC<PumpDaysProviderProps> = ({ child
   const onSetDays = (d: Day[]) => {
     setDays(d)
   }
+  const [selectedLanguagesByDay, setSelectedLanguagesByDay] = useState<Record<string, string[]>>({});
 
+  const setSelectedLanguagesForDay = (dayLocalId: string, langs: string[]) => {
+    setSelectedLanguagesByDay(prev => ({
+      ...prev,
+      [dayLocalId]: langs
+    }));
+  };
+
+  const handleLanguageToggleForDay = (dayLocalId: string, langKey: string) => {
+    setSelectedLanguagesByDay(prev => {
+      const current = prev[dayLocalId] || [];
+      const updated = current.includes(langKey)
+        ? current.filter(k => k !== langKey)
+        : [...current, langKey];
+
+      return {
+        ...prev,
+        [dayLocalId]: updated
+      };
+    });
+  };
   return (
-    <PumpDaysContext.Provider value={{ days, onSetDays }}>
+    <PumpDaysContext.Provider value={{
+      days,
+      onSetDays,
+      selectedLanguagesByDay,
+      setSelectedLanguagesForDay,
+      handleLanguageToggleForDay
+    }}>
       {children}
     </PumpDaysContext.Provider>
   );

@@ -5,7 +5,7 @@ import { ExercisePlan } from './ExercisePlan';
 import { DayExercise } from '@/types';
 import { useEffect, useState } from 'react';
 
-export const CircuitPlan = ({ circuit, dayIndex, circuitIndex, days, updateDays, addCircuit }) => {
+export const CircuitPlan = ({ circuit, dayIndex, circuitIndex, days, updateDays, addCircuit ,selectedLanguages=[]}) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
   useEffect(() => {
     if (circuit.formats) {
@@ -184,6 +184,7 @@ export const CircuitPlan = ({ circuit, dayIndex, circuitIndex, days, updateDays,
             isPumpDay
             days={days}
             updateDays={updateDays}
+            selectedLanguages={selectedLanguages}
             isCircuit
           />
         ))}

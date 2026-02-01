@@ -5,10 +5,13 @@ import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
 import SaveIcon from "@/lib/icons/SaveIcon";
 import { ArrowNarrowUpIcon } from "@heroicons/react/solid";
+import { cleanupNestedTranslations } from "@/utils/translationHelper"; // Adjust path as needed
+import { useWorkoutContext } from '../../WorkoutContext';
 
-export const SaveConfirmation = ({allMonths}) => {
+export const SaveConfirmation = ({ allMonths }) => {
   // Access the client
   const queryClient = useQueryClient();
+  const { selectedLanguagesByMonth } = useWorkoutContext();
   const { addNotification } = useNotificationStore();
   const { mutate, isSuccess, isLoading } = useMutation(updateWorkouts, {
     onSuccess: (message: string) => {
@@ -23,8 +26,47 @@ export const SaveConfirmation = ({allMonths}) => {
     },
   });
 
+  const autoFillMissingTranslations = (obj: any, selectedLangs: string[]): any => {
+    if (!obj || typeof obj !== 'object' || obj instanceof File) return obj;
+
+    if (Array.isArray(obj)) {
+      return obj.map(item => autoFillMissingTranslations(item, selectedLangs));
+    }
+
+    const updated = { ...obj };
+
+    Object.keys(updated).forEach(key => {
+      if (key.endsWith('Translations')) {
+        const baseKey = key.replace('Translations', '');
+        const baseValue = updated[baseKey];
+
+        if (baseValue && typeof updated[key] === 'object') {
+          updated[key] = { ...updated[key] };
+          selectedLangs.forEach(lang => {
+            if (!updated[key][lang]) {
+              updated[key][lang] = baseValue;
+            }
+          });
+        }
+      } else if (typeof updated[key] === 'object' && updated[key] !== null) {
+        updated[key] = autoFillMissingTranslations(updated[key], selectedLangs);
+      }
+    });
+
+    return updated;
+  };
+  const cleanupMonthsData = (months: any[]) => {
+    return months.map(month => {
+      const selectedLanguages = selectedLanguagesByMonth[month.localId] || [];
+
+      const autoFilled = autoFillMissingTranslations(month, selectedLanguages);
+
+      return cleanupNestedTranslations(autoFilled, selectedLanguages);
+    });
+  };
   const handleSaveWorkouts = () => {
-    mutate(allMonths);
+    const cleanedMonths = cleanupMonthsData(allMonths);
+    mutate(cleanedMonths);
   };
 
   const handlePublishWorkouts = () => {
@@ -50,7 +92,8 @@ export const SaveConfirmation = ({allMonths}) => {
         title: `Please select variation availability for Month ${monthId} Week ${weekId}`,
       });
     } else {
-      mutate(allMonths);
+      const cleanedMonths = cleanupMonthsData(allMonths);
+      mutate(cleanedMonths);
     }
   };
 
