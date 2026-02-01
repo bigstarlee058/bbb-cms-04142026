@@ -92,6 +92,8 @@ export const UpdateExercise = ({
   const { mutate, isLoading, isSuccess } = useMutation(updateExercise, {
     onSuccess: (message: string) => {
       queryClient.invalidateQueries('get-exercises');
+      resetLanguages();
+      formik.resetForm();
       addNotification({
         type: 'success',
         title: message

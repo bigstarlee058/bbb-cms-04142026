@@ -49,8 +49,8 @@ export const createEquipmentSchema = Yup.object().shape({
 export const createWarmupSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   vimeoId: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Thumbnail is required'),
-  videoImage: Yup.mixed().required('Video Thumbnail is required'),
+  thumbnail: Yup.mixed().required('Thumbnail is required'),
+  videoThumbnail: Yup.mixed().required('Video Thumbnail is required'),
 });
 
 export const createRestdaySchema = Yup.object().shape({

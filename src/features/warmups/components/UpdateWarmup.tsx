@@ -2,29 +2,70 @@ import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
 import { Field, FormDrawer, Dropzone, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation, useQuery } from 'react-query';
-import { fetchWarmup, updateWarmup } from "../api";
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { updateWarmup } from "../api";
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createWarmupSchema } from '@/utils/yup';
-import { Textarea } from '@/components/Form';
+import {  useEffect } from 'react';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { prepareTranslations } from '@/utils/translationHelper';
 
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   equipments: string[];
   length: number;
-  image: any;
-  videoImage: any;
-  deleteImage: boolean;
-  deleteVideoImage: boolean;
+  thumbnail: any;
+  videoThumbnail: any;
+  deleteThumbnail: boolean;
+  deletevideoThumbnail: boolean;
 }
 
 export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
   const { addNotification } = useNotificationStore();
+  const queryClient = useQueryClient();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    resetLanguages,
+    getFilteredTranslations,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description', 'vimeoId'],
+  });
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+  const warmupData = warmups.warmups.find(wu => wu._id === warmupId);
+  useEffect(() => {
+    if (!warmups) return;
+    const apiLanguages = useLanguageStore.getState().languages.map(l => l.key);
+
+    const langs = Object.values(warmupData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    setSelectedLanguages([...new Set(langs)]);
+  }, [warmupData, setSelectedLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(updateWarmup, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-warmups');
+      resetLanguages();
+      formik.resetForm();
       addNotification({
         type: 'success',
         title: message,
@@ -32,19 +73,22 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
     },
   });
 
-  const warmupData = warmups.warmups.find(ex => ex._id === warmupId);
+
   const equipmentTitles = titles || [];
 
   const initialValues: FormikState = {
     title: warmupData?.title || '',
+    titleTranslations: warmupData?.titleTranslations || {},
     vimeoId: warmupData?.vimeoId || '',
+    vimeoIdTranslations: warmupData?.vimeoIdTranslations || {},
     description: warmupData?.description || '',
+    descriptionTranslations: warmupData?.descriptionTranslations || {},
     equipments: warmupData?.equipments || [],
     length: warmupData?.length || 0,
-    image: warmupData?.thumbnail,
-    videoImage: warmupData?.videoThumbnail,
-    deleteImage: false,
-    deleteVideoImage: false
+    thumbnail: warmupData?.thumbnail,
+    videoThumbnail: warmupData?.videoThumbnail,
+    deleteThumbnail: false,
+    deletevideoThumbnail: false
   };
   const formik = useFormik({
     initialValues,
@@ -52,8 +96,18 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
     onSubmit: (v) => onSubmit(v),
   });
 
-  const onSubmit = (state: any) => {
-    mutate({ warmupId, payload: state });
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description', 'vimeoId'],
+      imageFields: [],
+    });
+    const payload = {
+      ...values, ...translations
+    }
+    mutate({ warmupId, payload });
   };
 
   return (
@@ -68,43 +122,75 @@ export const UpdateWarmup = ({ warmupId, warmups, titles }) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-warmup" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
-          <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Dropzone
-            label="Video Thumbnail"
-            name="videoImage"
-            formik={formik}
-            defaultImg={formik.values.videoImage}
-            onDrop={(img) => formik.setFieldValue('videoImage', img)}
-            onDelete={() => formik.setValues({ ...formik.values, videoImage: '', deleteVideoImage: true })}
-          />
-          <Textarea label="Description" formik={formik} name="description" />
-          <Select
-            isMulti
-            formik={formik}
-            label="Equipment"
-            name="equipments"
-            options={equipmentTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
-            value={formik.values.equipments.map((id) => {
-              const exercise = equipmentTitles?.find((exercise) => exercise._id === id);
-              return { label: exercise?.title || '', value: id };
-            })}
-            onChange={(value: any) =>
-              formik.setFieldValue(
-                'equipments',
-                value.map((v: any) => v.value)
-              )
-            }
-          />
+          <div className="row">
+            <TranslatableInput
+              formik={formik}
+              name="title"
+              translationField="titleTranslations"
+              label="Title"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+          <div className="row">
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.thumbnail}
+              onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+              onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteThumbnail: true })}
+            />
+          </div>
+          <div className="row">
+            <TranslatableInput
+              formik={formik}
+              name="vimeoId"
+              translationField="vimeoIdTranslations"
+              label="Vimeo Id"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+          <div className="row">
+            <Dropzone
+              label="Video Thumbnail"
+              name="videoThumbnail"
+              formik={formik}
+              defaultImg={formik.values.videoThumbnail}
+              onDrop={(img) => formik.setFieldValue('videoThumbnail', img)}
+              onDelete={() => formik.setValues({ ...formik.values, videoThumbnail: '', deletevideoThumbnail: true })}
+            />
+          </div>
+          <div className='row'>
+            <TranslatableTextarea formik={formik}
+              name="description"
+              label="Description"
+              selectedLanguages={selectedLanguages}
+              placeholder="Enter description" />
+          </div>
+          <div className='row'>
+            <Select
+              isMulti
+              formik={formik}
+              label="Related Equipment"
+              name="relatedEquipments"
+              options={equipmentTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+              value={formik.values.equipments.map((id) => {
+                const exercise = equipmentTitles?.find((exercise) => exercise._id === id);
+                return { label: exercise?.title || '', value: id };
+              })}
+              onChange={(value: any) =>
+                formik.setFieldValue(
+                  'equipments',
+                  value.map((v: any) => v.value)
+                )
+              }
+            />
+          </div>
           <Field label="Length (min)" formik={formik} name="length" />
         </form>
       </FormDrawer>

@@ -1,32 +1,61 @@
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
+import { queryClient } from '@/lib/react-query';
 import { PlusIcon } from '@heroicons/react/outline';
 import { useNotificationStore } from '@/stores/notifications';
 import { createWarmupSchema } from '@/utils/yup';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { Button } from '@/components/Elements';
 import { Dropzone, FormDrawer, Select } from '@/components/Form';
+import { useEffect } from "react"
 import { Field } from '@/components/Form';
 import { createWarmup } from '../api';
-import { Textarea } from '@/components/Form';
-
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { prepareTranslations } from '@/utils/translationHelper';
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   equipments: string[];
   length: number;
-  image: any;
-  videoImage: any;
+  thumbnail: any;
+  videoThumbnail: any;
   deleteImage: boolean;
-  deleteVideoImage: boolean;
+  deleteVideoThumbnail: boolean;
 }
 
-export const CreateWarmUp = ({titles}) => {
+export const CreateWarmUp = ({ titles }) => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    resetLanguages,
+    getFilteredTranslations,
+  } = useTranslations({
+    translationFields: ['title', 'description', 'vimeoId'],
+  });
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
   const { mutate, isLoading, isSuccess } = useMutation(createWarmup, {
     onSuccess: (message: string) => {
       formik.resetForm();
+      resetLanguages();
+      queryClient.invalidateQueries('get-warmups');
       addNotification({
         type: 'success',
         title: message,
@@ -38,22 +67,35 @@ export const CreateWarmUp = ({titles}) => {
 
   const initialValues: FormikState = {
     title: '',
+    titleTranslations: {},
     vimeoId: '',
+    vimeoIdTranslations: {},
     description: '',
+    descriptionTranslations: {},
     equipments: [],
     length: 0,
-    image: '',
-    videoImage: '',
+    thumbnail: '',
+    videoThumbnail: '',
     deleteImage: false,
-    deleteVideoImage: false,
+    deleteVideoThumbnail: false,
   };
   const formik = useFormik({
     initialValues,
     validationSchema: createWarmupSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (value: any) => {
-    mutate(value);
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description', 'vimeoId'],
+      imageFields:[],
+    });
+    const payload = {
+      ...values, ...translations
+    }
+    mutate(payload);
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -71,26 +113,57 @@ export const CreateWarmUp = ({titles}) => {
           </Button>
         }
       >
-        <form id="create-warmup" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
-            formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
-          />
-          <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Dropzone
-            label="Video Thumbnail"
-            name="videoImage"
-            formik={formik}
-            defaultImg={formik.values.videoImage}
-            onDrop={(img) => formik.setFieldValue('videoImage', img)}
-            onDelete={() => formik.setValues({ ...formik.values, videoImage: '', deleteVideoImage: true })}
-          />
-          <Textarea label="Description" formik={formik} name="description" />
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
+        <form id="create-warmup" onSubmit={formik.handleSubmit} className='space-y-4'>
+          <div className="row">
+            <TranslatableInput
+              formik={formik}
+              name="title"
+              translationField="titleTranslations"
+              label="Title"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+          <div className="row">
+            <Dropzone
+              label="Thumbnail"
+              name="thumbnail"
+              formik={formik}
+              defaultImg={formik.values.thumbnail}
+              onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+              onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
+            />
+          </div>
+          <div className="row">
+            <TranslatableInput
+              formik={formik}
+              name="vimeoId"
+              translationField="vimeoIdTranslations"
+              label="Vimeo Id"
+              selectedLanguages={selectedLanguages}
+            />
+          </div>
+          <div className="row">
+            <Dropzone
+              label="Video Thumbnail"
+              name="videoThumbnail"
+              formik={formik}
+              defaultImg={formik.values.videoThumbnail}
+              onDrop={(img) => formik.setFieldValue('videoThumbnail', img)}
+              onDelete={() => formik.setValues({ ...formik.values, videoThumbnail: '', deleteVideoThumbnail: true })}
+            />
+          </div>
+          <div className='row'>
+            <TranslatableTextarea formik={formik}
+              name="description"
+              label="Description"
+              selectedLanguages={selectedLanguages}
+              placeholder="Enter description" />
+          </div>
+          <div className='row'>
           <Select
             isMulti
             formik={formik}
@@ -108,6 +181,7 @@ export const CreateWarmUp = ({titles}) => {
               )
             }
           />
+          </div>
           <Field label="Length (min)" formik={formik} name="length" />
         </form>
       </FormDrawer>
