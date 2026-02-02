@@ -78,7 +78,7 @@ export const MonthPlan = React.memo(
         collectTranslationKeys(month);
 
         const availableLangs = Array.from(existingLangs).filter(lang =>
-          languages.some(l => l.key === lang && l.inUse)
+          languages.some(l => l.key === lang)
         );
 
         if (availableLangs.length > 0 && selectedLanguages.length === 0) {

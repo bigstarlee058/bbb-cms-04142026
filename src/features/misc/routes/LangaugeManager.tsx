@@ -4,7 +4,7 @@ import { Field, FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation, useQuery } from 'react-query';
 import { useEffect } from 'react';
-import { adminLanguages, updateLanguage, deleteLanguage, createLanguage } from '@/lib/api';
+import { fetchLanguages, updateLanguage, deleteLanguage, createLanguage } from '@/lib/api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useLanguageStore } from '@/stores/languages'
 import { useFormik } from 'formik';
@@ -180,7 +180,7 @@ const DeleteLanguage = ({ languageId, languageName, refetch }) => {
 
 export const LanguageManager = () => {
 
-  const { data: languages = [], refetch } = useQuery('languages', adminLanguages);
+  const { data: languages = [], refetch } = useQuery('languages', fetchLanguages);
   const setLanguages = useLanguageStore((state) => state.setLanguages);
   const { addNotification } = useNotificationStore();
   const toggleLanguageStatus = useMutation(
