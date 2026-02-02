@@ -9,14 +9,18 @@ import { UpdateExercise } from './UpdateExercise';
 import { fetchCategoryTitles, fetchTagTitles, fetchEquipmentTitles, fetchExerciseTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
-export const ExercisesList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1
-  });
-  const { data: exercises, isLoading, refetch } = useQuery(['get-exercises'], () => fetchExercises(filters));
+export const ExercisesList = ({
+  getValue,
+  exercises,
+  currentPage,
+  setCurrentPage
+}: {
+  getValue: (item: any, field: string) => any,
+  exercises: any,
+  currentPage: number,
+  setCurrentPage: (page: number) => void
+}) => {
+
   const { data: exerciseTitles } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
   const { data: equipmentTitles } = useQuery('get-equipment-titles', () => fetchEquipmentTitles({ filterString: '' }));
   const { data: categoryTitles, refetch: refetchCategoryTitles } = useQuery('get-category-titles', () =>
@@ -24,35 +28,6 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
   );
   const { data: tagTitles, refetch: refetchTagTitles } = useQuery('get-tag-titles', () => fetchTagTitles({ filterString: '' })
   );
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   if (!exercises) return null;
 
@@ -64,17 +39,17 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
           {
             title: 'Title',
             field: 'title',
-            Cell({entry}){
-              return getValue(entry,'title')
+            Cell({ entry }) {
+              return getValue(entry, 'title')
             }
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
-            Cell({ entry}) {
+            Cell({ entry }) {
               return (
                 <div className="justify-center items-center">
-                  <img className="h-24 object-contain" src={getValue(entry,'thumbnail')} />
+                  <img className="h-24 object-contain" src={getValue(entry, 'thumbnail')} />
                 </div>
               );
             }
@@ -82,10 +57,10 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
           {
             title: 'Video Thumbnail',
             field: 'videoThumbnail',
-            Cell({ entry}) {
+            Cell({ entry }) {
               return (
                 <div className="justify-center items-center">
-                  <img className="h-24 object-contain" src={getValue(entry,'videoThumbnail')} />
+                  <img className="h-24 object-contain" src={getValue(entry, 'videoThumbnail')} />
                 </div>
               );
             }
@@ -94,7 +69,7 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
             title: 'Description',
             field: 'description',
             Cell({ entry }) {
-              const description= getValue(entry,'description');
+              const description = getValue(entry, 'description');
               return (
                 <span
                   dangerouslySetInnerHTML={{
@@ -122,7 +97,7 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
             field: 'tags',
             minwidth: 150,
             Cell({ entry: { tags } }) {
-              if (!tagTitles) return null; 
+              if (!tagTitles) return null;
               if (!tags) return null; // Check if titles is defined
               const filteredTitles = tagTitles
                 .filter((title) => tags.includes(title.id))
@@ -147,7 +122,7 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
             title: 'Vimeo',
             field: 'vimeoId',
             Cell({ entry }) {
-              return <p>{getValue(entry,'vimeoId')}</p>;
+              return <p>{getValue(entry, 'vimeoId')}</p>;
             }
           },
           {
@@ -192,12 +167,14 @@ export const ExercisesList = ({ getValue }: { getValue: (item: any, field: strin
         ]}
       />
       <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(exercises.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={Math.ceil(exercises.count / 10)}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
       </div>
     </>
   );
