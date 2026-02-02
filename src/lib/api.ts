@@ -6,12 +6,8 @@ export interface Language {
   inUse:boolean;
   name: string;
 }
-export const adminLanguages = async (): Promise<Language[]> => {
-  const { data } = await axios.get('/settings/admin/languages');
-  return data.languages || [];
-};
 export const fetchLanguages = async (): Promise<Language[]> => {
-  const { data } = await axios.get('/settings/languages');
+  const { data } = await axios.get('/settings/admin/languages');
   return data.languages || [];
 };
 export const createLanguage = async (payload) => {

@@ -17,7 +17,6 @@ export const useListTranslations = ({
   const availableLanguages = useMemo(() => {
     if (!data?.length) return [];
     return languages.filter((lang) =>
-      lang.inUse &&
       data.some((item) =>
         translatableFields.some((field) => {
           const translations = item[getTranslationsKey(field)];
