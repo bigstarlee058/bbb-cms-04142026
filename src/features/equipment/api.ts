@@ -1,7 +1,7 @@
 import { Equipment, EquipmentsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchEquipments = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/equipments/admin/get`, {
@@ -30,25 +30,14 @@ export const fetchEquipment = async (equipmentId: string) => {
   }
 };
 
-export const createEquipment = async (payload: {
-  title: string;
-  description: string;
-  link: string;
-  image: File;
-  collections: [],
-}) => {
+export const createEquipment = async (payload: any) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('description', payload.description);
-    formData.append('link', payload.link);
-    formData.append('collections', JSON.stringify(payload.collections));
+    const formData = buildFormDataWithImages(payload, []);
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/equipments/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      queryClient.invalidateQueries('get-equipments');
+      queryClient.invalidateQueries('get-equipment');
       return 'Equipment successfully created.';
     }
     return result.message;
@@ -62,28 +51,16 @@ export const createEquipment = async (payload: {
   }
 };
 
-export const updateEquipment = async (payload: {
-  equipmentId: string 
-  title: string;
-  description: string;
-  link: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: boolean,
-  collections: string[],
+export const updateEquipment = async ({payload,
+  equipmentId
 }) => {
   try {
-    const formData = new FormData();
-    formData.append('_id', payload.equipmentId);
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('deleteImage', String(payload.deleteImage));
-    formData.append('description', payload.description);
-    formData.append('link', payload.link);
-    formData.append('collections', JSON.stringify(payload.collections));
+    const formData = buildFormDataWithImages(payload, []);
+    formData.append('_id', equipmentId);
+    
     const result = (await axios.put('/equipments/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-equipments');
-      queryClient.invalidateQueries(['get-equipment', payload.equipmentId]);
+      queryClient.invalidateQueries(['get-equipment']);
       return 'Equipment successfully updated.';
     }
     return result.message;
@@ -100,6 +77,7 @@ export const deleteEquipment = async (equipmentId: string) => {
   try {
     const result = (await axios.delete(`/equipments/admin/${equipmentId}`)) as ResponseMessage;
     if (result.result === true) {
+      queryClient.invalidateQueries('get-equipment');
       return 'Successfully deleted.';
     }
     return Promise.reject(result.message);

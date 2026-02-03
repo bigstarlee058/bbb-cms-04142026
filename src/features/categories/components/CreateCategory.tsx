@@ -19,7 +19,7 @@ interface FormikState {
   title: string;
   titleTranslations: Record<string, string>;
   deleteImage: boolean;
-  image: any;
+  thumbnail: any;
 }
 
 export const CreateCategory = () => {
@@ -54,7 +54,7 @@ export const CreateCategory = () => {
   const initialValues: FormikState = {
     title: '',
     titleTranslations: {},
-    image: '',
+    thumbnail: '',
     deleteImage: false,
   };
   const formik = useFormik({
@@ -106,11 +106,11 @@ export const CreateCategory = () => {
           />
           <Dropzone
             label="Thumbnail"
-            name="image"
+            name="thumbnail"
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            defaultImg={formik.values.thumbnail}
+            onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+            onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
           />
         </form>
       </FormDrawer>

@@ -20,11 +20,11 @@ interface PumpDaysProviderProps {
 // Create the provider component
 export const PumpDaysContextProvider: React.FC<PumpDaysProviderProps> = ({ children }) => {
   const [days, setDays] = useState<Day[]>([]);
+  const [selectedLanguagesByDay, setSelectedLanguagesByDay] = useState<Record<string, string[]>>({});
 
   const onSetDays = (d: Day[]) => {
     setDays(d)
   }
-  const [selectedLanguagesByDay, setSelectedLanguagesByDay] = useState<Record<string, string[]>>({});
 
   const setSelectedLanguagesForDay = (dayLocalId: string, langs: string[]) => {
     setSelectedLanguagesByDay(prev => ({

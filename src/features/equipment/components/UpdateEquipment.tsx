@@ -1,18 +1,29 @@
+import { useEffect } from 'react';
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, FormDrawer, Dropzone, Select } from '@/components/Form';
+import {  FormDrawer, Dropzone, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation } from 'react-query';
-import {  updateEquipment } from '../api';
+import { useMutation, useQueryClient, useQuery } from 'react-query';
+import { updateEquipment } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createEquipmentSchema } from '@/utils/yup';
-import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
+import { TranslatableTextareaWithFormatting } from '@/components/Form/TranslatableTextareaWithFormatting';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { prepareTranslations } from '@/utils/translationHelper';
 
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   link: string;
+  linkTranslations: Record<string, string>;
   image?: any;
   deleteImage: boolean;
   collections: string[],
@@ -20,8 +31,28 @@ interface FormikState {
 
 export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
   const { addNotification } = useNotificationStore();
+  const queryClient = useQueryClient();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    resetLanguages,
+    getFilteredTranslations,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description', 'link']
+  })
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(updateEquipment, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-equipment');
+      resetLanguages();
+      formik.resetForm();
       addNotification({
         type: 'success',
         title: message,
@@ -29,13 +60,25 @@ export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
     },
   });
 
-  const equipmentData = equipments.equipments.find(ex => ex._id === equipmentId);
+  const equipmentData = equipments.equipments.find(eq => eq._id === equipmentId);
   const collectionTitles = titles || [];
+  useEffect(() => {
+    if (!equipments) return;
+    const apiLanguages = useLanguageStore.getState().languages.map(l => l.key);
 
+    const langs = Object.values(equipmentData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    setSelectedLanguages([...new Set(langs)]);
+  }, [equipmentData, setSelectedLanguages]);
   const initialValues: FormikState = {
     title: equipmentData?.title || '',
+    titleTranslations: equipmentData?.titleTranslations || {},
     description: equipmentData?.description || '',
+    descriptionTranslations: equipmentData?.descriptionTranslations || {},
     link: equipmentData?.link || '',
+    linkTranslations: equipmentData?.linkTranslations || {},
     image: equipmentData?.thumbnail || '',
     deleteImage: false,
     collections: equipmentData?.collections || [],
@@ -45,9 +88,18 @@ export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
     validationSchema: createEquipmentSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (state: FormikState) => {
-    const { title, image, deleteImage, description, link, collections } = state;
-    mutate({ equipmentId, title, description, link, image, deleteImage, collections });
+  const onSubmit = (values: FormikState) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description', 'link'],
+      imageFields: [],
+    });
+    const payload = {
+      ...values, ...translations
+    }
+    mutate({ equipmentId, payload });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -61,11 +113,32 @@ export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-equipment" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
-          <TextareaWithFormatting label="Description" formik={formik} name="description" />
-          {/* <Field label="Description" formik={formik} name="description" /> */}
-          <Field label="Link" formik={formik} name="link" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
+          <TranslatableTextareaWithFormatting
+            formik={formik}
+            name="description"
+            label="Description"
+            selectedLanguages={selectedLanguages}
+            placeholder="Enter description"
+          />
+          <TranslatableInput
+            formik={formik}
+            name="link"
+            translationField="linkTranslations"
+            label="Link url"
+            selectedLanguages={selectedLanguages}
+          />
           <Dropzone
             label="Thumbnail"
             name="thumbnail"

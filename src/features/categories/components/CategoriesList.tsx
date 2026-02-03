@@ -1,58 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchCategories } from '../api';
-import { Category, Filters } from '@/types';
+import { Table, Link, Button } from '@/components/Elements';
+import { Category } from '@/types';
 import { EyeIcon } from '@heroicons/react/outline';
 import { DeleteCategory } from './DeleteCategory';
 import { UpdateCategory } from './UpdateCategory';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const CategoriesList =  ({ getValue }: { getValue: (item: any, field: string) => any }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
-
-  const {
-    data: categoryData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-categories'], () => fetchCategories(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
+export const CategoriesList = ({
+  getValue,
+  categoryData,
+  currentPage,
+  setCurrentPage
+}: {
+  getValue: (item: any, field: string) => any,
+  categoryData: any,
+  currentPage: number,
+  setCurrentPage: (page: number) => void
+}) => {
   if (!categoryData) return null;
 
   return (
@@ -63,18 +26,18 @@ export const CategoriesList =  ({ getValue }: { getValue: (item: any, field: str
           {
             title: 'Title',
             field: 'title',
-             Cell({entry}){
-              return getValue(entry,'title')
+            Cell({ entry }) {
+              return getValue(entry, 'title')
             }
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
-            Cell({ entry}) {
+            Cell({ entry }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={getValue(entry,'thumbnail')} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={getValue(entry, 'thumbnail')} loading="lazy" />
+                </div>);
             },
           },
           {
@@ -114,7 +77,7 @@ export const CategoriesList =  ({ getValue }: { getValue: (item: any, field: str
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(categoryData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(categoryData.count / 10)}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

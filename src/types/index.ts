@@ -188,9 +188,12 @@ export interface AchievementsGroupResponse {
 
 export interface Equipment extends BaseEntity {
   title: string;
+  titleTranslations: Record<string, string>;
   thumbnail: string;
   description: string;
+  descriptionTranslations: Record<string, string>;
   link: string;
+  linkTranslations: Record<string, string>;
 }
 export interface EquipmentsResponse {
   count: number;

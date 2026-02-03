@@ -1,6 +1,6 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import {  FormDrawer, Dropzone } from '@/components/Form';
+import { FormDrawer, Dropzone } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation, useQuery } from 'react-query';
 import { updateCategory } from '../api';
@@ -18,7 +18,7 @@ import { useEffect } from 'react';
 interface FormikState {
   title: string;
   titleTranslations: Record<string, string>;
-  image?: any;
+  thumbnail?: any;
   deleteImage: boolean;
 }
 
@@ -31,6 +31,7 @@ export const UpdateCategory = ({ categoryId, categories }) => {
     handleLanguageToggle,
     resetLanguages,
     getFilteredTranslations,
+    setSelectedLanguages,
   } = useTranslations({
     translationFields: ['title'],
   });
@@ -51,12 +52,21 @@ export const UpdateCategory = ({ categoryId, categories }) => {
     },
   });
 
-  const categoryData = categories.categories.find(ex => ex._id === categoryId);
+  const categoryData = categories.categories.find(ca => ca._id === categoryId);
+  useEffect(() => {
+    if (!categories) return;
+    const apiLanguages = useLanguageStore.getState().languages.map(l => l.key);
 
+    const langs = Object.values(categoryData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    setSelectedLanguages([...new Set(langs)]);
+  }, [categoryData, setSelectedLanguages]);
   const initialValues: FormikState = {
     title: categoryData?.title || '',
     titleTranslations: categoryData?.titleTranslations || {},
-    image: categoryData?.image || '',
+    thumbnail: categoryData?.thumbnail || '',
     deleteImage: false,
   };
   const formik = useFormik({
@@ -64,18 +74,19 @@ export const UpdateCategory = ({ categoryId, categories }) => {
     validationSchema: createCategorySchema,
     onSubmit: (v) => onSubmit(v),
   });
+  console.log()
   const onSubmit = (values: FormikState) => {
-  const translations = prepareTranslations({
+    const translations = prepareTranslations({
       values,
       translations: getFilteredTranslations(values, true),
       selectedLanguages,
       textFields: ['title'],
-      imageFields: ['image'],
+      imageFields: ['thumbnail'],
     });
     const payload = {
       ...values, ...translations
     }
-    mutate({categoryId,payload});
+    mutate({ categoryId, payload });
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -105,9 +116,9 @@ export const UpdateCategory = ({ categoryId, categories }) => {
             label="Thumbnail"
             name="thumbnail"
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            defaultImg={formik.values.thumbnail}
+            onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+            onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
           />
         </form>
       </FormDrawer>

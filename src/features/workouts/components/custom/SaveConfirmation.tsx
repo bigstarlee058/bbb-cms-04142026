@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
 import SaveIcon from "@/lib/icons/SaveIcon";
 import { ArrowNarrowUpIcon } from "@heroicons/react/solid";
-import { cleanupNestedTranslations } from "@/utils/translationHelper"; // Adjust path as needed
+import { cleanupNestedTranslations } from "@/utils/translationHelper";
 import { useWorkoutContext } from '../../WorkoutContext';
 
 export const SaveConfirmation = ({ allMonths }) => {
@@ -27,7 +27,7 @@ export const SaveConfirmation = ({ allMonths }) => {
   });
 
   const autoFillMissingTranslations = (obj: any, selectedLangs: string[]): any => {
-    if (!obj || typeof obj !== 'object' || obj instanceof File) return obj;
+    if (!obj || typeof obj !== 'object' || obj instanceof File || obj instanceof Date) return obj;
 
     if (Array.isArray(obj)) {
       return obj.map(item => autoFillMissingTranslations(item, selectedLangs));

@@ -13,6 +13,9 @@ import { LanguageSelector } from '@/components/Language/LanguageSelector';
 import { v4 as uuid } from 'uuid';
 import { usePumpDaysContext } from '../../pumpdays/PumpDaysContext';
 import { useLanguageStore } from '@/stores/languages';
+import { useQuery } from 'react-query';
+import { fetchLanguages } from '@/lib/api';
+
 export const DayPlan = ({
   monthIndex,
   weekIndex,
@@ -25,17 +28,28 @@ export const DayPlan = ({
   isSevenDays,
   isWeekCollapsed,
   isPumpDay = false,
-  updateDays = (val) => {},
+  updateDays = (val) => { },
   days = []
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
+
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
   const { selectedLanguagesByDay, handleLanguageToggleForDay, setSelectedLanguagesForDay } = isPumpDay
     ? usePumpDaysContext()
     : { selectedLanguagesByDay: {}, handleLanguageToggleForDay: () => { }, setSelectedLanguagesForDay: () => { } };
 
   const selectedLanguages = isPumpDay ? (selectedLanguagesByDay[day.localId] || []) : [];
   const languages = useLanguageStore((state) => state.languages);
+
   if (!isPumpDay && !months[monthIndex]?.weeks[weekIndex]?.days[dayIndex]) return null;
 
   useEffect(() => {
