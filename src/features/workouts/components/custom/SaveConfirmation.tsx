@@ -66,31 +66,39 @@ export const SaveConfirmation = ({ allMonths }) => {
   };
 
   const hasIncompleteItems = (months: any[]) => {
-    for (const month of months) {
-      for (const week of month.weeks) {
-        for (const day of week.days) {
-          const incompleteWarmup = (day.warmups || []).find(
-            w => !w.warmupId || w.warmupId.trim() === ''
-          );
-          if (incompleteWarmup) {
-            return {
-              type: 'warmup',
-              monthIndex: month.index,
-              weekIndex: week.index,
-              dayTitle: day.title
-            };
+    for (let mIndex = 0; mIndex < months.length; mIndex++) {
+      const month = months[mIndex];
+      for (let wIndex = 0; wIndex < month.weeks.length; wIndex++) {
+        const week = month.weeks[wIndex];
+        for (let dIndex = 0; dIndex < week.days.length; dIndex++) {
+          const day = week.days[dIndex];
+
+          for (let wuIndex = 0; wuIndex < (day.warmups || []).length; wuIndex++) {
+            const warmup = day.warmups[wuIndex];
+            if (!warmup.warmupId || warmup.warmupId.trim() === '') {
+              return {
+                type: 'warmup',
+                monthIndex: month.index ?? mIndex + 1,
+                weekIndex: week.index ?? wIndex + 1,
+                dayTitle: day.title || `Day ${dIndex + 1}`,
+                itemIndex: warmup.typeId ?? wuIndex + 1,
+                itemTitle: warmup.title || null
+              };
+            }
           }
 
-          const incompleteExercise = (day.exercises || []).find(
-            e => !e.exerciseId || e.exerciseId.trim() === ''
-          );
-          if (incompleteExercise) {
-            return {
-              type: 'exercise',
-              monthIndex: month.index,
-              weekIndex: week.index,
-              dayTitle: day.title
-            };
+          for (let exIndex = 0; exIndex < (day.exercises || []).length; exIndex++) {
+            const exercise = day.exercises[exIndex];
+            if (!exercise.exerciseId || exercise.exerciseId.trim() === '') {
+              return {
+                type: 'exercise',
+                monthIndex: month.index ?? mIndex + 1,
+                weekIndex: week.index ?? wIndex + 1,
+                dayTitle: day.title || `Day ${dIndex + 1}`,
+                itemIndex: exercise.typeId ?? exIndex + 1,
+                itemTitle: exercise.title || null
+              };
+            }
           }
         }
       }
@@ -101,13 +109,16 @@ export const SaveConfirmation = ({ allMonths }) => {
   const handleSaveWorkouts = () => {
     const incomplete = hasIncompleteItems(allMonths);
     if (incomplete) {
+      const itemName = incomplete.itemTitle
+        ? `${incomplete.type} "${incomplete.itemTitle}"`
+        : `${incomplete.type} ${incomplete.itemIndex}`;
+
       addNotification({
         type: 'error',
-        title: `Please select ${incomplete.type} in Month ${incomplete.monthIndex} Week ${incomplete.weekIndex} Day ${incomplete.dayTitle}`,
+        title: `Please select ${itemName} in Month ${incomplete.monthIndex} in Week ${incomplete.weekIndex} in Day ${incomplete.dayTitle}`,
       });
       return;
     }
-
     const cleanedMonths = cleanupMonthsData(allMonths);
     mutate(cleanedMonths);
   };
@@ -115,9 +126,13 @@ export const SaveConfirmation = ({ allMonths }) => {
   const handlePublishWorkouts = () => {
     const incomplete = hasIncompleteItems(allMonths);
     if (incomplete) {
+      const itemName = incomplete.itemTitle
+        ? `${incomplete.type} "${incomplete.itemTitle}"`
+        : `${incomplete.type} ${incomplete.itemIndex}`;
+
       addNotification({
         type: 'error',
-        title: `Please select ${incomplete.type} in Month ${incomplete.monthIndex} Week ${incomplete.weekIndex} Day ${incomplete.dayTitle}`,
+        title: `Please select ${itemName} in Month ${incomplete.monthIndex} in Week ${incomplete.weekIndex} in Day ${incomplete.dayTitle}`,
       });
       return;
     }
