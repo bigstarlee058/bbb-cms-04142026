@@ -80,7 +80,7 @@ export const createBonusSchema = Yup.object().shape({
 
 export const createCategorySchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Thumbnail is required'),
+  thumbnail: Yup.mixed().required('Thumbnail is required'),
 });
 export const createTagsSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),

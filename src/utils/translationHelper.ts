@@ -43,11 +43,7 @@ export const cleanupNestedTranslations = (
   data: any,
   selectedLanguages: string[]
 ): any => {
-  if (!data || typeof data !== 'object') {
-    return data;
-  }
-  
-  if (data instanceof File) {
+  if (!data || typeof data !== 'object' || data instanceof File || data instanceof Date) {
     return data;
   }
   

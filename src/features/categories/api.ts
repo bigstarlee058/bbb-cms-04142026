@@ -32,7 +32,7 @@ export const fetchCategory = async (categoryId: string) => {
 
 export const createCategory = async (data:any) => {
   try {
-    const formData = buildFormDataWithImages(data, ['image']);
+    const formData = buildFormDataWithImages(data, []);
     const result = (await axios.post('/categories/admin', formData)) as any;
     if (result.result === true) {
       queryClient.invalidateQueries('get-categories');
@@ -58,7 +58,7 @@ export const updateCategory = async ({
     payload: any;
   }) => {
   try {
-    const formData = buildFormDataWithImages(payload, ['image']);
+    const formData = buildFormDataWithImages(payload, []);
       formData.append('_id', categoryId);
     const result = (await axios.put('/categories/admin', formData)) as ResponseMessage;
     if (result.result === true) {

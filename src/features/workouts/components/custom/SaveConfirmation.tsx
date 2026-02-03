@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { useNotificationStore } from "@/stores/notifications";
 import SaveIcon from "@/lib/icons/SaveIcon";
 import { ArrowNarrowUpIcon } from "@heroicons/react/solid";
-import { cleanupNestedTranslations } from "@/utils/translationHelper"; // Adjust path as needed
+import { cleanupNestedTranslations } from "@/utils/translationHelper";
 import { useWorkoutContext } from '../../WorkoutContext';
 
 export const SaveConfirmation = ({ allMonths }) => {
@@ -27,7 +27,7 @@ export const SaveConfirmation = ({ allMonths }) => {
   });
 
   const autoFillMissingTranslations = (obj: any, selectedLangs: string[]): any => {
-    if (!obj || typeof obj !== 'object' || obj instanceof File) return obj;
+    if (!obj || typeof obj !== 'object' || obj instanceof File || obj instanceof Date) return obj;
 
     if (Array.isArray(obj)) {
       return obj.map(item => autoFillMissingTranslations(item, selectedLangs));
@@ -64,12 +64,64 @@ export const SaveConfirmation = ({ allMonths }) => {
       return cleanupNestedTranslations(autoFilled, selectedLanguages);
     });
   };
+
+  const hasIncompleteItems = (months: any[]) => {
+    for (const month of months) {
+      for (const week of month.weeks) {
+        for (const day of week.days) {
+          const incompleteWarmup = (day.warmups || []).find(
+            w => !w.warmupId || w.warmupId.trim() === ''
+          );
+          if (incompleteWarmup) {
+            return {
+              type: 'warmup',
+              monthIndex: month.index,
+              weekIndex: week.index,
+              dayTitle: day.title
+            };
+          }
+
+          const incompleteExercise = (day.exercises || []).find(
+            e => !e.exerciseId || e.exerciseId.trim() === ''
+          );
+          if (incompleteExercise) {
+            return {
+              type: 'exercise',
+              monthIndex: month.index,
+              weekIndex: week.index,
+              dayTitle: day.title
+            };
+          }
+        }
+      }
+    }
+    return null;
+  };
+
   const handleSaveWorkouts = () => {
+    const incomplete = hasIncompleteItems(allMonths);
+    if (incomplete) {
+      addNotification({
+        type: 'error',
+        title: `Please select ${incomplete.type} in Month ${incomplete.monthIndex} Week ${incomplete.weekIndex} Day ${incomplete.dayTitle}`,
+      });
+      return;
+    }
+
     const cleanedMonths = cleanupMonthsData(allMonths);
     mutate(cleanedMonths);
   };
 
   const handlePublishWorkouts = () => {
+    const incomplete = hasIncompleteItems(allMonths);
+    if (incomplete) {
+      addNotification({
+        type: 'error',
+        title: `Please select ${incomplete.type} in Month ${incomplete.monthIndex} Week ${incomplete.weekIndex} Day ${incomplete.dayTitle}`,
+      });
+      return;
+    }
+
     let monthId = 0;
     let weekId = 0;
     let isComplete = true;
@@ -78,15 +130,15 @@ export const SaveConfirmation = ({ allMonths }) => {
         const countDaysWithFormat3 = week.days.filter(day => day.formats.includes('3')).length;
         const countDaysWithFormat4 = week.days.filter(day => day.formats.includes('4')).length;
         const countDaysWithFormat5 = week.days.filter(day => day.formats.includes('5')).length;
-        
-        if(countDaysWithFormat3 != 3 || countDaysWithFormat4 != 4 || countDaysWithFormat5 != 5) {
+
+        if (countDaysWithFormat3 != 3 || countDaysWithFormat4 != 4 || countDaysWithFormat5 != 5) {
           monthId = month.index;
           weekId = week.index !== undefined && week.index !== null ? week.index : month.weeks.length;
           isComplete = false;
         }
       });
     });
-    if(!isComplete) {
+    if (!isComplete) {
       addNotification({
         type: 'error',
         title: `Please select variation availability for Month ${monthId} Week ${weekId}`,
@@ -96,7 +148,6 @@ export const SaveConfirmation = ({ allMonths }) => {
       mutate(cleanedMonths);
     }
   };
-
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
       <ConfirmationDialog

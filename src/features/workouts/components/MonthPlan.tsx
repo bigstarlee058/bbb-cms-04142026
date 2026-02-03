@@ -6,6 +6,8 @@ import { v4 as uuid } from 'uuid';
 import { useLanguageStore } from '@/stores/languages';
 import { LanguageSelector } from '@/components/Language/LanguageSelector';
 import { useWorkoutContext } from '../WorkoutContext';
+import { useQuery } from 'react-query';
+import { fetchLanguages } from '@/lib/api';
 
 import {
   DuplicateIcon,
@@ -49,6 +51,16 @@ export const MonthPlan = React.memo(
     onDuplicateMonth
   }, ref) => {
     const realMonthIndex = startIndex + monthIndex;
+    
+    const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+    const setLanguages = useLanguageStore((state) => state.setLanguages);
+
+    useEffect(() => {
+      if (fetchedLanguages.length > 0) {
+        setLanguages(fetchedLanguages);
+      }
+    }, [fetchedLanguages, setLanguages]);
+
     const languages = useLanguageStore((state) => state.languages);
     const { selectedLanguagesByMonth, handleLanguageToggleForMonth, setSelectedLanguagesForMonth } = useWorkoutContext();
     const selectedLanguages = selectedLanguagesByMonth[month.localId] || [];
@@ -86,6 +98,7 @@ export const MonthPlan = React.memo(
         }
       }
     }, [month, languages]);
+
 
     const addWeek = useCallback(() => {
       const newWeek: Week = { title: '', description: '', vimeoId: '', thumbnail: '', restdayId: '', days: [], localId: uuid(), };

@@ -41,7 +41,6 @@ export const CreateTutorial = () => {
     handleLanguageToggle,
     getFilteredTranslations,
     resetLanguages,
-    setSelectedLanguages,
   } = useTranslations({
     translationFields: ['title', 'description', 'vimeoId', 'image'],
   });
