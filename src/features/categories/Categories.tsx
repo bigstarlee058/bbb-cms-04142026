@@ -3,7 +3,7 @@ import { CreateCategory } from './components/CreateCategory';
 import { CategoriesList } from './components/CategoriesList';
 import { useQuery } from 'react-query';
 import { fetchCategories } from './api';
-import { LanguageSwitcher, useListTranslations } from '@/components/Language';;
+import { LanguageSwitcher, useListTranslations } from '@/components/Language';
 import { useEffect, useState } from 'react';
 import { useFilteringStore } from '@/stores/filter';
 import { Filters } from '@/types';
