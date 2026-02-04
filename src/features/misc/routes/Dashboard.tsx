@@ -1,14 +1,17 @@
+import { lazy, Suspense, useState } from 'react';
+import { Spinner } from '@/components/Elements';
 import { ContentLayout } from '@/components/Layout';
 import { useAuthStore } from '@/stores/auth';
 import { useUserStore } from '@/stores/user';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SubscriptionChart from '../SubscriptionChart';
+const SubscriptionChart = lazy(() => import('../SubscriptionChart'));
 import { LanguageManager } from './LangaugeManager';
 export const Dashboard = () => {
   const { user, setUser, setIsLogged } = useAuthStore();
   const navigate = useNavigate();
   const { setCurrentPage } = useUserStore();
+  const [showChart, setShowChart] = useState(false);
   useEffect(() => {
     if (user.role != 1) {
       setIsLogged(false);
@@ -18,6 +21,11 @@ export const Dashboard = () => {
       window.location.href = '/';
     } else {
       setCurrentPage("dashboard");
+      const timer = setTimeout(() => {
+        setShowChart(true);
+      }, 200);
+
+      return () => clearTimeout(timer);
     }
   }, [user, navigate]);
 
@@ -48,13 +56,21 @@ export const Dashboard = () => {
             )}
           </div>
           <div className="flex-1">
-            <LanguageManager />
+            <Suspense fallback={<div className="flex justify-center items-center h-64"><Spinner size="lg" /></div>}>
+              <LanguageManager />
+            </Suspense>
           </div>
         </div>
 
         {user?.role === 1 && (
-          <div className="">
-            <SubscriptionChart />
+          <div className="mt-6">
+            {showChart ? (
+              <Suspense fallback={<div className="flex justify-center items-center h-[600px]"><Spinner size="xl" /></div>}>
+                <SubscriptionChart />
+              </Suspense>
+            ) : (
+              <div className="flex justify-center items-center h-[600px]"><Spinner size="xl" /></div>
+            )}
           </div>
         )}
       </div>

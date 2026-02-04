@@ -1,6 +1,6 @@
 import { Table, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
-import { Equipment, Filters } from '@/types';
+import { Equipment } from '@/types';
 import { DeleteEquipment } from './DeleteEquipment';
 import { EyeIcon } from '@heroicons/react/outline';
 import { UpdateEquipment } from './UpdateEquipment';

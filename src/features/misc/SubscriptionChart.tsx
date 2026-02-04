@@ -16,6 +16,7 @@ import {
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import { axios } from '@/lib/axios';
+import { Spinner } from '@/components/Elements';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
 interface SubscriptionStatsResponse {
@@ -275,12 +276,12 @@ const SubscriptionChart: React.FC = () => {
     useEffect(() => {
         if (!chartData) return;
         fetchSubscriptionStats('currentMonth');
-        setDateFilter(dateFilterOptions[1]);      
+        setDateFilter(dateFilterOptions[1]);
     }, [viewType]);
     if (loading)
         return (
             <div className="flex items-center justify-center h-96 bg-white rounded-lg shadow">
-                <p className="text-gray-500">Loading chart...</p>
+                <Spinner size="lg" />
             </div>
         );
 

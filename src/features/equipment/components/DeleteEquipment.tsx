@@ -18,7 +18,7 @@ export const DeleteEquipment = ({ equipmentId }: DeleteEquipmentProps) => {
         type: 'success',
         title: message,
       });
-      queryClient.invalidateQueries('get-equipments');
+      queryClient.invalidateQueries('get-equipment');
     },
   });
 

@@ -24,7 +24,7 @@ interface FormikState {
   descriptionTranslations: Record<string, string>;
   link: string;
   linkTranslations: Record<string, string>;
-  image: any;
+  thumbnail: any;
   deleteImage: boolean;
   collections: string[];
 }
@@ -67,7 +67,7 @@ export const CreateEquipment = ({ titles }) => {
     descriptionTranslations: {},
     link: '',
     linkTranslations: {},
-    image: '',
+    thumbnail: '',
     deleteImage: false,
     collections: [],
   };
@@ -134,11 +134,11 @@ export const CreateEquipment = ({ titles }) => {
             />
           <Dropzone
             label="Thumbnail"
-            name="image"
+            name="thumbnail"
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            defaultImg={formik.values.thumbnail}
+            onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+            onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
           />
           <Select
             isMulti

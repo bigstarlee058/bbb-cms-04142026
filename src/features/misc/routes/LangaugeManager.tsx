@@ -3,14 +3,13 @@ import { Button, ConfirmationDialog } from '@/components/Elements';
 import { Field, FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation, useQuery } from 'react-query';
-import { useEffect } from 'react';
+import { useEffect, useState} from 'react';
 import { fetchLanguages, updateLanguage, deleteLanguage, createLanguage } from '@/lib/api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useLanguageStore } from '@/stores/languages'
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { useState } from 'react';
-
+import { Spinner } from '@/components/Elements';
 const languageSchema = Yup.object().shape({
   key: Yup.string().required('Key is required').min(2).max(3),
   name: Yup.string().required('Name is required')
@@ -180,7 +179,7 @@ const DeleteLanguage = ({ languageId, languageName, refetch }) => {
 
 export const LanguageManager = () => {
 
-  const { data: languages = [], refetch } = useQuery('languages', fetchLanguages);
+  const { data: languages = [], refetch, isLoading } = useQuery('languages', fetchLanguages);
   const setLanguages = useLanguageStore((state) => state.setLanguages);
   const { addNotification } = useNotificationStore();
   const toggleLanguageStatus = useMutation(
@@ -203,6 +202,13 @@ export const LanguageManager = () => {
       setLanguages(languages);
     }
   }, [languages, setLanguages]);
+  if (isLoading) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-md p-3 shadow-sm flex items-center justify-center h-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>

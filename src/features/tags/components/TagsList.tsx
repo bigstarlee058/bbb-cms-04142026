@@ -1,56 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchTags } from '../api';
+import { Table } from '@/components/Elements';
 import { Tags, Filters } from '@/types';
 import { DeleteTag } from './DeleteTag';
 import { UpdateTag } from './UpdateTag';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const TagsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
-
-  const {
-    data: tagData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-tags'], () => fetchTags(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+export const TagsList = ({
+  getValue,
+  tagData,
+  currentPage,
+  setCurrentPage
+}: {
+  getValue: (item: any, field: string) => any,
+  tagData: any,
+  currentPage: number,
+  setCurrentPage: (page: number) => void
+}) => {
 
   if (!tagData) return null;
 
@@ -92,7 +58,7 @@ export const TagsList = ({ getValue }: { getValue: (item: any, field: string) =>
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(tagData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil(tagData.count / 10)}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

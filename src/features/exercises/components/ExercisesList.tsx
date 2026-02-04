@@ -1,33 +1,33 @@
-import { Table, Spinner, Link, Button } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchExercises } from '../api';
-import { Exercise, Filters } from '@/types';
+import { Table,  Link, Button } from '@/components/Elements';
+import { Exercise,  } from '@/types';
 import { DeleteExercise } from './DeleteExercise';
-import { useEffect, useState } from 'react';
 import { EyeIcon } from '@heroicons/react/solid';
 import { UpdateExercise } from './UpdateExercise';
-import { fetchCategoryTitles, fetchTagTitles, fetchEquipmentTitles, fetchExerciseTitles } from '@/features/workouts/api';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 export const ExercisesList = ({
   getValue,
   exercises,
   currentPage,
-  setCurrentPage
+  setCurrentPage,
+  exerciseTitles,
+  equipmentTitles,
+  categoryTitles,
+  tagTitles,
+  refetchCategoryTitles,
+  refetchTagTitles
 }: {
   getValue: (item: any, field: string) => any,
   exercises: any,
   currentPage: number,
-  setCurrentPage: (page: number) => void
+  setCurrentPage: (page: number) => void,
+  exerciseTitles: any,
+  equipmentTitles: any,
+  categoryTitles: any,
+  tagTitles: any,
+  refetchCategoryTitles: () => void,
+  refetchTagTitles: () => void
 }) => {
 
-  const { data: exerciseTitles } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
-  const { data: equipmentTitles } = useQuery('get-equipment-titles', () => fetchEquipmentTitles({ filterString: '' }));
-  const { data: categoryTitles, refetch: refetchCategoryTitles } = useQuery('get-category-titles', () =>
-    fetchCategoryTitles({ filterString: '' })
-  );
-  const { data: tagTitles, refetch: refetchTagTitles } = useQuery('get-tag-titles', () => fetchTagTitles({ filterString: '' })
-  );
 
   if (!exercises) return null;
 

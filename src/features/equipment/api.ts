@@ -1,6 +1,5 @@
 import { Equipment, EquipmentsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
-import { queryClient } from '@/lib/react-query';
 import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchEquipments = async (filters: Filters) => {
   try {
@@ -37,7 +36,6 @@ export const createEquipment = async (payload: any) => {
     const result = (await axios.post('/equipments/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      queryClient.invalidateQueries('get-equipment');
       return 'Equipment successfully created.';
     }
     return result.message;
@@ -60,7 +58,6 @@ export const updateEquipment = async ({payload,
     
     const result = (await axios.put('/equipments/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries(['get-equipment']);
       return 'Equipment successfully updated.';
     }
     return result.message;
@@ -77,7 +74,6 @@ export const deleteEquipment = async (equipmentId: string) => {
   try {
     const result = (await axios.delete(`/equipments/admin/${equipmentId}`)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-equipment');
       return 'Successfully deleted.';
     }
     return Promise.reject(result.message);

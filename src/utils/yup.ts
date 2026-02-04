@@ -43,7 +43,7 @@ export const createExerciseSchema = Yup.object().shape({
 export const createEquipmentSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   link: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Thumbnail is required'),
+  thumbnail: Yup.mixed().required('Thumbnail is required'),
 });
 
 export const createWarmupSchema = Yup.object().shape({
