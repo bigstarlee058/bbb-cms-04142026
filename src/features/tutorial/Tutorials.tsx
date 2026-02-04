@@ -42,7 +42,7 @@ export const Tutorials = () => {
         <CreateTutorial />
       </div>
       <div className="mt-1">
-        <TutorialsList getValue={getValue}/>
+        <TutorialsList getValue={getValue} tutorialData={tutorialData} />
       </div>
     </ContentLayout>
   );

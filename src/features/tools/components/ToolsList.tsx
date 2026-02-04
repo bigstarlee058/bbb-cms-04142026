@@ -7,12 +7,16 @@ import Pagination from '@/components/Elements/Pagination';
 import { useNotificationStore } from '@/stores/notifications';
 import { DeleteTool } from './DeleteTool';
 import { UpdateTool } from './UpdateTool';
-export const ToolsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
+export const ToolsList = ({ 
+  getValue,
+  toolsData 
+}: { 
+  getValue: (item: any, field: string) => any,
+  toolsData: any
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
   const queryClient = useQueryClient();
-
-  const { data: toolsData, isLoading } = useQuery(['get-tools'], fetchTools);
   const { addNotification } = useNotificationStore();
   const mutation = useMutation(updateVisibility, {
     onSuccess: (message: string) => {
@@ -30,14 +34,6 @@ export const ToolsList = ({ getValue }: { getValue: (item: any, field: string) =
       visible: !currentVisible,
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   if (!toolsData) return null;
   const total = toolsData.tools.length;

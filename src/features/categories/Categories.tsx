@@ -68,7 +68,7 @@ export const Categories = () => {
         </div>
         <CreateCategory />
       </div>
-            <div className="mt-2">
+      <div className="mt-2">
         <CategoriesList
           getValue={getValue}
           categoryData={data}

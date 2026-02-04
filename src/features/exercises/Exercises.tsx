@@ -1,4 +1,4 @@
-import { useEffect ,useState} from 'react';
+import { useEffect, useState } from 'react';
 import { ContentLayout } from '@/components/Layout';
 import { CreateExercise } from './components/CreateExercise';
 import { ExercisesList } from './components/ExercisesList';
@@ -23,13 +23,11 @@ export const Exercises = () => {
   const { data: equipmentTitles } = useQuery('get-equipment-titles', () => fetchEquipmentTitles({ filterString: '' }));
   const { data: categoryTitles, refetch: refetchCategoryTitles } = useQuery('get-category-titles', () => fetchCategoryTitles({ filterString: '' }));
   const { data: tagTitles, refetch: refetchTagTitles } = useQuery('get-tag-titles', () => fetchTagTitles({ filterString: '' }));
-  
-  const { data: exercises, isLoading } = useQuery(
-    ['get-exercises', filters], 
-    () => fetchExercises(filters),
-    { keepPreviousData: true }
-  );
 
+  const { data: exercises, isLoading } = useQuery(
+    ['get-exercises', filters],
+    () => fetchExercises(filters),
+  );
   useEffect(() => {
     setFilters((prev) => ({ ...prev, page: currentPage }));
   }, [currentPage]);
@@ -86,12 +84,18 @@ export const Exercises = () => {
           onTagCreate={refetchTagTitles}
         />
       </div>
-            <div className="mt-1">
-        <ExercisesList 
-          getValue={getValue} 
+      <div className="mt-1">
+        <ExercisesList
+          getValue={getValue}
           exercises={exercises}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
+          exerciseTitles={exerciseTitles}
+          equipmentTitles={equipmentTitles}
+          categoryTitles={categoryTitles}
+          tagTitles={tagTitles}
+          refetchCategoryTitles={refetchCategoryTitles}
+          refetchTagTitles={refetchTagTitles}
         />
       </div>
     </ContentLayout>

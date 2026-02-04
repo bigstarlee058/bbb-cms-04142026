@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
 import { DeleteUpsell } from './DeleteUpsell';
-import { Table, Spinner } from '@/components/Elements';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { Table } from '@/components/Elements';
+import {  useMutation, useQueryClient } from 'react-query';
 import { formatDate } from '@/utils/format';
 import { Upsell } from '../types';
 import { upsellApi } from '../api';
@@ -11,12 +11,17 @@ import { useNotificationStore } from '@/stores/notifications';
 import { UpdateUpsell } from './UpdateUpsell';
 import { UpsellDetail } from './UpsellDetail';
 
-export const UpsellsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
+export const UpsellsList = ({ 
+  getValue,
+  upsellsData
+}: { 
+  getValue: (item: any, field: string) => any,
+  upsellsData: any
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 10;
   const queryClient = useQueryClient();
   const { addNotification } = useNotificationStore();
-  const { data: upsellsData, isLoading } = useQuery(['upsells'], upsellApi.getAll);
 
   const toggleMutation = useMutation(
     ({ id, isActive }: { id: string; isActive: boolean }) => upsellApi.toggleActive(id, isActive),
@@ -49,14 +54,6 @@ export const UpsellsList = ({ getValue }: { getValue: (item: any, field: string)
     }
     return Math.max(0, original - discount);
   };
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   if (!upsellsData?.data) return null;
 

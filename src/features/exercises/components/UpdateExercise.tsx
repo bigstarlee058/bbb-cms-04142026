@@ -150,7 +150,6 @@ export const UpdateExercise = ({
     mutate({ exerciseId, payload });
     onCategoryCreate();
     onTagCreate();
-    queryClient.invalidateQueries(['get-exercise', exerciseId]);
   };
 
   return (

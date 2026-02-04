@@ -4,6 +4,7 @@ import { CreateUpsell } from './CreateUpsell';
 import { upsellApi } from '../api';
 import { LanguageSwitcher, useListTranslations } from '@/components/Language';
 import { useQuery } from 'react-query';
+import {  Spinner } from '@/components/Elements';
 export const Upsells = () => {
   const { data: upsellsData, isLoading } = useQuery(['upsells'], upsellApi.getAll);
   const {
@@ -17,7 +18,11 @@ export const Upsells = () => {
     translatableFields: ["title", "subtitle", "description", "image"],
   });
   if (isLoading) {
-    return (<>Getting the Available Upsells</>)
+    return (
+      <div className="w-full h-48 flex justify-center items-center">
+        <Spinner size="lg" />
+      </div>
+    );
   }
   return (
     <ContentLayout title="">
@@ -35,7 +40,7 @@ export const Upsells = () => {
         <CreateUpsell />
       </div>
       <div className="mt-1">
-        <UpsellsList getValue={getValue} />
+        <UpsellsList getValue={getValue} upsellsData={upsellsData} />
       </div>
     </ContentLayout>
   );

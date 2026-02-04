@@ -14,7 +14,6 @@ import { fetchLanguages } from '@/lib/api';
 import { LanguageSelector } from '@/components/Language/LanguageSelector';
 import { TranslatableInput } from '@/components/Form/TranslatableInput';
 import { useTranslations } from '@/hooks/useTranslations';
-import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
 import { prepareTranslations } from '@/utils/translationHelper';
 
 interface FormikState {
@@ -24,7 +23,7 @@ interface FormikState {
   descriptionTranslations: Record<string, string>;
   link: string;
   linkTranslations: Record<string, string>;
-  image?: any;
+  thumbnail?: any;
   deleteImage: boolean;
   collections: string[],
 }
@@ -79,7 +78,7 @@ export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
     descriptionTranslations: equipmentData?.descriptionTranslations || {},
     link: equipmentData?.link || '',
     linkTranslations: equipmentData?.linkTranslations || {},
-    image: equipmentData?.thumbnail || '',
+    thumbnail: equipmentData?.thumbnail || '',
     deleteImage: false,
     collections: equipmentData?.collections || [],
   };
@@ -143,9 +142,9 @@ export const UpdateEquipment = ({ equipmentId, equipments, titles }) => {
             label="Thumbnail"
             name="thumbnail"
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            defaultImg={formik.values.thumbnail}
+            onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+            onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
           />
           <Select
             isMulti

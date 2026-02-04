@@ -1,7 +1,5 @@
 import { Warmup, WarmupsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
-import { queryClient } from '@/lib/react-query';
-
 export const fetchWarmups = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/warmups/admin/get`, { params: filters })) as WarmupsResponse;
@@ -34,7 +32,6 @@ export const createWarmup = async (payload) => {
     // Post the new category data (including the image) to your backend
     const result = (await axios.post('/warmups/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries(['get-warmups']);
       return 'Warmup successfully created.';
     }
     return result.message;
@@ -53,7 +50,6 @@ export const updateWarmup = async ({ warmupId, payload }) => {
       formData.append('_id', warmupId);
       const result = (await axios.put('/warmups/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries(['get-warmups']);
       return 'Warmup successfully updated.';
     }
     return result.message;

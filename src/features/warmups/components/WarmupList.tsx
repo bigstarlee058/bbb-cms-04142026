@@ -1,61 +1,26 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
+import { Table, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
-import { useQuery } from 'react-query';
-import { fetchWarmups } from '../api';
 import { Warmup, Filters } from '@/types';
 import { DeleteWarmup } from './DeleteWarmup';
 import { EyeIcon } from '@heroicons/react/outline';
 import { UpdateWarmup } from './UpdateWarmup';
-import { fetchEquipmentTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const WarmupList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const {search, sortBy} = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
-
-  const {
-    data: warmupData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-warmups', filters], () => fetchWarmups(filters));
-  const { data: titles } = useQuery('get-equipment-titles', () =>
-    fetchEquipmentTitles({ filterString: '' })
-  );
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+export const WarmupList = ({ 
+  getValue,
+  warmupData,
+  titles,
+  currentPage,
+  setCurrentPage
+}: { 
+  getValue: (item: any, field: string) => any,
+  warmupData: any,
+  titles: any,
+  currentPage: number,
+  setCurrentPage: (page: number) => void
+}) => {
 
   if (!warmupData) return null;
 
@@ -162,11 +127,11 @@ export const WarmupList = ({ getValue }: { getValue: (item: any, field: string) 
       />
       <div className="flex justify-center mt-6">
         <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(warmupData.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
+  currentPage={currentPage}
+  lastPage={Math.ceil(warmupData.count / 10)}
+  maxLength={7}
+  setCurrentPage={setCurrentPage}
+/>
       </div>
     </>
   );

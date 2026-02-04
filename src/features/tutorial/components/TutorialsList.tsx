@@ -8,24 +8,19 @@ import { UpdateTutorial } from './UpdateTutorial';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const TutorialsList = ({ getValue }: { getValue: (item: any, field: string) => any }) => {
+export const TutorialsList = ({ 
+  getValue,
+  tutorialData
+}: { 
+  getValue: (item: any, field: string) => any,
+  tutorialData: any
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
   const { search, sortBy } = useFilteringStore();
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
     page: 1,
   });
-
-  const {
-    data: tutorialData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-tutorials'], () => fetchTutorials(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
   useEffect(() => {
     setFilters({
       ...filters,
@@ -43,14 +38,6 @@ export const TutorialsList = ({ getValue }: { getValue: (item: any, field: strin
       sortBy: sortBy?.value,
     });
   }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   if (!tutorialData) return null;
 
