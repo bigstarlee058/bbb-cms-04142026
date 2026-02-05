@@ -99,8 +99,6 @@ export const CreateTutorial = () => {
     const payload = {
       ...values,
       ...translations,
-      deleteImage: values.deleteImage || false,
-      deleteImageTranslations: values.deleteImageTranslations || [],
     };
 
     mutate(payload);

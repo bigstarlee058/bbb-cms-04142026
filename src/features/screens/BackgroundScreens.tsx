@@ -28,7 +28,7 @@ export const BackgroundScreens = () => {
     data: data ? [data] : [],
     translatableFields: ['title','vimeoId', 'description'],
   });
-  if (isLoading || !data) {
+  if (isLoading ) {
     return (
       <div className="w-full h-48 flex justify-center items-center">
         <Spinner size="lg" />
@@ -43,7 +43,7 @@ export const BackgroundScreens = () => {
     <ContentLayout title="">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 md:px-8 py-6">
         <div className="flex justify-between items-center">
-          <h2>Backgroun Screens</h2>
+          <h2>Background Screens</h2>
           <div>
             {hasTranslations && (
               <LanguageSwitcher

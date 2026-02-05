@@ -1,76 +1,52 @@
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchAchievements } from '../api';
-import { Achievement, AchievementIndividual, AchievementsGroup, Filters } from '@/types';
+import { useState } from 'react';
+import { Table } from '@/components/Elements';
+import { AchievementsGroup } from '@/types';
 import { DeleteAchievementsGroup } from './DeleteAchievementsGroup';
 import { UpdateAchievementsGroup } from './UpdateAchievementsGroup';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const AchievementsGroupList = ({titles}) => {
+export const AchievementsGroupList = ({
+  getValue,
+  achievementsData,
+  titles,
+}: {
+  getValue: (item: any, field: string) => any;
+  achievementsData: any;
+  titles: any;
+}) => {
+  const perPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
-
-  const {
-    data: achievementsData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-achievementsgroups'], () => fetchAchievements(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   if (!achievementsData) return null;
+
+  const total = achievementsData?.achievementsGroups?.length || 0;
+  const lastPage = Math.ceil(total / perPage);
+  const paginatedData = achievementsData?.achievementsGroups?.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
+  ) || [];
 
   return (
     <>
       <Table<AchievementsGroup>
-        data={achievementsData.achievementsGroups}
+        data={paginatedData}
         columns={[
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
             Cell({ entry: { thumbnail } }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={thumbnail} />
+                </div>
+              );
             },
           },
           {
@@ -80,19 +56,22 @@ export const AchievementsGroupList = ({titles}) => {
           {
             title: 'Description',
             field: 'description',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'description')}</span>;
+            },
           },
           {
             title: 'Achievements',
             field: 'achievements',
             minwidth: 150,
             Cell({ entry: { achievements } }) {
-              if (!titles) return null; // Check if titles is defined
+              
+              if (!titles) return null;
               const sortedAchievements = achievements.sort((a, b) => a.index - b.index);
               return (
                 <span>
                   {sortedAchievements.map((achievement, idx) => {
-                    console.log('this is the title',titles)
-                    const matchedTitle = titles.find((title) => title.id === achievement.achievementId);
+                    const matchedTitle = titles.find((title) => title._id === achievement.achievementId);
                     if (!matchedTitle) return null;
                     return (
                       <div key={idx} className='p-1'>
@@ -109,7 +88,7 @@ export const AchievementsGroupList = ({titles}) => {
             field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
-              return <UpdateAchievementsGroup achievementId={_id} achievements={achievementsData} titles = {titles} />;
+              return <UpdateAchievementsGroup achievementId={_id} achievements={achievementsData} titles={titles} />;
             },
           },
           {
@@ -122,14 +101,16 @@ export const AchievementsGroupList = ({titles}) => {
           },
         ]}
       />
-      <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(achievementsData.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+      {lastPage > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={lastPage}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
     </>
   );
 };

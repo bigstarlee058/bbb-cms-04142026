@@ -87,6 +87,17 @@ interface DeviceInfo {
   appVersion?: string;
   lastLogin?: Date;
 }
+export interface UserSettings {
+  isEnabledNotifications?: boolean;
+  isEnabledMuteVideo?: boolean;
+  isEnabledHapicFeedback?: boolean;
+  isEnabledKeepAwake?: boolean;
+  isEnabledMetricUnits?: boolean;
+  weekStartDay?: 'monday' | 'sunday';
+  isDarkMode?: boolean;
+  language?: string;
+}
+
 export interface User extends BaseEntity {
   workoutsHistory: UserWorkout[];
   subscription: UserSubscription;
@@ -97,6 +108,7 @@ export interface User extends BaseEntity {
   rcUserId?:string;
   singuptype:string;
   deviceInfo:DeviceInfo;
+  settings?: UserSettings;
 }
 export interface UsersResponse {
   users: User[];

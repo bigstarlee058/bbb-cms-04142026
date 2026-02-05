@@ -1,29 +1,54 @@
+import { useEffect } from 'react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
-
+import { useMutation, useQuery } from 'react-query';
 import { Button } from '@/components/Elements';
 import { FormDrawer, Field, Dropzone, Textarea, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { createTagSchema } from '@/utils/yup';
-
 import { createAchievement } from '../api';
 import { Achievement, SelectOption } from '@/types';
-
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { queryClient } from '@/lib/react-query';
+import { prepareTranslations } from '@/utils/translationHelper';
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   type: string;
   description: string;
-  image: any;
+  descriptionTranslations: Record<string, string>;
+  thumbnail: any;
   achievements: Achievement[];
   deleteImage: boolean;
 }
 
-export const CreateAchievementsGroup = ({titles}) => {
+export const CreateAchievementsGroup = ({ titles }) => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description'],
+  });
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(createAchievement, {
     onSuccess: () => {
+      queryClient.invalidateQueries('get-achievementsgroups');
+      resetLanguages();
       formik.resetForm();
       addNotification({
         type: 'success',
@@ -33,9 +58,11 @@ export const CreateAchievementsGroup = ({titles}) => {
   });
   const initialValues: FormikState = {
     title: '',
+    titleTranslations: {},
     type: '',
     description: '',
-    image: '',
+    descriptionTranslations: {},
+    thumbnail: '',
     achievements: [],
     deleteImage: false
   };
@@ -46,8 +73,19 @@ export const CreateAchievementsGroup = ({titles}) => {
     onSubmit: (v) => onSubmit(v),
   });
 
-  const onSubmit = (value: any) => {
-    mutate(value);
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description'],
+      imageFields: ['thumbnail'],
+    });
+    const payload = {
+      ...values,
+      ...translations,
+    };
+    mutate(payload);
   };
 
   const handleAddLevel = () => {
@@ -87,17 +125,29 @@ export const CreateAchievementsGroup = ({titles}) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="create-achievement" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
-          <Field label="Type" formik={formik} name="type" />
-          <Textarea label="Description" formik={formik} name="description" />
-          <Dropzone
-            label="Thumbnail"
-            name="image"
+          <TranslatableInput
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
+          <Field label="Type" formik={formik} name="type" />
+          <TranslatableTextarea label="Description" formik={formik} name={`description`}
+            translationField={`descriptionTranslations`}
+            selectedLanguages={selectedLanguages}
+          />          <Dropzone
+            label="Thumbnail"
+            name="thumbnail"
+            formik={formik}
+            defaultImg={formik.values.thumbnail}
+            onDrop={(img) => formik.setFieldValue('thumbnail', img)}
+            onDelete={() => formik.setValues({ ...formik.values, thumbnail: '', deleteImage: true })}
           />
           {formik.values.achievements.map((achievements, achievementIndex) => (
             <div key={achievementIndex} className="flex items-center gap-4 mb-2 bg-gray-100 p-3 rounded">
@@ -106,14 +156,14 @@ export const CreateAchievementsGroup = ({titles}) => {
                 <Select
                   formik={formik}
                   label="Achievement"
-                  name="achievement"
-                  options={individualTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+                  name={`achievements[${achievementIndex}].achievementId`}
+                  options={individualTitles?.map(({ title, _id }) => ({ label: title, value: _id })) || []}
                   value={
-                    individualTitles?.find((title) => title._id === achievements.achievementId)
+                    formik.values.achievements[achievementIndex]?.achievementId
                       ? {
-                          label: individualTitles.find((title) => title._id === achievements.achievementId).title,
-                          value: achievements.achievementId,
-                        }
+                        label: individualTitles?.find((t) => t._id === formik.values.achievements[achievementIndex].achievementId)?.title || '',
+                        value: formik.values.achievements[achievementIndex].achievementId,
+                      }
                       : null
                   }
                   onChange={({ value }: SelectOption) =>
