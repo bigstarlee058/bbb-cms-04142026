@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from 'react-query';
 import { fetchMe } from '@/features/users';
-import { USER_ADMIN, User } from '@/features/users/types';
 import { Button } from '@/components/Elements';
 import { Field } from '@/components/Form';
 import { login } from '@/features/auth/api/auth';

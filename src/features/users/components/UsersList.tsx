@@ -9,8 +9,10 @@ import { useEffect, useState } from 'react';
 import { useFilteringStore } from '@/stores/filter';
 import { UserDetail } from '../UserDetail';
 import { ManageSubscription } from './ManageSubscription';
+import { fetchLanguages } from '@/lib/api';
 export const UsersList = () => {
-  const { search, sortBy,subscription ,source} = useFilteringStore();
+  const { search, sortBy, subscription, source } = useFilteringStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
     perPage: 10,
@@ -173,6 +175,16 @@ export const UsersList = () => {
             field: '_id',
             Cell({ entry }) {
               return <div>{entry?.deviceInfo?.appVersion || '-'}</div>;
+            },
+          },
+          {
+            title: 'Language',
+            field: 'settings',
+            Cell({ entry }) {
+              const langKey = entry.settings?.language || 'en';
+              const foundLang = fetchedLanguages.find((l) => l.key === langKey);
+              const langName = foundLang?.name || (langKey === 'en' ? 'English' : langKey);
+              return <span>{langName}</span>;
             },
           },
           {

@@ -14,11 +14,11 @@ export const DeleteAchievementsGroup = ({ achievementId }: DeleteAchievementsGro
   const { addNotification } = useNotificationStore();
   const { mutate, isSuccess, isLoading } = useMutation(deleteAchievement, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-achievementsgroups');
       addNotification({
         type: 'success',
         title: message,
       });
-      queryClient.invalidateQueries('get-achievementsgroups');
     },
   });
 

@@ -1,7 +1,6 @@
-import { Achievement, AchievementsGroupResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
+import {  AchievementsGroupResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
-import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchAchievements = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/achievements-group/admin/get`, {
@@ -17,26 +16,12 @@ export const fetchAchievements = async (filters: Filters) => {
   }
 };
 
-export const createAchievement = async (payload: {
-  title: string;
-  type: string;
-  description: string;
-  image: File;
-  achievements: Achievement[];  // Assuming the image comes as a File object from the client
-}) => {
+export const createAchievement = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('type', payload.type);
-    formData.append('description', payload.description);
-    formData.append('image', payload.image);
-    formData.append('achievements', JSON.stringify(payload.achievements));
-
+    const formData = buildFormDataWithImages(payload, []);
     const result = (await axios.post('/achievements-group/admin', formData)) as any;
-    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
-      queryClient.invalidateQueries('get-achievementsgroups');
-      // return result.achievementsIndividuals;
+      return 'Achievement successfully created.';
     }
     return result.message;
   } catch (err: any) {
@@ -49,26 +34,12 @@ export const createAchievement = async (payload: {
   }
 };
 
-export const updateAchievement = async (payload: {
-  achievementId: string 
-  title: string;
-  type: string;
-  description: string;
-  achievements: Achievement[];
-  image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: boolean,
-}) => {
+export const updateAchievement = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, []);  
     formData.append('_id', payload.achievementId);
-    formData.append('title', payload.title);
-    formData.append('type', payload.type);
-    formData.append('description', payload.description);
-    formData.append('image', payload.image);
-    formData.append('achievements', JSON.stringify(payload.achievements));
     const result = (await axios.put('/achievements-group/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-achievementsgroups');
       return 'Achievement successfully updated.';
     }
     return result.message;
