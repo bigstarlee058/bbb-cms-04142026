@@ -133,16 +133,26 @@ const WeekPlanComponent = ({
     updateMonths(updatedMonths, { skipMeasure: true })
   };
 
-  const updateWeekTitle = (_,value) => {
-    const updatedWeek = { ...week, title:value };
+  const updateWeekTitle = (key, value) => {
+    const keys = key.split('.');
+    let updatedWeek = { ...week };
+
+    if (keys.length === 1) {
+      updatedWeek = { ...week, [key]: value };
+    } else {
+      updatedWeek = {
+        ...week,
+        [keys[0]]: { ...week[keys[0]], [keys[1]]: value }
+      };
+    }
     updateWeek(monthIndex, weekIndex, updatedWeek);
   };
   const isSevenDays = showAddDay(week.days);
   return (
     <div className={`my-4 border p-4 rounded shadow week-${week.localId}`} style={{ backgroundColor: '#CDBDDC' }}>
       <div className="flex mb-2 justify-between items-center">
-        <CustomTitle type={'WEEK'} index={weekIndex + 1} customTitle={week.title} updateFunction={updateWeekTitle} titleTranslations={{}}
-          selectedLanguages={[]} />
+        <CustomTitle type={'WEEK'} index={weekIndex + 1} customTitle={week.title} updateFunction={updateWeekTitle} titleTranslations={week.titleTranslations || {}}
+          selectedLanguages={selectedLanguages} />
         <div className="flex gap-3">
           {isFourWeeksOrLess ? (
             <Button

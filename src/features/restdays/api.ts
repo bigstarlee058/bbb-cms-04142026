@@ -1,7 +1,6 @@
 import { Restday, ErrorMessage, ResponseMessage, Filters, RestdaysResponse } from '@/types';
 import { axios } from '@/lib/axios';
-import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchRestdays = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/restdays/admin/get`, { params: filters })) as RestdaysResponse;
@@ -30,13 +29,9 @@ export const fetchRestday = async (restdayId: string) => {
 
 export const createRestday = async (payload) => {
   try {
-    const newRestday = {
-      ...payload,
-      createdAt: Date.now(),
-    };
-    const result = (await axios.post('/restdays/admin', newRestday)) as ResponseMessage;
+    const formData = buildFormDataWithImages(payload, []);
+    const result = (await axios.post('/restdays/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-restdays');
       return 'Restday successfully created.';
     }
     return result.message;
@@ -58,8 +53,6 @@ export const updateRestday = async ({ restdayId, payload }) => {
     };
     const result = (await axios.put('/restdays/admin', updatedRestday)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-restdays');
-      queryClient.invalidateQueries(['get-restday', restdayId]);
       return 'Restday successfully updated.';
     }
     return result.message;

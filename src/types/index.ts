@@ -377,6 +377,7 @@ export interface Month extends WorkoutsBaseEntity {
 export interface Week extends WorkoutsBaseEntity {
   index?: number;
   title: string;
+  titleTranslations?:Record<string, string>;
   description: string;
   vimeoId: string;
   thumbnail: any;

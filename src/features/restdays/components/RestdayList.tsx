@@ -1,86 +1,66 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
+import { Table, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { Restday, Filters } from '@/types';
 import { DeleteRestday } from './DeleteRestday';
 import { EyeIcon } from '@heroicons/react/outline';
 import { UpdateRestday } from './UpdateRestday';
-import { useQuery } from 'react-query';
-import { fetchRestdays } from '../api';
-import { fetchEquipmentTitles } from '@/features/workouts/api';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const RestdayList = () => {
+export const RestdayList = ({
+  getValue,
+  restdayData,
+  titles,
+}: {
+  getValue: (item: any, field: string) => any;
+  restdayData: any;
+  titles: any;
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const {search, sortBy} = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
-
-  const {
-    data: restdayData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-restdays'], () => fetchRestdays(filters));
-  const { data: titles } = useQuery('get-equipment-titles', () =>
-    fetchEquipmentTitles({ filterString: '' })
-  );
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  
+  const perPage = 10;
 
   if (!restdayData) return null;
+
+  const total = restdayData.restdays?.length || 0;
+  const lastPage = Math.ceil(total / perPage);
+  const paginatedRestdays = restdayData.restdays?.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
+  );
 
   return (
     <>
       <Table<Restday>
-        data={restdayData.restdays}
+        data={paginatedRestdays}
         columns={[
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Vimeo',
             field: 'vimeoId',
+            Cell({entry}){
+              return <span>{getValue(entry, 'vimeoId')}</span>;
+            }
           },
           {
             title: 'Note',
             field: 'description',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'description')}</span>;
+            },
           },
           {
             title: 'Equipment',
             field: 'equipments',
             Cell({ entry: { equipments } }) {
-              if (!titles) return null; // Check if titles is defined
+              if (!titles) return null;
               const filteredTitles = titles
                 .filter((title) => equipments.includes(title.id))
                 .map((title) => title.title)
@@ -125,14 +105,16 @@ export const RestdayList = () => {
           },
         ]}
       />
-      <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(restdayData.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+      {lastPage > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={lastPage}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
     </>
   );
 };

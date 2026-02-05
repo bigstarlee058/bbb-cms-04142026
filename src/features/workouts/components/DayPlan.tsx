@@ -137,9 +137,9 @@ const DayPlanComponent = ({
         typeId: newTypeId,
         warmupId: '',
         title: '',
-        titleTranslations:{},
+        titleTranslations: {},
         guide: '',
-        guideTranslations:{},
+        guideTranslations: {},
         formats: newFormats,
         localId: uuid()
       };
@@ -151,9 +151,9 @@ const DayPlanComponent = ({
         typeId: newTypeId,
         warmupId: '',
         title: '',
-        titleTranslations:{},
+        titleTranslations: {},
         guide: '',
-        guideTranslations:{},
+        guideTranslations: {},
         formats: newFormats,
         localId: uuid()
       };
@@ -189,13 +189,13 @@ const DayPlanComponent = ({
     // const newDay = _.cloneDeep(originDay);
     const newDay = { ..._.cloneDeep(originDay), formats: [] }; // Reset formats
     delete newDay._id;
-    newDay.localId=uuid();
+    newDay.localId = uuid();
     newDay.exercises.map((exercise) => {
-      exercise.localId=uuid();
+      exercise.localId = uuid();
     });
     newDay.warmups.map((warmup) => {
       delete warmup._id;
-      warmup.localId=uuid();
+      warmup.localId = uuid();
     });
     const nextFormat = getNextFormat();
     const nextTypeId = getNextTypeId();
@@ -270,11 +270,20 @@ const DayPlanComponent = ({
     }
   };
 
-  const updateDayTitle = (_,title) => {
-    const updatedDay = { ...day, title };
+  const updateDayTitle = (key, value) => {
+    const keys = key.split('.');
+    let updatedDay = { ...day };
+
+    if (keys.length === 1) {
+      updatedDay = { ...day, [key]: value };
+    } else {
+      updatedDay = {
+        ...day,
+        [keys[0]]: { ...day[keys[0]], [keys[1]]: value }
+      };
+    }
     updateDay(monthIndex, weekIndex, dayIndex, updatedDay);
   };
-
   const isCollapsed = isWeekCollapsed || !expandedDays?.[dayKey];
   const toggleCollapse = React.useCallback(() => {
     if (!setExpandedDays) return;
@@ -350,9 +359,15 @@ const DayPlanComponent = ({
     <>
       <div className={`p-4 bg-gray-300 rounded shadow-md mt-4 day-${day.localId}`} style={{ backgroundColor: '#EAC0AB' }}>
         <div className="flex mb-2 justify-between items-center">
-          <CustomTitle type={'DAY'} index={day.typeId || 1} customTitle={day.title} updateFunction={updateDayTitle} selectedLanguages={[]}  
-          titleTranslations={{}}
-          isPumpDay />
+          <CustomTitle
+            type={'DAY'}
+            index={day.typeId || 1}
+            customTitle={day.title}
+            updateFunction={updateDayTitle}
+            selectedLanguages={selectedLanguages}
+            titleTranslations={day.titleTranslations || {}}
+            isPumpDay
+          />
           <div className="flex gap-3">
             {isSevenDays ? (
               <Button

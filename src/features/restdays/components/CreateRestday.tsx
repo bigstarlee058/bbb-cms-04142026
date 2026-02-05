@@ -1,26 +1,52 @@
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
+import { useMutation,useQueryClient ,useQuery } from 'react-query';
 import { PlusIcon } from '@heroicons/react/outline';
 import { useNotificationStore } from '@/stores/notifications';
 import { createRestdaySchema } from '@/utils/yup';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { Button } from '@/components/Elements';
 import { FormDrawer, Select } from '@/components/Form';
-import { Field } from '@/components/Form';
 import { createRestday } from "../api";
-import { Textarea } from '@/components/Form';
+import { useEffect } from 'react';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   equipments: string[];
 }
 
-export const CreateRestday = ({titles}) => {
+export const CreateRestday = ({ titles }) => {
   const { addNotification } = useNotificationStore();
+  const queryClient = useQueryClient();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+    const setLanguages = useLanguageStore((state) => state.setLanguages);
+    const {
+      selectedLanguages,
+      handleLanguageToggle,
+      resetLanguages,
+    } = useTranslations({
+      translationFields: ['title', 'vimeoId', 'description']
+    });
+  
+    useEffect(() => {
+      if (fetchedLanguages.length > 0) {
+        setLanguages(fetchedLanguages);
+      }
+    }, [fetchedLanguages, setLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(createRestday, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-restdays');
+      resetLanguages();
       formik.resetForm();
       addNotification({
         type: 'success',
@@ -33,8 +59,11 @@ export const CreateRestday = ({titles}) => {
 
   const initialValues: FormikState = {
     title: '',
+    titleTranslations:{},
     vimeoId: '',
+    vimeoIdTranslations:{},
     description: '',
+    descriptionTranslations:{},
     equipments: [],
   };
   const formik = useFormik({
@@ -61,10 +90,29 @@ export const CreateRestday = ({titles}) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="create-restday" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
-          <Field label="Vimeo" formik={formik} name="vimeoId" />
-          <Textarea label="Notes" formik={formik} name="description" />
+         <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
+          <TranslatableInput
+            formik={formik}
+            name="vimeoId"
+            translationField="vimeoIdTranslations"
+            label="Vimeo Id"
+            selectedLanguages={selectedLanguages}
+          />
+          <TranslatableTextarea label="Notes"
+          formik={formik} name="description"
+          translationField={`descriptionTranslations`}
+          selectedLanguages={selectedLanguages} />
           <Select
             isMulti
             formik={formik}
