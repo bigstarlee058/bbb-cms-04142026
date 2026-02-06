@@ -93,6 +93,9 @@ export const createTagSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   type: Yup.string().max(255).required(),
 });
+export const achievementsTargetSchema = Yup.object().shape({
+  title: Yup.string().max(255).required('Title is required'),
+});
 
 export const createStaffSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),

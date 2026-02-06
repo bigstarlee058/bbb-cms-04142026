@@ -1,67 +1,53 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchTargets } from '../api';
-import { Filters, Target } from '@/types';
+import { Table } from '@/components/Elements';
+import { Target } from '@/types';
 import { DeleteAchievementsTarget } from './DeleteAchievementsTarget';
 import { UpdateAchievementsTarget } from './UpdateAchievementsTarget';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const AchievementsTargetsList = () => {
+export const AchievementsTargetsList = ({
+  getValue,
+  targetData,
+}: {
+  getValue: (item: any, field: string) => any;
+  targetData: any;
+}) => {
+  const perPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
-
-  const {
-    data: targetData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-targets'], () => fetchTargets(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  const { search } = useFilteringStore();
 
   if (!targetData) return null;
+  let filteredData = targetData.achievementsTargets || [];
+  if (search) {
+    filteredData = filteredData.filter((item: any) => {
+      const title = getValue(item, 'title')?.toLowerCase() || '';
+      return title.includes(search.toLowerCase());
+    });
+  }
+
+  const total = filteredData.length;
+  const lastPage = Math.ceil(total / perPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
 
   return (
     <>
       <Table<Target>
-        data={targetData.achievementsTargets}
+        data={paginatedData}
         columns={[
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: '',
@@ -81,14 +67,16 @@ export const AchievementsTargetsList = () => {
           },
         ]}
       />
-      <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(targetData.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+      {lastPage > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={lastPage}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
     </>
   );
 };
