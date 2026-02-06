@@ -1,32 +1,56 @@
 import { PlusIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
-
+import { useMutation, useQuery } from 'react-query';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone, Textarea, Select } from '@/components/Form';
+import { FormDrawer, Field, Dropzone, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
-import { createCategorySchema } from '@/utils/yup';
-
+import { achievementsIndividualSchema } from '@/utils/yup';
 import { createAchievement } from '../api';
 import { SelectOption } from '@/types';
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
+import { useLanguageStore } from '@/stores/languages';
+import { fetchLanguages } from '@/lib/api';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { queryClient } from '@/lib/react-query';
+import { prepareTranslations } from '@/utils/translationHelper';
 interface FormikState {
   title: string;
-  deleteImage: boolean;
+  titleTranslations: Record<string, string>;
   image: any;
+  deleteImage: boolean;
   targettype: string;
   target: string;
   value: string;
   description: string;
+  descriptionTranslations: Record<string, string>;
 }
 
-export const CreateAchievementsIndividual = ({tagtitles, othertitles}) => {
+export const CreateAchievementsIndividual = ({ tagtitles, othertitles }) => {
   const { addNotification } = useNotificationStore();
-  const [targetTitles, setTargetTitles] = useState(tagtitles);
+  const [targetTitles, setTargetTitles] = useState<any[]>([]);
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description'],
+  });
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(createAchievement, {
     onSuccess: () => {
+      queryClient.invalidateQueries('get-achievements');
+      resetLanguages();
       formik.resetForm();
       addNotification({
         type: 'success',
@@ -36,28 +60,46 @@ export const CreateAchievementsIndividual = ({tagtitles, othertitles}) => {
   });
   const initialValues: FormikState = {
     title: '',
+    titleTranslations: {},
     image: '',
     deleteImage: false,
     targettype: '',
     target: '',
     value: '1',
     description: '',
+    descriptionTranslations: {},
   };
   const optionTitles = ["Tags", "Others"];
   const formik = useFormik({
     initialValues,
-    validationSchema: createCategorySchema,
+    validationSchema: achievementsIndividualSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (value: any) => {
-    mutate(value);
+
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description'],
+      imageFields: ['thumbnail'],
+    });
+    const payload = {
+      ...values,
+      ...translations,
+    };
+    mutate(payload);
   };
 
-  const onChangeSelect = (value: String) => {
-    if(value == "Tags") {
-      setTargetTitles(tagtitles);
-    } else if (value == "Others") {
-      setTargetTitles(othertitles);
+
+  const onChangeSelect = (value: string) => {
+    formik.setFieldValue('target', '');
+    if (value === "Tags") {
+      setTargetTitles(tagtitles || []);
+    } else if (value === "Others") {
+      setTargetTitles(othertitles || []);
+    } else {
+      setTargetTitles([]);
     }
   }
 
@@ -77,8 +119,18 @@ export const CreateAchievementsIndividual = ({tagtitles, othertitles}) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="create-achievement" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
           <Dropzone
             label="Thumbnail"
             name="image"
@@ -101,11 +153,15 @@ export const CreateAchievementsIndividual = ({tagtitles, othertitles}) => {
             formik={formik}
             label="Target"
             name="target"
-            options={targetTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            options={targetTitles?.map(({ title, _id, id }) => ({ label: title, value: _id || id })) || []}
             onChange={({ value }: SelectOption) => formik.setFieldValue('target', value)}
+            isDisabled={!formik.values.targettype}
           />
-          <Field label="Value" formik={formik} name="value" type ='number'/>
-          <Textarea label="Description" formik={formik} name="description" />
+          <Field label="Value" formik={formik} name="value" type='number' />
+          <TranslatableTextarea label="Description" formik={formik} name={`description`}
+            translationField={`descriptionTranslations`}
+            selectedLanguages={selectedLanguages}
+          />
         </form>
       </FormDrawer>
     </Authorization>
