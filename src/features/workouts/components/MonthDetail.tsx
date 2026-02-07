@@ -19,9 +19,27 @@ interface Props {
 
 export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selectedLanguages }: Props) => {
   const [showDatePickerModal, setShowDatePickerModal] = useState(false);
-  const [startDate, setStartDate] = useState<Date | undefined>(month.startDate);
-  const [endDate, setEndDate] = useState<Date | undefined>(month.endDate);
+  const parseDate = (date: any): Date | undefined => {
+    if (!date) return undefined;
+    const d = new Date(date);
+    return isNaN(d.getTime()) ? undefined : d;
+  };
+  const formatDate = (date: Date | undefined): string => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getUTCFullYear();
+    const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${m}/${day}/${year}`;
+  };
 
+  const [startDate, setStartDate] = useState<Date | undefined>(parseDate(month.startDate));
+  const [endDate, setEndDate] = useState<Date | undefined>(parseDate(month.endDate));
+
+  useEffect(() => {
+    setStartDate(parseDate(month.startDate));
+    setEndDate(parseDate(month.endDate));
+  }, [month.startDate, month.endDate]);
   const { count } = useMonthCoverContext();
 
   useEffect(() => {
@@ -31,16 +49,25 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selecte
   }, [count]);
 
   const updateMonthDates = (range) => {
-    setStartDate(range.from);
-    setEndDate(range.to);
-    const updatedMonth = { ...month, startDate: range.from, endDate: range.to };
+    const normalizeDate = (date) => {
+      if (!date) return undefined;
+      const d = new Date(date);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0);
+    };
+
+    const from = normalizeDate(range.from);
+    const to = normalizeDate(range.to);
+
+    setStartDate(from);
+    setEndDate(to);
+    const updatedMonth = { ...month, startDate: from, endDate: to };
     updateMonth(monthIndex, updatedMonth);
   };
 
   const updateMonthDetail = (key, value) => {
     const keys = key.split('.');
     let updatedMonth = { ...month };
-    
+
     if (keys.length === 1) {
       updatedMonth = { ...month, [key]: value };
     } else {
@@ -94,7 +121,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selecte
               <Field
                 label="Start Date"
                 name="startDate"
-                value={startDate ? new Date(startDate).toLocaleDateString() : ''}
+                value={formatDate(startDate)}
                 onChange={handleChange}
                 onClick={openDatePickerModal}
                 readOnly
@@ -103,7 +130,7 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selecte
                 label="End Date"
                 name="endDate"
                 disabled
-                value={endDate ? new Date(endDate).toLocaleDateString() : ''}
+                value={formatDate(endDate)}
                 onChange={handleChange}
                 onClick={openDatePickerModal}
                 readOnly
