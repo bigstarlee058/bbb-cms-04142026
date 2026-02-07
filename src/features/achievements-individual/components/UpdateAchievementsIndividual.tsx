@@ -2,29 +2,49 @@ import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
 import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { updateAchievement } from '../api';
 import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
-import { createCategorySchema } from '@/utils/yup';
+import { achievementsIndividualSchema } from '@/utils/yup';
 import { SelectOption } from '@/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { fetchLanguages } from '@/lib/api';
+import { useLanguageStore } from '@/stores/languages';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
+import { useTranslations } from '@/hooks/useTranslations';
+import { prepareTranslations } from '@/utils/translationHelper';
+import { queryClient } from '@/lib/react-query';
 
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   deleteImage: boolean;
   image: any;
   targettype: string;
   target: string;
   value: string;
   description: string;
+  descriptionTranslations: Record<string, string>;
 }
 
 export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagtitles, othertitles }) => {
-  const [isSetTitles, setIsSetTitles] = useState(false);
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+  
+
   const { mutate, isLoading, isSuccess } = useMutation(updateAchievement, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-achievements');
+      resetLanguages();
       addNotification({
         type: 'success',
         title: message,
@@ -33,29 +53,63 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagt
   });
   const optionTitles = ["Tags", "Others"];
 
-  const achievementData = achievements.achievementsIndividuals.find(ex => ex._id === achievementId);
-  const [targetTitles, setTargetTitles] = useState(achievementData?.targettype == "Tags"? tagtitles : othertitles);
+  const achievementData = achievements.achievementsIndividuals.find(ac => ac._id === achievementId);
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    setSelectedLanguages,
+    resetLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description'],
+  });
+  const syncLanguages = () => {
+    const apiLanguages = fetchedLanguages.map(l => l.key);
+    const foundLangs = Object.values(achievementData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    if (foundLangs.length > 0) setSelectedLanguages([...new Set(foundLangs)]);
+    else resetLanguages();
+  };
+  useEffect(() => {
+    syncLanguages();
+  }, [achievementData, fetchedLanguages]);
+  const [targetTitles, setTargetTitles] = useState(achievementData?.targettype == "Tags" ? tagtitles : othertitles);
   const initialValues: FormikState = {
     title: achievementData?.title || '',
+    titleTranslations: achievementData?.titleTranslations || {},
     image: achievementData?.image || '',
     deleteImage: false,
     targettype: achievementData?.targettype || '',
     target: achievementData?.target || '',
     value: achievementData?.value || '1',
     description: achievementData?.description || '',
+    descriptionTranslations: achievementData?.descriptionTranslations || {},
   };
   const formik = useFormik({
     initialValues,
-    validationSchema: createCategorySchema,
+    validationSchema: achievementsIndividualSchema,
     onSubmit: (v) => onSubmit(v),
   });
-  const onSubmit = (state: FormikState) => {
-    const { title, image, targettype, target , value, description,deleteImage} = state;
-    mutate({ achievementId, title, image, targettype, target, value, description, deleteImage });
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description'],
+      imageFields: [],
+    });
+    const payload = {
+      ...values,
+      ...translations,
+      achievementId,
+    };
+    mutate(payload);
   };
 
   const onChangeSelect = (value: String) => {
-    if(value == "Tags") {
+    if (value == "Tags") {
       setTargetTitles(tagtitles);
     } else if (value == "Others") {
       setTargetTitles(othertitles);
@@ -73,8 +127,18 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagt
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-achievement" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
           <Dropzone
             label="Thumbnail"
             name="thumbnail"
@@ -91,9 +155,9 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagt
             value={
               optionTitles?.find((title) => title === formik.values.targettype)
                 ? {
-                    label: formik.values.targettype,
-                    value: formik.values.targettype,
-                  }
+                  label: formik.values.targettype,
+                  value: formik.values.targettype,
+                }
                 : null
             }
             // value= {{ label: formik.values.type, value: formik.values.type }}
@@ -106,20 +170,23 @@ export const UpdateAchievementsIndividual = ({ achievementId, achievements, tagt
             formik={formik}
             label="Target"
             name="target"
-            options={targetTitles?.map(({ title, id }) => ({ label: title, value: id })) || []}
+            options={targetTitles?.map(({ title, _id, id }) => ({ label: title, value: _id || id })) || []}
             value={
-              targetTitles?.find((title) => title._id === formik.values.target)
+              targetTitles?.find((title) => (title._id || title.id) === formik.values.target)
                 ? {
-                    label: targetTitles.find((title) => title._id === formik.values.target).title,
-                    value: formik.values.target,
-                  }
+                  label: targetTitles.find((title) => (title._id || title.id) === formik.values.target).title,
+                  value: formik.values.target,
+                }
                 : null
             }
-            // value= {{ label: formik.values.type, value: formik.values.type }}
             onChange={({ value }: SelectOption) => formik.setFieldValue('target', value)}
+            isDisabled={!formik.values.targettype}
           />
-          <Field label="Value" formik={formik} name="value" type ='number'/>
-          <Textarea label="Description" formik={formik} name="description" />
+          <Field label="Value" formik={formik} name="value" type='number' />
+          <TranslatableTextarea label="Description" formik={formik} name={`description`}
+            translationField={`descriptionTranslations`}
+            selectedLanguages={selectedLanguages}
+          />
         </form>
       </FormDrawer>
     </Authorization>

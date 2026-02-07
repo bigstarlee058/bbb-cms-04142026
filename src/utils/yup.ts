@@ -77,9 +77,13 @@ export const createBonusSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   image: Yup.mixed().required('Thumbnail is required'),
 });
-
+export const achievementsIndividualSchema = Yup.object().shape({
+  title: Yup.string().max(255).required('Title is required'),
+  image: Yup.mixed().required('Image is required'),
+  description: Yup.string().max(1000).required('Description is required'),
+});
 export const createCategorySchema = Yup.object().shape({
-  title: Yup.string().max(255).required(),
+  title: Yup.string().max(255).required('skjsosk'),
   thumbnail: Yup.mixed().required('Thumbnail is required'),
 });
 export const createTagsSchema = Yup.object().shape({
@@ -88,6 +92,9 @@ export const createTagsSchema = Yup.object().shape({
 export const createTagSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   type: Yup.string().max(255).required(),
+});
+export const achievementsTargetSchema = Yup.object().shape({
+  title: Yup.string().max(255).required('Title is required'),
 });
 
 export const createStaffSchema = Yup.object().shape({

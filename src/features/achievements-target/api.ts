@@ -19,10 +19,14 @@ export const fetchTargets = async (filters: Filters) => {
 
 export const createTarget = async (payload: {
   title: string;
+  titleTranslations?: Record<string, string>;
 }) => {
   try {
     const formData = new FormData();
     formData.append('title', payload.title);
+    if (payload.titleTranslations) {
+      formData.append('titleTranslations', JSON.stringify(payload.titleTranslations));
+    }
     // Post the new target data (including the image) to your backend
     const result = (await axios.post('/achievements-target/admin', formData)) as any;
     // Invalidate cache or update your frontend state if needed
@@ -42,16 +46,19 @@ export const createTarget = async (payload: {
 };
 
 export const updateTarget = async (payload: {
-  targetId: string 
+  targetId: string
   title: string;
+  titleTranslations?: Record<string, string>;
 }) => {
   try {
     const formData = new FormData();
     formData.append('_id', payload.targetId);
     formData.append('title', payload.title);
+    if (payload.titleTranslations) {
+      formData.append('titleTranslations', JSON.stringify(payload.titleTranslations));
+    }
     const result = (await axios.put('/achievements-target/admin', formData)) as ResponseMessage;
     if (result.result === true) {
-      queryClient.invalidateQueries('get-targets');
       return 'Target successfully updated.';
     }
     return result.message;

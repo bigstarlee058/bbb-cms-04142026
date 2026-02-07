@@ -141,7 +141,8 @@ export const CreateAchievementsGroup = ({ titles }) => {
           <TranslatableTextarea label="Description" formik={formik} name={`description`}
             translationField={`descriptionTranslations`}
             selectedLanguages={selectedLanguages}
-          />          <Dropzone
+          />
+          <Dropzone
             label="Thumbnail"
             name="thumbnail"
             formik={formik}

@@ -14,11 +14,11 @@ export const DeleteAchievementsIndividual = ({ achievementId }: DeleteAchievemen
   const { addNotification } = useNotificationStore();
   const { mutate, isSuccess, isLoading } = useMutation(deleteAchievement, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-achievements');
       addNotification({
         type: 'success',
         title: message,
       });
-      queryClient.invalidateQueries('get-achievements');
     },
   });
 
