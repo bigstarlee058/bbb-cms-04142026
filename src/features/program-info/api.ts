@@ -1,7 +1,7 @@
 import { Section, SectionsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchSections = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/program-info/admin/get`, {
@@ -30,16 +30,9 @@ export const fetchSection = async (sectionId: string) => {
   }
 };
 
-export const createSection = async (payload: {
-  title: string;
-  description: string;
-  vimeoId: string
-}) => {
+export const createSection = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('description', payload.description);
-    formData.append('vimeoId', payload.vimeoId);
+    const formData = buildFormDataWithImages(payload, []);
     const result = (await axios.post('/program-info/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-sections');
@@ -57,22 +50,10 @@ export const createSection = async (payload: {
 };
 
 
-export const updateSection = async (payload: {
-  sectionId: string 
-  title: string;
-  description: string;
-  vimeoId: string;
-  variations: string[];
-  formats: string[];
-}) => {
+export const updateSection = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, []);
     formData.append('_id', payload.sectionId);
-    formData.append('title', payload.title);
-    formData.append('description', payload.description);
-    formData.append('vimeoId', payload.vimeoId);
-    formData.append('variations', JSON.stringify(payload.variations));
-    formData.append('formats', JSON.stringify(payload.formats));
     const result = (await axios.put('/program-info/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-sections');

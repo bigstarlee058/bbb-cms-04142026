@@ -1,6 +1,6 @@
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
+import { Field, FormDrawer } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation } from 'react-query';
 import { updateSection } from '../api';
@@ -8,17 +8,60 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createSectionSchema } from '@/utils/yup';
 import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
-
+import { useEffect } from 'react';
+import { useQuery } from 'react-query';
+import { fetchLanguages } from '@/lib/api';
+import { useLanguageStore } from '@/stores/languages';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { TranslatableTextareaWithFormatting } from '@/components/Form/TranslatableTextareaWithFormatting';
+import { prepareTranslations } from '@/utils/translationHelper';
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   vimeoId: string;
+  vimeoIdTranslations: Record<string, string>;
   variations: string[];
   formats: string[];
 }
 
 export const UpdateSection = ({ sectionId, sections }) => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  const sectionData = sections.sections.find((se) => se._id === sectionId);
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description', 'vimeoId'],
+  });
+
+  const syncLanguages = () => {
+    const apiLanguages = fetchedLanguages.map(l => l.key);
+    const foundLangs = Object.values(sectionData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    if (foundLangs.length > 0) setSelectedLanguages([...new Set(foundLangs)]);
+    else resetLanguages();
+  };
+
+  useEffect(() => {
+    syncLanguages();
+  }, [sectionData, fetchedLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(updateSection, {
     onSuccess: (message: string) => {
       addNotification({
@@ -28,26 +71,36 @@ export const UpdateSection = ({ sectionId, sections }) => {
     }
   });
 
-  const sectionData = sections.sections.find((ex) => ex._id === sectionId);
-
   const initialValues: FormikState = {
     title: sectionData?.title || '',
+    titleTranslations: sectionData?.titleTranslations || {},
     description: sectionData?.description || '',
+    descriptionTranslations: sectionData?.descriptionTranslations || {},
     vimeoId: sectionData?.vimeoId || '',
+    vimeoIdTranslations: sectionData?.vimeoIdTranslations || {},
     variations: sectionData?.variations || [],
     formats: sectionData?.formats || [],
   };
   const formik = useFormik({
     initialValues,
+    enableReinitialize: true,
     validationSchema: createSectionSchema,
     onSubmit: (v) => onSubmit(v)
   });
-  const onSubmit = (state: FormikState) => {
-    const { title, description, vimeoId, variations, formats } = state;
-    console.log("sumit")
-    mutate({ sectionId, title, description, vimeoId, variations, formats });
+  const onSubmit = (values: FormikState) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description', 'vimeoId'],
+      imageFields: [],
+    });
+    mutate({
+      sectionId, ...values,
+      ...translations
+    });
   };
-  const handleVariationCheckboxClick = (label: string, index:number) => {
+  const handleVariationCheckboxClick = (label: string, _: number) => {
     const currentValues = formik.values.variations;
     let newValues;
 
@@ -63,7 +116,7 @@ export const UpdateSection = ({ sectionId, sections }) => {
     newValues.sort((a, b) => Number(a) - Number(b));
     formik.setFieldValue('variations', newValues);
   };
-  const handleFormatCheckboxClick = (label: string, index:number) => {
+  const handleFormatCheckboxClick = (label: string, _: number) => {
     const currentFormats = formik.values.formats;
     let newFormats;
 
@@ -91,11 +144,32 @@ export const UpdateSection = ({ sectionId, sections }) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-section" onSubmit={formik.handleSubmit}>
-          <Field label="Name" formik={formik} name="title" />
-          <TextareaWithFormatting label="Description" formik={formik} name="description" />
-          {/* <Textarea label="Description" formik={formik} name="description" /> */}
-          <Field label="Vimeo Id" formik={formik} name="vimeoId" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Name"
+            selectedLanguages={selectedLanguages}
+          />
+          <TranslatableTextareaWithFormatting
+            formik={formik}
+            name="description"
+            translationField="descriptionTranslations"
+            label="Description"
+            selectedLanguages={selectedLanguages}
+          />
+          <TranslatableInput
+            formik={formik}
+            name="vimeoId"
+            translationField="vimeoIdTranslations"
+            label="Vimeo Id"
+            selectedLanguages={selectedLanguages}
+          />
           <div className="flex mt-3">
             <div className="flex items-center">
               <label className="block mb-1 mr-4">Available in variations:</label>
