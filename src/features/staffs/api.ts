@@ -1,7 +1,7 @@
 import { Staff, StaffsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchStaffs = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/staffs/admin/get`, {
@@ -30,32 +30,9 @@ export const fetchStaff = async (staffId: string) => {
   }
 };
 
-export const createStaff = async (payload: {
-  title: string;
-  location: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  type: number;
-  bio: string;
-  link: string;
-  linkedin:string;
-  tiktok:string;
-  facebook:string;
-  twitter:string;
-}) => {
+export const createStaff = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('location', payload.location);
-    formData.append('image', payload.image);
-    formData.append('type', payload.type.toString());
-    formData.append('bio', payload.bio);
-    formData.append('link', payload.link);
-    formData.append('linkedin', payload.linkedin);
-    formData.append('tiktok', payload.tiktok);
-    formData.append('facebook', payload.facebook);
-    formData.append('twitter', payload.twitter);
-    
-    // Post the new category data (including the image) to your backend
+    const formData = buildFormDataWithImages(payload, []);
     const result = (await axios.post('/staffs/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
@@ -74,34 +51,10 @@ export const createStaff = async (payload: {
 };
 
 
-export const updateStaff = async (payload: {
-  staffId: string 
-  title: string;
-  location: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  type: number;
-  bio: string;
-  link: string;
-  linkedin:string;
-  tiktok:string;
-  facebook:string;
-  twitter:string;
-  deleteImage: Boolean
-}) => {
+export const updateStaff = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, []);
     formData.append('_id', payload.staffId);
-    formData.append('title', payload.title);
-    formData.append('location', payload.location);
-    formData.append('image', payload.image);
-    formData.append('type', payload.type.toString());
-    formData.append('bio', payload.bio);
-    formData.append('link', payload.link);
-    formData.append('linkedin', payload.linkedin);
-    formData.append('tiktok', payload.tiktok);
-    formData.append('facebook', payload.facebook);
-    formData.append('twitter', payload.twitter);
-    formData.append('deleteImage', String(payload.deleteImage));
     const result = (await axios.put('/staffs/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-staffs');

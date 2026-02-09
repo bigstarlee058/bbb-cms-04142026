@@ -1,24 +1,29 @@
+import { useEffect } from 'react';
+import { fetchLanguages } from '@/lib/api';
+import { useLanguageStore } from '@/stores/languages';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextareaWithFormatting } from '@/components/Form/TranslatableTextareaWithFormatting';
+import { prepareTranslations } from '@/utils/translationHelper';
 import { PlusIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
-
+import { useMutation, useQuery } from 'react-query';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone, Textarea, Select } from '@/components/Form';
+import { FormDrawer, Field, Dropzone,Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { createStaffSchema } from '@/utils/yup';
-
 import { createStaff } from '../api';
 import { SelectOption } from '@/types';
-import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
   location: string;
   type: number;
   bio: string;
+  bioTranslations: Record<string, string>;
   deleteImage: boolean;
-  image: any;
+  photo: any;
   link: string;
   linkedin:string;
   tiktok:string;
@@ -39,8 +44,26 @@ const COACH_TYPE_OPTIONS: SelectOption[] = [
 
 export const CreateStaff = () => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+  } = useTranslations({
+    translationFields: ['bio'],
+  });
   const { mutate, isLoading, isSuccess } = useMutation(createStaff, {
     onSuccess: (message: string) => {
+      resetLanguages();
       formik.resetForm();
       addNotification({
         type: 'success',
@@ -51,9 +74,10 @@ export const CreateStaff = () => {
   const initialValues: FormikState = {
     title: '',
     location:'',
-    image: '',
+    photo: '',
     type: 0,
     bio: '',
+    bioTranslations: {},
     link: '',
     linkedin:'',
     tiktok:'',
@@ -66,8 +90,16 @@ export const CreateStaff = () => {
     validationSchema: createStaffSchema,
     onSubmit: (v) => onSubmit(v)
   });
-  const onSubmit = (value: any) => {
-    mutate(value);
+  const onSubmit = (values: FormikState) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['bio'],
+      imageFields: [],
+    });
+    const payload = { ...values, ...translations };
+    mutate(payload);
   };
 
   return (
@@ -86,17 +118,27 @@ export const CreateStaff = () => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="create-staff" onSubmit={formik.handleSubmit}>
           <Field label="Name" formik={formik} name="title" />
           <Field label="Location" formik={formik} name="location" />
-          <TextareaWithFormatting label="Bio" formik={formik} name="bio" />
+          <TranslatableTextareaWithFormatting
+            formik={formik}
+            name="bio"
+            translationField="bioTranslations"
+            label="Bio"
+            selectedLanguages={selectedLanguages}
+          />
           <Dropzone
             label="Photo"
-            name="image"
+            name="photo"
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            defaultImg={formik.values.photo}
+            onDrop={(img) => formik.setFieldValue('photo', img)}
+            onDelete={() => formik.setValues({ ...formik.values, photo: '', deleteImage: true })}
           />
           <Select
             formik={formik}

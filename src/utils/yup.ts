@@ -100,7 +100,7 @@ export const achievementsTargetSchema = Yup.object().shape({
 export const createStaffSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   type: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Photo is required'),
+  photo: Yup.mixed().required('Photo is required'),
 });
 
 export const createChallengeSchema = Yup.object().shape({

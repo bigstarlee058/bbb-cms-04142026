@@ -1,59 +1,22 @@
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchStaffs } from '../api';
-import { Staff, Filters } from '@/types';
+import {  useState } from 'react';
+import { Table, Link, Button } from '@/components/Elements';
+import { Staff } from '@/types';
 import { EyeIcon } from '@heroicons/react/outline';
 import { DeleteStaff } from './DeleteStaff';
 import { UpdateStaff } from './UpdateStaff';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const StaffsList = () => {
+export const StaffsList = ({
+  getValue,
+  staffData,
+}: {
+  getValue: (item: any, field: string) => any;
+  staffData: any;
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
+  const perPage = 10;
 
-  const {
-    data: staffData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-staffs'], () => fetchStaffs(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (!staffData) return null;
+  if (!staffData?.staffs) return <>No Data Found</>;
 
   return (
     <>
@@ -63,6 +26,9 @@ export const StaffsList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Location',
@@ -73,9 +39,9 @@ export const StaffsList = () => {
             field: 'photo',
             Cell({ entry: { photo } }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={photo} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={photo} />
+                </div>);
             },
           },
           {
@@ -88,12 +54,13 @@ export const StaffsList = () => {
           {
             title: 'Bio',
             field: 'bio',
-            Cell({ entry: { bio } }) {
+            Cell({ entry }) {
+              const bio = getValue(entry, 'bio') || '';
               return <span
-                  dangerouslySetInnerHTML={{
-                    __html: bio.length > 100 ? `${bio.slice(0, 100)}...` : bio,
-                  }}
-                />;
+                dangerouslySetInnerHTML={{
+                  __html: bio.length > 100 ? `${bio.slice(0, 100)}...` : bio,
+                }}
+              />;
             }
           },
           {
@@ -133,7 +100,7 @@ export const StaffsList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(staffData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil((staffData?.count || 0) / perPage)}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

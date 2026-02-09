@@ -1,6 +1,14 @@
+import { useEffect } from 'react';
+import { useQuery } from 'react-query';
+import { fetchLanguages } from '@/lib/api';
+import { useLanguageStore } from '@/stores/languages';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { useTranslations } from '@/hooks/useTranslations';
+import { TranslatableTextareaWithFormatting } from '@/components/Form/TranslatableTextareaWithFormatting';
+import { prepareTranslations } from '@/utils/translationHelper';
 import { PencilIcon } from '@heroicons/react/solid';
 import { Button } from '@/components/Elements';
-import { Field, FormDrawer, Dropzone, Textarea, Select } from '@/components/Form';
+import { Field, FormDrawer, Dropzone, Select } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useMutation } from 'react-query';
 import { updateStaff } from '../api';
@@ -8,19 +16,19 @@ import { useNotificationStore } from '@/stores/notifications';
 import { useFormik } from 'formik';
 import { createStaffSchema } from '@/utils/yup';
 import { SelectOption } from '@/types';
-import { TextareaWithFormatting } from '@/components/Form/TextareaWithFormatting';
 
 interface FormikState {
   title: string;
   location: string;
   type: number;
   bio: string;
-  image?: any;
+  bioTranslations: Record<string, string>;
+  photo?: any;
   link: string;
-  linkedin:string;
-  tiktok:string;
-  facebook:string;
-  twitter:string;
+  linkedin: string;
+  tiktok: string;
+  facebook: string;
+  twitter: string;
   deleteImage: boolean;
 }
 
@@ -37,6 +45,40 @@ const COACH_TYPE_OPTIONS: SelectOption[] = [
 
 export const UpdateStaff = ({ staffId, staffs }) => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+    setSelectedLanguages,
+  } = useTranslations({
+    translationFields: ['bio'],
+  });
+
+  const staffData = staffs.staffs.find((st) => st._id === staffId);
+
+  const syncLanguages = () => {
+    const apiLanguages = fetchedLanguages.map(l => l.key);
+    const foundLangs = Object.values(staffData || {})
+      .flatMap(obj => obj && typeof obj === 'object' ? Object.keys(obj) : [])
+      .filter(key => apiLanguages.includes(key));
+
+    if (foundLangs.length > 0) setSelectedLanguages([...new Set(foundLangs)]);
+    else resetLanguages();
+  };
+
+  useEffect(() => {
+    syncLanguages();
+  }, [staffData, fetchedLanguages]);
   const { mutate, isLoading, isSuccess } = useMutation(updateStaff, {
     onSuccess: (message: string) => {
       addNotification({
@@ -46,29 +88,36 @@ export const UpdateStaff = ({ staffId, staffs }) => {
     }
   });
 
-  const staffData = staffs.staffs.find((ex) => ex._id === staffId);
   const initialValues: FormikState = {
     title: staffData?.title || '',
     location: staffData?.location || '',
     type: staffData?.type || 0,
     bio: staffData?.bio || '',
+    bioTranslations: staffData?.bioTranslations || {},
+    photo: staffData?.photo || '',
     link: staffData?.link || '',
     linkedin: staffData?.linkedin || '',
     tiktok: staffData?.tiktok || '',
     facebook: staffData?.facebook || '',
     twitter: staffData?.twitter || '',
-    image: staffData?.photo || '',
-    deleteImage: false
+    deleteImage: false,
   };
   const formik = useFormik({
     initialValues,
     validationSchema: createStaffSchema,
+    enableReinitialize: true,
     onSubmit: (v) => onSubmit(v)
   });
-  const onSubmit = (state: FormikState) => {
-    const { title, location, image, type, bio,link, linkedin, tiktok, facebook, twitter, deleteImage} = state;
-    console.log("sumit")
-    mutate({ staffId, title, location, image, type, bio, link, linkedin, tiktok, facebook, twitter,deleteImage });
+  const onSubmit = (values: FormikState) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['bio'],
+      imageFields: [],
+    });
+    const payload = { staffId, ...values, ...translations }
+    mutate(payload);
   };
   return (
     <Authorization allowedRoles={[ROLES.ADMIN]}>
@@ -82,17 +131,27 @@ export const UpdateStaff = ({ staffId, staffs }) => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="update-staff" onSubmit={formik.handleSubmit}>
           <Field label="Name" formik={formik} name="title" />
           <Field label="Location" formik={formik} name="location" />
-          <TextareaWithFormatting label="Bio" formik={formik} name="bio" />
+          <TranslatableTextareaWithFormatting
+            formik={formik}
+            name="bio"
+            translationField="bioTranslations"
+            label="Bio"
+            selectedLanguages={selectedLanguages}
+          />
           <Dropzone
             label="Photo"
-            name="image"
+            name="photo"
             formik={formik}
-            defaultImg={formik.values.image}
-            onDrop={(img) => formik.setFieldValue('image', img)}
-            onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
+            defaultImg={formik.values.photo}
+            onDrop={(img) => formik.setFieldValue('photo', img)}
+            onDelete={() => formik.setValues({ ...formik.values, photo: '', deleteImage: true })}
           />
           <Select
             formik={formik}
