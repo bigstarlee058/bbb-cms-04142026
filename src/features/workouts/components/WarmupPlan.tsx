@@ -215,10 +215,10 @@ export const WarmupPlan = ({
           <CustomTitle
             type={'WARMUP'}
             index={warmup.typeId}
-            customTitle={warmup.title}
-            titleTranslations={{}}
-            selectedLanguages={[]}
-            updateFunction={updateWarmupTitle}
+            customTitle={warmup?.title}
+            titleTranslations={warmup?.titleTranslations || {}}
+            selectedLanguages={selectedLanguages}
+            updateFunction={handleChange}
           />
           <div className="flex gap-3">
             <Button
