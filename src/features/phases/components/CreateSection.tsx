@@ -1,36 +1,66 @@
 import { PlusIcon } from '@heroicons/react/outline';
 import { useFormik } from 'formik';
-import { useMutation } from 'react-query';
-
+import { useMutation, useQuery } from 'react-query';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone, Textarea, Select } from '@/components/Form';
+import { FormDrawer, Dropzone, Textarea } from '@/components/Form';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { useNotificationStore } from '@/stores/notifications';
 import { createPhasesSchema } from '@/utils/yup';
-
 import { createPhases } from '../api';
+import { fetchLanguages } from '@/lib/api';
+import { useLanguageStore } from '@/stores/languages';
+import { LanguageSelector } from '@/components/Language/LanguageSelector';
+import { TranslatableInput } from '@/components/Form/TranslatableInput';
+import { useTranslations } from '@/hooks/useTranslations';
+import { prepareTranslations } from '@/utils/translationHelper';
+import { queryClient } from '@/lib/react-query';
+import { useEffect } from 'react';
 
 interface FormikState {
   title: string;
+  titleTranslations: Record<string, string>;
   description: string;
+  descriptionTranslations: Record<string, string>;
   image: any;
   deleteImage: boolean;
 }
 
 export const CreateSection = () => {
   const { addNotification } = useNotificationStore();
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+  const setLanguages = useLanguageStore((state) => state.setLanguages);
+  
+  const {
+    selectedLanguages,
+    handleLanguageToggle,
+    getFilteredTranslations,
+    resetLanguages,
+  } = useTranslations({
+    translationFields: ['title', 'description'],
+  });
+
+  useEffect(() => {
+    if (fetchedLanguages.length > 0) {
+      setLanguages(fetchedLanguages);
+    }
+  }, [fetchedLanguages, setLanguages]);
+
   const { mutate, isLoading, isSuccess } = useMutation(createPhases, {
-    onSuccess: (message: string) => {
+    onSuccess: () => {
+      queryClient.invalidateQueries('get-sections');
+      resetLanguages();
       formik.resetForm();
       addNotification({
         type: 'success',
-        title: message
+        title: "Section successfully created."
       });
     }
   });
   const initialValues: FormikState = {
     title: '',
+    titleTranslations: {},
     description: '',
+    descriptionTranslations: {},
     image: '',
     deleteImage: false,
   };
@@ -39,8 +69,20 @@ export const CreateSection = () => {
     validationSchema: createPhasesSchema,
     onSubmit: (v) => onSubmit(v)
   });
-  const onSubmit = (value: any) => {
-    mutate(value);
+
+  const onSubmit = (values: any) => {
+    const translations = prepareTranslations({
+      values,
+      translations: getFilteredTranslations(values, true),
+      selectedLanguages,
+      textFields: ['title', 'description'],
+      imageFields: [],
+    });
+    const payload = {
+      ...values,
+      ...translations,
+    };
+    mutate(payload);
   };
 
   return (
@@ -59,8 +101,18 @@ export const CreateSection = () => {
           </Button>
         }
       >
+        <LanguageSelector
+          selectedLanguages={selectedLanguages}
+          onToggle={handleLanguageToggle}
+        />
         <form id="create-section" onSubmit={formik.handleSubmit}>
-          <Field label="Title" formik={formik} name="title" />
+          <TranslatableInput
+            formik={formik}
+            name="title"
+            translationField="titleTranslations"
+            label="Title"
+            selectedLanguages={selectedLanguages}
+          />
           <Dropzone
             label="Thumbnail"
             name="image"
@@ -69,7 +121,13 @@ export const CreateSection = () => {
             onDrop={(img) => formik.setFieldValue('image', img)}
             onDelete={() => formik.setValues({ ...formik.values, image: '', deleteImage: true })}
           />
-          <Textarea label="Description" formik={formik} name="description" />
+          <TranslatableInput
+            formik={formik}
+            name="description"
+            translationField="descriptionTranslations"
+            label="Description"
+            selectedLanguages={selectedLanguages}
+          />
         </form>
       </FormDrawer>
     </Authorization>

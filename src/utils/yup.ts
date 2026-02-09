@@ -134,6 +134,7 @@ export const createSettingsSchema = Yup.object().shape({
 
 export const createSectionSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
+  description: Yup.string().max(500).required(),
 });
 
 export const createPumpDaySchema = Yup.object().shape({
@@ -150,7 +151,7 @@ export const createCircuitSchema = Yup.object().shape({
 
 export const updatePhasesMainInfoSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Thumbnail is required'),
+  thumbnail: Yup.mixed().required('Thumbnail is required'),
   contenttitle: Yup.string().max(255).required(),
 });
 

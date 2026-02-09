@@ -1,6 +1,7 @@
-import { Section, SectionsResponse, ErrorMessage, Filters, ResponseMessage,PhasesMainInfoResponse, PhasesResponse } from '@/types';
+import { Section, ErrorMessage, Filters, ResponseMessage,PhasesMainInfoResponse, PhasesResponse } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 
 export const fetchPhasesMainInfo = async () => {
   try {
@@ -43,16 +44,9 @@ export const fetchSection = async (sectionId: string) => {
   }
 };
 
-export const createPhases = async (payload: {
-  title: string;
-  description: string;
-  image: File;
-}) => {
+export const createPhases = async (data: any) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('description', payload.description);
-    formData.append('image', payload.image);
+    const formData = buildFormDataWithImages(data, []);
     const result = (await axios.post('/phases/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-phases');
@@ -69,22 +63,10 @@ export const createPhases = async (payload: {
   }
 };
 
-export const updateMainInfo = async (payload: {
-  title: string;
-  contenttitle: string;
-  description: string;
-  image: File,
-  deleteImage: boolean,
-}) => {
-  try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('contenttitle', payload.contenttitle);
-    formData.append('description', payload.description);
-    if (payload.image) {
-      formData.append('image', payload.image);
-    }
 
+export const updateMainInfo = async (payload) => {
+  try {
+    const formData = buildFormDataWithImages(payload, ['thumbnail']);
     const result = (await axios.put('/phases/admin/maininfo', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-phasesmaininfo');
@@ -101,19 +83,10 @@ export const updateMainInfo = async (payload: {
 };
 
 
-export const updateSection = async (payload: {
-  sectionId: string 
-  title: string;
-  description: string;
-  image: File;
-  deleteImage: boolean;
-}) => {
+export const updateSection = async (payload: any) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, []);
     formData.append('_id', payload.sectionId);
-    formData.append('title', payload.title);
-    formData.append('description', payload.description);
-    formData.append('image', payload.image);
     const result = (await axios.put('/phases/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-phases');

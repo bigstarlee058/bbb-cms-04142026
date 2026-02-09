@@ -8,50 +8,39 @@ import { DeleteSection } from './DeleteSection';
 import { UpdateSection } from './UpdateSection';
 import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
-
-export const SectionsList = () => {
+export const SectionsList = ({
+  getValue,
+  sectionData,
+}: {
+  getValue: (item: any, field: string) => any;
+  sectionData: any;
+}) => {
+  const perPage = 10;
   const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
+  const { search } = useFilteringStore();
 
-  const {
-    data: sectionData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-phases'], () => fetchSections(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
+  if (!sectionData) return null;
+  let filteredData = sectionData.phases || [];
+  if (search) {
+    filteredData = filteredData.filter((item: any) => {
+      const title = getValue(item, 'title')?.toLowerCase() || '';
+      const description = getValue(item, 'description')?.toLowerCase() || '';
+      const searchTerm = search.toLowerCase();
+      return title.includes(searchTerm) || description.includes(searchTerm);
     });
-  }, [currentPage]);
+  }
+
+  const total = filteredData.length;
+  const lastPage = Math.ceil(total / perPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * perPage,
+    currentPage * perPage
+  );
 
   useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
+    setCurrentPage(1);
   }, [search]);
 
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
 
   if (!sectionData) return null;
 
@@ -63,20 +52,26 @@ export const SectionsList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
             Cell({ entry: { thumbnail } }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={thumbnail} />
+                </div>);
             },
           },
           {
             title: 'Description',
             field: 'description',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'description')}</span>;
+            },
           },
           {
             title: '',
@@ -96,14 +91,16 @@ export const SectionsList = () => {
           },
         ]}
       />
-      <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(sectionData.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+      {lastPage > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={lastPage}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
     </>
   );
 };
