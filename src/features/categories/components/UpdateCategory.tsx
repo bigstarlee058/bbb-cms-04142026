@@ -74,7 +74,6 @@ export const UpdateCategory = ({ categoryId, categories }) => {
     validationSchema: createCategorySchema,
     onSubmit: (v) => onSubmit(v),
   });
-  console.log()
   const onSubmit = (values: FormikState) => {
     const translations = prepareTranslations({
       values,

@@ -1,7 +1,7 @@
 import { Challenge, ChallengesResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchChallenges = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/challenges/admin/get`, {
@@ -30,23 +30,9 @@ export const fetchChallenge = async (challengeId: string) => {
   }
 };
 
-export const createChallenge = async (payload: {
-  title: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  description: string;
-  link: string;
-  buttonText: string;
-  isHide: boolean;
-}) => {
+export const createChallenge = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('description', payload.description);
-    formData.append('link', payload.link);
-    formData.append('buttonText', payload.buttonText);
-    formData.append('isHide', String(payload.isHide));
-    // Post the new category data (including the image) to your backend
+    const formData = buildFormDataWithImages(payload, ['photo']);
     const result = (await axios.post('/challenges/admin', formData)) as ResponseMessage;
     // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
@@ -65,26 +51,10 @@ export const createChallenge = async (payload: {
 };
 
 
-export const updateChallenge = async (payload: {
-  challengeId: string 
-  title: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  description: string;
-  link: string;
-  buttonText: string;
-  deleteImage: Boolean;
-  isHide: boolean;
-}) => {
+export const updateChallenge = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, ['photo']);
     formData.append('_id', payload.challengeId);
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('description', payload.description);
-    formData.append('link', payload.link);
-    formData.append('buttonText', payload.buttonText);
-    formData.append('deleteImage', String(payload.deleteImage));
-    formData.append('isHide', String(payload.isHide));
     const result = (await axios.put('/challenges/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-challenges');

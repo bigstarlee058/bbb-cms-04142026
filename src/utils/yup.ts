@@ -107,7 +107,7 @@ export const createChallengeSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
   link: Yup.string().max(255).required(),
   buttonText: Yup.string().max(255).required(),
-  image: Yup.mixed().required('Photo is required'),
+  photo: Yup.mixed().required('Photo is required'),
 });
 
 export const createQuizSchema = Yup.object().shape({

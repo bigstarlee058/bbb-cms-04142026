@@ -5,7 +5,7 @@ import { useNotificationStore } from '@/stores/notifications';
 import { createCollectionSchema } from '@/utils/yup';
 import { Authorization, ROLES } from '@/lib/authorization';
 import { Button } from '@/components/Elements';
-import { FormDrawer, Field, Dropzone, Textarea } from '@/components/Form';
+import { FormDrawer} from '@/components/Form';
 import { createCollection } from '../api';
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
@@ -85,7 +85,6 @@ export const CreateCollection = () => {
       imageFields: ['thumbnail'],
     });
     const payload = { ...values, ...translations };
-    console.log(payload)
     mutate(payload);
   };
   return (
