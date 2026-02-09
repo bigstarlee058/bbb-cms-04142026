@@ -1,60 +1,23 @@
 import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
+import { Table, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
-import { useQuery } from 'react-query';
-import { fetchCollections } from '../api';
 import { Collection, Filters } from '@/types';
 import { DeleteCollection } from './DeleteCollection';
 import { EyeIcon } from '@heroicons/react/outline';
 import { UpdateCollection } from './UpdateCollection';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const CollectionsList = () => {
+export const CollectionsList = ({
+  getValue,
+  collectionData,
+}: {
+  getValue: (item: any, field: string) => any;
+  collectionData: any;
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
+  const perPage = 10;
 
-  const {
-    data: collectionData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-collections'], () => fetchCollections(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (!collectionData) return null;
+  if (!collectionData?.collections) return <>No Data Found</>;
 
   return (
     <>
@@ -64,24 +27,28 @@ export const CollectionsList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
-            Cell({ entry: { thumbnail } }) {
+            Cell({ entry }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={getValue(entry, 'thumbnail')} />
+                </div>);
             },
           },
           {
             title: 'Description',
             field: 'description',
-            Cell({ entry: { description } }) {
+            Cell({ entry }) {
+              const description = getValue(entry, 'description') || '';
               return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
             }
-          },          
+          },
           {
             title: 'Created On',
             field: 'createdAt',
@@ -94,9 +61,9 @@ export const CollectionsList = () => {
             field: 'isFeatured',
             Cell({ entry: { isFeatured } }) {
               return (
-              <div className="justify-center items-center">
-                {isFeatured ? "Featured" : ""}
-              </div>);
+                <div className="justify-center items-center">
+                  {isFeatured ? "Featured" : ""}
+                </div>);
             },
           },
           {
@@ -132,7 +99,7 @@ export const CollectionsList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(collectionData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil((collectionData?.count || 0) / perPage)}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />

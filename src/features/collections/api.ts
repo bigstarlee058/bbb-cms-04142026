@@ -1,7 +1,7 @@
 import { Collection, CollectionsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchAllCollections = async (): Promise<Collection[]> => {
   try {
     const collections = (await axios.get('/collections/admin/get')) as Collection[];
@@ -43,21 +43,10 @@ export const fetchCollection = async (collectionId: string) => {
   }
 };
 
-export const createCollection = async (payload: {
-  title: string;
-  description: string;
-  image: File;
-  isFeatured: boolean;
-}) => {
+export const createCollection = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('description', payload.description);
-    formData.append('isFeatured', String(payload.isFeatured));
-    // Post the new category data (including the image) to your backend
+    const formData = buildFormDataWithImages(payload, ['thumbnail']);
     const result = (await axios.post('/collections/admin', formData)) as ResponseMessage;
-    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       queryClient.invalidateQueries('get-collections');
       return 'Collection successfully created.';
@@ -73,22 +62,10 @@ export const createCollection = async (payload: {
   }
 };
 
-export const updateCollection = async (payload: {
-  collectionId: string 
-  title: string;
-  description: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: boolean;
-  isFeatured: boolean;
-}) => {
+export const updateCollection = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, ['thumbnail']);
     formData.append('_id', payload.collectionId);
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('deleteImage', String(payload.deleteImage));
-    formData.append('description', payload.description);
-    formData.append('isFeatured', String(payload.isFeatured));
     const result = (await axios.put('/collections/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-collections');
