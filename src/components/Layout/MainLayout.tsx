@@ -16,7 +16,8 @@ import {
   LightBulbIcon,
   GiftIcon,
   InformationCircleIcon,
-  CubeIcon
+  CubeIcon,
+  DownloadIcon
 } from '@heroicons/react/outline';
 import { CiDumbbell, CiTrophy, CiSquareInfo, } from "react-icons/ci";
 import { IoMdFitness, } from "react-icons/io";
@@ -122,7 +123,7 @@ const SideNavigation = () => {
     { title: 'Phases', path: './phases', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
     { title: 'Bonuses', path: './bonuses', icon: GiftIcon },
-    { title: 'Downloads', path: './downloads', icon: GiftIcon },
+    { title: 'Downloads', path: './downloads', icon: DownloadIcon },
     { title: 'Program Info', path: './program-info', icon: InformationCircleIcon },
     { title: 'FAQs', path: './faqs', icon: QuestionMarkCircleIcon },
   ].filter(Boolean) as SideNavigationItem[];
