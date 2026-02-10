@@ -269,7 +269,7 @@ export const PopupDialog = ({
           </div>
         );
 
-      case 1:
+            case 1:
         return (
           <div className="space-y-6 max-h-[500px] overflow-auto px-2 relative">
             {isLoading || !userData ? (
@@ -293,26 +293,53 @@ export const PopupDialog = ({
                   </div>
 
                   <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                    {group.workouts.map((ex, exIndex) => (
-                      <div
-                        key={`${ex.date}_${exIndex}`}
-                        className={`p-4 rounded-lg border ${ex.status === 'Completed'
-                          ? 'bg-green-50 border-green-300'
-                          : 'bg-red-50 border-red-300'
+                    {group.workouts.map((ex, exIndex) => {
+                      const rawWeight = Number(ex.weight) || 0;
+                      const isMetric = userData?.settings?.isEnabledMetricUnits ?? false;
+                      const finalWeight = isMetric 
+                        ? rawWeight * 0.45359237 
+                        : rawWeight;
+                      const displayWeight = parseFloat(finalWeight.toFixed(2));
+                      const unitLabel = isMetric ? 'kg' : 'lbs';
+                      return (
+                        <div
+                          key={`${ex.date}_${exIndex}`}
+                          className={`p-4 rounded-lg border ${
+                            ex.status === 'Completed'
+                              ? 'bg-green-50 border-green-300'
+                              : 'bg-red-50 border-red-300'
                           }`}
-                      >
-                        <h5 className="text-md font-medium text-gray-800">{ex.exerciseTitle}</h5>
-                        <ul className="mt-2 text-sm text-gray-600 space-y-1">
-                          <li><span className="font-semibold">Sets:</span> {ex.sets}</li>
-                          <li><span className="font-semibold">Reps:</span> {ex.reps}</li>
-                          <li><span className="font-semibold">Weight:</span> {ex.weight} kg</li>
-                          <li><span className="font-semibold">Rest:</span> {ex.rest} sec</li>
-                        </ul>
-                        <p className={`mt-3 text-sm font-semibold ${ex.status === 'Completed' ? 'text-green-600' : 'text-red-600'}`}>
-                          {ex.status}
-                        </p>
-                      </div>
-                    ))}
+                        >
+                          <h5 className="text-md font-medium text-gray-800">
+                            {ex.exerciseTitle}
+                          </h5>
+                          <ul className="mt-2 text-sm text-gray-600 space-y-1">
+                            <li>
+                              <span className="font-semibold">Sets:</span> {ex.sets}
+                            </li>
+                            <li>
+                              <span className="font-semibold">Reps:</span> {ex.reps}
+                            </li>
+                            <li>
+                              <span className="font-semibold">Weight:</span>{' '}
+                              {displayWeight} {unitLabel}
+                            </li>
+                            <li>
+                              <span className="font-semibold">Rest:</span> {ex.rest} sec
+                            </li>
+                          </ul>
+                          <p
+                            className={`mt-3 text-sm font-semibold ${
+                              ex.status === 'Completed'
+                                ? 'text-green-600'
+                                : 'text-red-600'
+                            }`}
+                          >
+                            {ex.status}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))
