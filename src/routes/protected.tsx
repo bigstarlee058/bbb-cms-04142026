@@ -41,6 +41,7 @@ const { PumpDaysRoutes } = lazyImport(() => import('@/features/pumpdays'), 'Pump
 const { FaqsRoutes } = lazyImport(() => import('@/features/faqs'), 'FaqsRoutes');
 const { MoneyRoutes } = lazyImport(() => import('@/features/money'), 'MoneyRoutes');
 const {PopupNewJoinRoutes} =lazyImport(() => import('@/features/popup-new-join-users'), 'PopupNewJoinRoutes');
+const { Downloads } = lazyImport(() => import('@/features/downloads'), 'Downloads');
 const ProtectedApp = () => {
   return (
     <WorkoutContextProvider>
@@ -112,6 +113,7 @@ export const protectedRoutes = [
       { path: 'phases/*', element: <PhasesRoutes /> },
       { path: 'collections/*', element: <CollectionsRoutes /> },
       { path: 'bonuses/*', element: <BonusesRoutes /> },
+      { path: 'downloads/*', element: <Downloads /> },
       { path: 'program-info/*', element: <ProgramInfoRoutes /> },
       { path: 'pumpdays/*', element: <PumpDaysRoutes /> },
       { path: 'faqs/*', element: <FaqsRoutes /> },

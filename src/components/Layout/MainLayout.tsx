@@ -122,6 +122,7 @@ const SideNavigation = () => {
     { title: 'Phases', path: './phases', icon: MenuAlt4Icon },
     { title: 'Collections', path: './collections', icon: MenuAlt4Icon },
     { title: 'Bonuses', path: './bonuses', icon: GiftIcon },
+    { title: 'Downloads', path: './downloads', icon: GiftIcon },
     { title: 'Program Info', path: './program-info', icon: InformationCircleIcon },
     { title: 'FAQs', path: './faqs', icon: QuestionMarkCircleIcon },
   ].filter(Boolean) as SideNavigationItem[];
