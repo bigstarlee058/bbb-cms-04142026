@@ -1,60 +1,31 @@
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
+import { Table, Link, Button } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
-import { useQuery } from 'react-query';
-import { fetchBonuses } from '../api';
-import { Bonus, Filters } from '@/types';
+import { Bonus } from '@/types';
 import { DeleteBonus } from './DeleteBonus';
 import { EyeIcon } from '@heroicons/react/outline';
 import { UpdateBonus } from './UpdateBonus';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const BonusesList = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
+type BonusesListProps = {
+  getValue: (item: any, field: string) => any;
+  bonusData: any;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  perPage: number;
+};
 
-  const {
-    data: bonusData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-bonuses'], () => fetchBonuses(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
+export const BonusesList = ({
+  getValue,
+  bonusData,
+  currentPage,
+  setCurrentPage,
+  perPage,
+}: BonusesListProps) => {
+  if (!bonusData?.bonuses) {
+    return <>No Data Found</>;
   }
 
-  if (!bonusData) return null;
+  const lastPage = Math.ceil((bonusData?.count || 0) / perPage);
 
   return (
     <>
@@ -64,24 +35,35 @@ export const BonusesList = () => {
           {
             title: 'Title',
             field: 'title',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'title')}</span>;
+            },
           },
           {
             title: 'Thumbnail',
             field: 'thumbnail',
             Cell({ entry: { thumbnail } }) {
               return (
-              <div className="justify-center items-center">
-                <img className="h-24 object-contain" src={thumbnail} />
-              </div>);
+                <div className="justify-center items-center">
+                  <img className="h-24 object-contain" src={thumbnail} />
+                </div>
+              );
             },
           },
           {
             title: 'Description',
             field: 'description',
-            Cell({ entry: { description } }) {
-              return <p>{description.length > 100 ? `${description.slice(0, 100)}...` : description}</p>;
-            }
-          },          
+            Cell({ entry }) {
+              const description = getValue(entry, 'description') || '';
+              return (
+                <p>
+                  {description.length > 100
+                    ? `${description.slice(0, 100)}...`
+                    : description}
+                </p>
+              );
+            },
+          },
           {
             title: 'Created On',
             field: 'createdAt',
@@ -94,9 +76,10 @@ export const BonusesList = () => {
             field: 'isFeatured',
             Cell({ entry: { isFeatured } }) {
               return (
-              <div className="justify-center items-center">
-                {isFeatured ? "Featured" : ""}
-              </div>);
+                <div className="justify-center items-center">
+                  {isFeatured ? 'Featured' : ''}
+                </div>
+              );
             },
           },
           {
@@ -106,14 +89,17 @@ export const BonusesList = () => {
             Cell({ entry: { _id } }) {
               return (
                 <Link to={`./${_id}`}>
-                  <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
+                  <Button
+                    variant="danger"
+                    startIcon={<EyeIcon className="h-4 w-4" />}
+                  />
                 </Link>
               );
             },
           },
           {
             title: '',
-            field: '_id',            
+            field: '_id',
             width: 70,
             Cell({ entry: { _id } }) {
               return <UpdateBonus bonusId={_id} bonuses={bonusData} />;
@@ -129,14 +115,16 @@ export const BonusesList = () => {
           },
         ]}
       />
-      <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil(bonusData.count / (filters?.perPage || 10))}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+      {lastPage > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            lastPage={lastPage}
+            maxLength={7}
+            setCurrentPage={setCurrentPage}
+          />
+        </div>
+      )}
     </>
   );
 };

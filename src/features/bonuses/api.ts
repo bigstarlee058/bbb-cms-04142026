@@ -1,6 +1,7 @@
 import { Bonus, BonusesResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 
 export const fetchAllBonuses = async (): Promise<Bonus[]> => {
   try {
@@ -43,21 +44,10 @@ export const fetchBonus = async (bonusId: string) => {
   }
 };
 
-export const createBonus = async (payload: {
-  title: string;
-  description: string;
-  image: File;
-  isFeatured: boolean;
-}) => {
+export const createBonus = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('description', payload.description);
-    formData.append('isFeatured', String(payload.isFeatured));
-    // Post the new category data (including the image) to your backend
+    const formData = buildFormDataWithImages(payload, ['thumbnail']);
     const result = (await axios.post('/bonuses/admin', formData)) as ResponseMessage;
-    // Invalidate cache or update your frontend state if needed
     if (result.result === true) {
       queryClient.invalidateQueries('get-bonuses');
       return 'Bonus successfully created.';
@@ -73,22 +63,10 @@ export const createBonus = async (payload: {
   }
 };
 
-export const updateBonus = async (payload: {
-  bonusId: string 
-  title: string;
-  description: string;
-  image: File;  // Assuming the image comes as a File object from the client
-  deleteImage: boolean;
-  isFeatured: boolean;
-}) => {
+export const updateBonus = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, ['thumbnail']);
     formData.append('_id', payload.bonusId);
-    formData.append('title', payload.title);
-    formData.append('image', payload.image);
-    formData.append('deleteImage', String(payload.deleteImage));
-    formData.append('description', payload.description);
-    formData.append('isFeatured', String(payload.isFeatured));
     const result = (await axios.put('/bonuses/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-bonuses');
@@ -118,5 +96,21 @@ export const deleteBonus = async (bonusId: string) => {
       message: err as string,
     };
     return Promise.reject(error);
+  }
+};
+
+export const toggleBonusFeatured = async (bonusId: string, isFeatured: boolean) => {
+  try {
+    const result = (await axios.put('/bonuses/admin/toggle-featured', {
+      bonusId,
+      isFeatured,
+    })) as ResponseMessage;
+    if (result.result === true) {
+      queryClient.invalidateQueries('get-bonuses');
+      return result.message;
+    }
+    return Promise.reject(result.message);
+  } catch (err: any) {
+    return Promise.reject(err);
   }
 };

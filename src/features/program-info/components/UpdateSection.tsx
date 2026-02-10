@@ -27,7 +27,21 @@ interface FormikState {
   variations: string[];
   formats: string[];
 }
+const cleanArrayField = (arr: any[]): string[] => {
+  if (!arr || !Array.isArray(arr)) return [];
 
+  return arr.flatMap(item => {
+    if (typeof item === 'string' && item.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(item);
+        return Array.isArray(parsed) ? parsed : [item];
+      } catch {
+        return [item];
+      }
+    }
+    return [item];
+  }).filter((v, i, a) => a.indexOf(v) === i);
+};
 export const UpdateSection = ({ sectionId, sections }) => {
   const { addNotification } = useNotificationStore();
   const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
@@ -78,8 +92,8 @@ export const UpdateSection = ({ sectionId, sections }) => {
     descriptionTranslations: sectionData?.descriptionTranslations || {},
     vimeoId: sectionData?.vimeoId || '',
     vimeoIdTranslations: sectionData?.vimeoIdTranslations || {},
-    variations: sectionData?.variations || [],
-    formats: sectionData?.formats || [],
+    variations: cleanArrayField(sectionData?.variations || []),
+    formats: cleanArrayField(sectionData?.formats || []),
   };
   const formik = useFormik({
     initialValues,

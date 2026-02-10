@@ -8,13 +8,19 @@ import Pagination from '@/components/Elements/Pagination';
 export const SectionsList = ({
   getValue,
   sectionData,
+  currentPage,
+  setCurrentPage,
+  perPage,
 }: {
   getValue: (item: any, field: string) => any;
   sectionData: any;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  perPage: number;
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 10;
   if (!sectionData?.sections) return (<>No Data Found</>);
+
+  const lastPage = Math.ceil((sectionData?.count || 0) / perPage);
 
   return (
     <>
@@ -69,14 +75,16 @@ export const SectionsList = ({
           },
         ]}
       />
-      <div className="flex justify-center mt-6">
-        <Pagination
-          currentPage={currentPage}
-          lastPage={Math.ceil((sectionData?.count || 0) / perPage)}
-          maxLength={7}
-          setCurrentPage={setCurrentPage}
-        />
-      </div>
+        {lastPage > 1 && (
+          <div className="flex justify-center mt-6">
+            <Pagination
+              currentPage={currentPage}
+              lastPage={lastPage}
+              maxLength={7}
+              setCurrentPage={setCurrentPage}
+            />
+          </div>
+        )}
     </>
   );
 };

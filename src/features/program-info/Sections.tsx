@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ContentLayout } from '@/components/Layout';
 import { SectionsList } from './components/SectionsList';
 import { CreateSection } from './components/CreateSection';
@@ -8,8 +8,13 @@ import { Spinner } from '@/components/Elements';
 import { LanguageSwitcher, useListTranslations } from '@/components/Language';
 import { fetchSections } from './api';
 export const Sections = () => {
-  const { setCurrentPage } = useUserStore();
-  const { data: sectionData, isLoading } = useQuery(['get-sections'], () => fetchSections({}));
+  const { setCurrentPage: setCurrentUserPage } = useUserStore();
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 10;
+  const { data: sectionData, isLoading } = useQuery(
+    ['get-sections', currentPage, perPage],
+    () => fetchSections({ page: currentPage, perPage })
+  );
 
   const {
     selectedLang,
@@ -21,9 +26,13 @@ export const Sections = () => {
     data: sectionData?.sections,
     translatableFields: ['title', 'description', 'vimeoId'],
   });
+  const handlePageChange = (page: number) => {
+  console.log('Page changed to:', page);
+  setCurrentPage(page);
+};
 
   useEffect(() => {
-    setCurrentPage("sections");
+    setCurrentUserPage("sections");
   }, []);
   if (isLoading) {
     return (
@@ -48,7 +57,13 @@ export const Sections = () => {
         <CreateSection />
       </div>
       <div className="mt-4">
-        <SectionsList getValue={getValue} sectionData={sectionData} />
+        <SectionsList
+          getValue={getValue}
+          sectionData={sectionData}
+          currentPage={currentPage}
+          setCurrentPage={handlePageChange}
+          perPage={perPage}
+        />
       </div>
     </ContentLayout>
   );
