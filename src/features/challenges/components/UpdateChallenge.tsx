@@ -97,7 +97,6 @@ export const UpdateChallenge = ({ challengeId, challenges }) => {
     const payload = {
       ...values, ...translations
     }
-    console.log(payload)
     mutate({ challengeId, ...payload });
   };
 

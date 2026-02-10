@@ -1,7 +1,7 @@
 import { Faq, FaqsResponse, ErrorMessage, Filters, ResponseMessage } from '@/types';
 import { axios } from '@/lib/axios';
 import { queryClient } from '@/lib/react-query';
-
+import { buildFormDataWithImages } from '@/utils/formDataBuilder';
 export const fetchFaqs = async (filters: Filters) => {
   try {
     const result = (await axios.get(`/faqs/admin/get`, {
@@ -30,14 +30,9 @@ export const fetchFaq = async (faqId: string) => {
   }
 };
 
-export const createFaq = async (payload: {
-  question: string;
-  answer: string;
-}) => {
+export const createFaq = async (payload) => {
   try {
-    const formData = new FormData();
-    formData.append('question', payload.question);
-    formData.append('answer', payload.answer);
+    const formData = buildFormDataWithImages(payload, []);
     const result = (await axios.post('/faqs/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-faqs');
@@ -55,16 +50,10 @@ export const createFaq = async (payload: {
 };
 
 
-export const updateFaq = async (payload: {
-  faqId: string 
-  question: string;
-  answer: string;
-}) => {
+export const updateFaq = async (payload) => {
   try {
-    const formData = new FormData();
+    const formData = buildFormDataWithImages(payload, []);
     formData.append('_id', payload.faqId);
-    formData.append('question', payload.question);
-    formData.append('answer', payload.answer);
     const result = (await axios.put('/faqs/admin', formData)) as ResponseMessage;
     if (result.result === true) {
       queryClient.invalidateQueries('get-faqs');

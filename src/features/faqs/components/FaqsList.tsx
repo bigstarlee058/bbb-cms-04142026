@@ -1,85 +1,43 @@
-import { useEffect, useState } from 'react';
-import { Table, Spinner, Link, Button } from '@/components/Elements';
-import { useQuery } from 'react-query';
-import { fetchFaqs } from '../api';
-import { Filters, Faq } from '@/types';
-import { EyeIcon } from '@heroicons/react/outline';
+import { useState } from 'react';
+import { Table } from '@/components/Elements';
+import { Faq } from '@/types';
 import { DeleteFaq } from './DeleteFaq';
 import { UpdateFaq } from './UpdateFaq';
-import { useFilteringStore } from '@/stores/filter';
 import Pagination from '@/components/Elements/Pagination';
 
-export const FaqsList = () => {
+export const FaqsList = ({
+  getValue,
+  faqsData,
+}: {
+  getValue: (item: any, field: string) => any;
+  faqsData: any;
+}) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const { search, sortBy } = useFilteringStore();
-  const [filters, setFilters] = useState<Filters>({
-    perPage: 10,
-    page: 1,
-  });
+  const perPage = 10;
 
-  const {
-    data: faqsData,
-    isLoading,
-    refetch,
-  } = useQuery(['get-faqs'], () => fetchFaqs(filters));
-
-  useEffect(() => {
-    refetch();
-  }, [filters]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      page: currentPage,
-    });
-  }, [currentPage]);
-
-  useEffect(() => {
-    setFilters((p) => ({ ...p, search: search }));
-  }, [search]);
-
-  useEffect(() => {
-    setFilters({
-      ...filters,
-      sortBy: sortBy?.value,
-    });
-  }, [sortBy]);
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-48 flex justify-center items-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (!faqsData) return null;
-
+  if (!faqsData?.faqs) return <>No Data Found</>;
+  const startIndex = (currentPage - 1) * perPage;
+  const paginatedFaqs = faqsData.faqs.slice(startIndex, startIndex + perPage);
   return (
     <>
       <Table<Faq>
-        data={faqsData.faqs}
+        data={paginatedFaqs}
         columns={[
           {
             title: 'Question',
             field: 'question',
+            Cell({ entry }) {
+              return <span>{getValue(entry, 'question')}</span>;
+            },
           },
           {
             title: 'Answer',
             field: 'answer',
+            Cell({ entry }) {
+              const answer = getValue(entry, 'answer') || '';
+              return <p>{answer.length > 100 ? `${answer.slice(0, 100)}...` : answer}</p>;
+            },
           },
-          // {
-          //   title: '',
-          //   field: '_id',
-          //   width: 70,
-          //   Cell({ entry: { _id } }) {
-          //     return (
-          //       <Link to={`./${_id}`}>
-          //         <Button variant="danger" startIcon={<EyeIcon className="h-4 w-4" />} />
-          //       </Link>
-          //     );
-          //   },
-          // },
           {
             title: '',
             field: '_id',
@@ -101,7 +59,7 @@ export const FaqsList = () => {
       <div className="flex justify-center mt-6">
         <Pagination
           currentPage={currentPage}
-          lastPage={Math.ceil(faqsData.count / (filters?.perPage || 10))}
+          lastPage={Math.ceil((faqsData?.count || 0) / perPage)}
           maxLength={7}
           setCurrentPage={setCurrentPage}
         />
