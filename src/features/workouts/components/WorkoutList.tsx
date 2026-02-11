@@ -162,6 +162,7 @@ export const WorkoutList = () => {
       vimeoId: '',
       vimeoIdTranslations:{},
       thumbnail: null,
+      thumbnailTranslations:{},
       startDate: null,
       endDate: null,
       weeks: [],
