@@ -219,101 +219,56 @@ const uploadImagesAndGetURLs = async (images: (File | string | null)[]): Promise
 
 export const updateWorkouts = async (months: Month[]) => {
   try {
-    // Function to recursively collect all thumbnails
-    const collectThumbnails = (month: Month): (File | string | null)[] => {
-      const thumbnails: (File | string | null)[] = [];
+    const filesToUpload: File[] = [];
+    const urlSetters: ((url: string) => void)[] = [];
 
-      // Check if month thumbnail is a File or a URL (string)
-      if (month.thumbnail instanceof File || typeof month.thumbnail === 'string') {
-        thumbnails.push(month.thumbnail);
-      } else {
-        thumbnails.push(null); // Add null for invalid values
+    const processField = (obj: any, key: string) => {
+      if (obj && obj[key] instanceof File) {
+        filesToUpload.push(obj[key]);
+        urlSetters.push((url: string) => {
+          obj[key] = url;
+        });
       }
+    };
 
-      month.weeks.forEach((week) => {
-        // Check if week thumbnail is a File or a URL (string)
-        if (week.thumbnail instanceof File || typeof week.thumbnail === 'string') {
-          thumbnails.push(week.thumbnail);
-        } else {
-          thumbnails.push(null);
-        }
-
-        week.days.forEach((day) => {
-          // Check if day thumbnail is a File or a URL (string)
-          if (day.thumbnail instanceof File || typeof day.thumbnail === 'string') {
-            thumbnails.push(day.thumbnail);
-          } else {
-            thumbnails.push(null);
-          }
-          if (day.thumbnailOne instanceof File || typeof day.thumbnailOne === 'string') {
-            thumbnails.push(day.thumbnailOne);
-          } else {
-            thumbnails.push(null);
-          }
-          if (day.thumbnailTwo instanceof File || typeof day.thumbnailTwo === 'string') {
-            thumbnails.push(day.thumbnailTwo);
-          } else {
-            thumbnails.push(null);
-          }
-          if (day.thumbnailThree instanceof File || typeof day.thumbnailThree === 'string') {
-            thumbnails.push(day.thumbnailThree);
-          } else {
-            thumbnails.push(null);
+    const processTranslations = (obj: any, key: string) => {
+      if (obj && obj[key] && typeof obj[key] === 'object') {
+        Object.keys(obj[key]).forEach((langKey) => {
+          if (obj[key][langKey] instanceof File) {
+            filesToUpload.push(obj[key][langKey]);
+            urlSetters.push((url: string) => {
+              obj[key][langKey] = url;
+            });
           }
         });
-      });
-
-      return thumbnails;
+      }
     };
-
-    // Collect all the thumbnails from all months
-    let allThumbnails: (File | string | null)[] = [];
 
     months.forEach((month) => {
-      // Filter out any non-File (i.e., string or null) and concatenate valid File objects
-      allThumbnails = allThumbnails.concat(collectThumbnails(month));
+      processField(month, 'thumbnail');
+      processTranslations(month, 'thumbnailTranslations');
+
+      month.weeks.forEach((week) => {
+        processField(week, 'thumbnail');
+
+        week.days.forEach((day) => {
+          processField(day, 'thumbnail');
+          processField(day, 'thumbnailOne');
+          processField(day, 'thumbnailTwo');
+          processField(day, 'thumbnailThree');
+        });
+      });
     });
 
-    // Upload all thumbnails in one request
-    const thumbnailURLs = await uploadImagesAndGetURLs(allThumbnails);
+    if (filesToUpload.length > 0) {
+      const urls = await uploadImagesAndGetURLs(filesToUpload);
+      urls.forEach((url, index) => {
+        if (urlSetters[index]) {
+          urlSetters[index](url);
+        }
+      });
+    }
 
-    // Process each month to update thumbnails with the received URLs
-    let urlIndex = 0;
-    const updateThumbnails = (item: any) => {
-      if (urlIndex < thumbnailURLs.length) {
-        item.thumbnail = thumbnailURLs[urlIndex];
-        urlIndex++;
-      }
-      if (item.weeks) {
-        item.weeks.forEach((week) => updateThumbnails(week));
-      }
-      if (item.days) {
-        item.days.forEach((day) => {
-          if (urlIndex < thumbnailURLs.length) {
-            day.thumbnail = thumbnailURLs[urlIndex];
-            urlIndex++;
-          }
-          if (urlIndex < thumbnailURLs.length) {
-            day.thumbnailOne = thumbnailURLs[urlIndex];
-            urlIndex++;
-          }
-          if (urlIndex < thumbnailURLs.length) {
-            day.thumbnailTwo = thumbnailURLs[urlIndex];
-            urlIndex++;
-          }
-          if (urlIndex < thumbnailURLs.length) {
-            day.thumbnailThree = thumbnailURLs[urlIndex];
-            urlIndex++;
-          }
-        })
-        // item.days.forEach((day) => updateThumbnails(day));
-        
-      }
-    };
-
-    months.forEach((month) => updateThumbnails(month));
-
-    // Submit the updated months with new thumbnail URLs
     const response = (await axios.put('/workouts/update', { months })) as ResponseMessage;
     return response.message;
   } catch (err: any) {

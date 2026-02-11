@@ -134,7 +134,7 @@ export const createSettingsSchema = Yup.object().shape({
 
 export const createSectionSchema = Yup.object().shape({
   title: Yup.string().max(255).required(),
-  description: Yup.string().max(500).required(),
+  description: Yup.string().min(10).required(),
 });
 
 export const createPumpDaySchema = Yup.object().shape({

@@ -7,7 +7,7 @@ import Modal from 'react-modal';
 import { axios } from '@/lib/axios';
 import { useMonthCoverContext } from '../MonthCoverContext';
 import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
-
+import { WorkoutTranslatableDropzone } from './custom/WorkoutTranslatableDropzone';
 Modal.setAppElement('#root');
 
 interface Props {
@@ -94,15 +94,16 @@ export const MonthDetail = React.memo(({ monthIndex, month, updateMonth, selecte
   return (
     <div className="mb-4 flex mt-[25px]">
       <div className="w-1/2 my-auto">
-        <Dropzone
-          defaultImg={month.thumbnail}
-          onDrop={(img) => {
-            handleChange('thumbnail', img);
+        <WorkoutTranslatableDropzone
+          name="thumbnail"
+          label="Thumbnail"
+          selectedLanguages={selectedLanguages}
+          value={month.thumbnail}
+          translations={month.thumbnailTranslations || {}}
+          onChange={handleChange}
+          onDelete={(key) => {
+             handleChange(key, null);
           }}
-          onDelete={() => {
-            handleChange('thumbnail', null);
-          }}
-          file={month.thumbnail}
         />
       </div>
       <div className="ml-2 mr-2">

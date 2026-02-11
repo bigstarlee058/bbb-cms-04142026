@@ -381,6 +381,7 @@ export interface Month extends WorkoutsBaseEntity {
   vimeoId: string;
   vimeoIdTranslations: Record<string, string>;
   thumbnail: any;
+  thumbnailTranslations: Record<string, string>;
   startDate: Date;
   endDate: Date;
   localId: string;

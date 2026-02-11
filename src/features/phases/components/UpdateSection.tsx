@@ -108,7 +108,7 @@ export const UpdateSection = ({ sectionId, sections }) => {
       <FormDrawer
         isDone={isSuccess}
         triggerButton={<Button variant="danger" startIcon={<PencilIcon className="h-4 w-4" />} />}
-        title="Update Section"
+        title="Update Phase"
         submitButton={
           <Button form="update-section" variant="danger" type="submit" size="sm" isLoading={isLoading}>
             Submit
