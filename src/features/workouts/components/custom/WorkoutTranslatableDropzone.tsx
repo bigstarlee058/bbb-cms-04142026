@@ -57,9 +57,9 @@ export const WorkoutTranslatableDropzone = ({
   const currentFieldName = activeLanguage === 'en' ? name : `${translationField}.${activeLanguage}`;
 
   return (
-    <div className="mb-4">
+    <div >
       {hasOtherLanguages && hasSelectedOtherLanguages && (
-        <div className="flex flex-wrap gap-2 mb-2">
+        <div className="flex flex-wrap gap-2">
           <label
             className={`inline-flex items-center px-2 py-1 rounded text-xs cursor-pointer transition-all border ${
               activeLanguage === 'en'

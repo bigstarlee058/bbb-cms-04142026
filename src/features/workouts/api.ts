@@ -296,50 +296,46 @@ export const fetchPumpDays = async () => {
 export const updatePumpDays = async (days: Day[]) => {
   try {
     // Function to recursively collect all thumbnails
-    const collectThumbnails = (day: Day): (File | string | null)[] => {
-      const thumbnails: (File | string | null)[] = [];
-
+    const filesToUpload: File[] = [];
+    const urlSetters: ((url: string) => void)[] = [];
       // Check if day thumbnail is a File or a URL (string)
-      if (day.thumbnail instanceof File || typeof day.thumbnail === 'string') {
-        thumbnails.push(day.thumbnail);
-      } else {
-        thumbnails.push(null);
+    const processField = (obj: any, key: string) => {
+      if (obj && obj[key] instanceof File) {
+        filesToUpload.push(obj[key]);
+        urlSetters.push((url: string) => {
+          obj[key] = url;
+        });
       }
-
-      if (day.thumbnailOne instanceof File || typeof day.thumbnailOne === 'string') {
-        thumbnails.push(day.thumbnailOne);
-      } else {
-        thumbnails.push(null);
-      }
-
-      return thumbnails;
     };
 
-    // Collect all the thumbnails from all months
-    let allThumbnails: (File | string | null)[] = [];
-
+    const processTranslations = (obj: any, key: string) => {
+      if (obj && obj[key] && typeof obj[key] === 'object') {
+        Object.keys(obj[key]).forEach((langKey) => {
+          if (obj[key][langKey] instanceof File) {
+            filesToUpload.push(obj[key][langKey]);
+            urlSetters.push((url: string) => {
+              obj[key][langKey] = url;
+            });
+          }
+        });
+      }
+    };
+// Collect all the thumbnails from all months
     days.forEach((day) => {
-      // Filter out any non-File (i.e., string or null) and concatenate valid File objects
-      allThumbnails = allThumbnails.concat(collectThumbnails(day));
+      processField(day, 'thumbnail');
+      processTranslations(day, 'thumbnailTranslations');
+      processField(day, 'thumbnailOne');
+      processTranslations(day, 'thumbnailOneTranslations');
     });
 
-    // Upload all thumbnails in one request
-    const thumbnailURLs = await uploadImagesAndGetURLs(allThumbnails);
-
-    // Process each month to update thumbnails with the received URLs
-    let urlIndex = 0;
-    const updateThumbnails = (item: any) => {
-      if (urlIndex < thumbnailURLs.length) {
-        item.thumbnail = thumbnailURLs[urlIndex];
-        urlIndex++;
-      }
-      if (urlIndex < thumbnailURLs.length) {
-        item.thumbnailOne = thumbnailURLs[urlIndex];
-        urlIndex++;
-      }
-    };
-
-    days.forEach((day) => updateThumbnails(day));
+    if (filesToUpload.length > 0) {
+      const urls = await uploadImagesAndGetURLs(filesToUpload);
+      urls.forEach((url, index) => {
+        if (urlSetters[index]) {
+          urlSetters[index](url);
+        }
+      });
+    }
 
     // Submit the updated days with new thumbnail URLs
     const response = (await axios.put('/pump-days/admin/update', { days })) as ResponseMessage;

@@ -15,11 +15,11 @@ export const SavePumpDays = ({allDays}) => {
   // const [isSuccess, setIsSuccess] = useState(false);
   const { mutate, isSuccess, isLoading } = useMutation(updatePumpDays, {
     onSuccess: (message: string) => {
+      queryClient.invalidateQueries('get-pump-days');
       addNotification({
         type: 'success',
         title: message,
       });
-      queryClient.invalidateQueries('get-pump-days');
     },
     onError: (err) => {
       console.error('Error updating pump days:', err);

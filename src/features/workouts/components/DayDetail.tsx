@@ -4,7 +4,7 @@ import { WorkoutTranslatableInput } from './custom/WorkoutTranslatableInput';
 import { WorkoutTranslatableTextarea } from './custom/WorkoutTranslatableTextarea';
 import { useEffect } from 'react';
 import { SelectOption } from '@/types';
-
+import { WorkoutTranslatableDropzone } from './custom/WorkoutTranslatableDropzone';
 const DAY_ORDERS: SelectOption[] = [
   {
     label: 'Day 1',
@@ -122,36 +122,45 @@ export const DayDetail = ({
         />
       </div>
       <div className="w-1/2 ml-4 mr-4 mt-6">
-        <Dropzone
-          defaultImg={day.thumbnail}
-          onDrop={(img) => {
-            handleChange('thumbnail', img);
-          }}
-          onDelete={() => {
-            handleChange('thumbnail', null);
-          }}
-          file={day.thumbnail}
-        />
-        <WorkoutTranslatableInput
-          name="vimeoId"
-          translationField="vimeoIdTranslations"
-          label="Vimeo Id One"
-          selectedLanguages={selectedLanguages}
-          value={day.vimeoId || ''}
-          translations={day.vimeoIdTranslations || {}}
-          onChange={handleChange}
-        />
-        <Dropzone
-          defaultImg={day.thumbnailOne}
-          onDrop={(img) => {
-            handleChange('thumbnailOne', img);
-          }}
-          onDelete={() => {
-            handleChange('thumbnailOne', null);
-          }}
-          file={day.thumbnailOne}
-        />
-        
+        <div>
+          <WorkoutTranslatableDropzone
+            name="thumbnail"
+            label="Thumbnail"
+            selectedLanguages={selectedLanguages}
+            value={day.thumbnail}
+            translations={day.thumbnailTranslations || {}}
+            onChange={handleChange}
+            onDelete={(key) => {
+              handleChange(key, null);
+            }}
+          />
+        </div>
+
+        <div className='mt-2'>
+          <WorkoutTranslatableInput
+            name="vimeoId"
+            translationField="vimeoIdTranslations"
+            label="Vimeo Id One"
+            selectedLanguages={selectedLanguages}
+            value={day.vimeoId || ''}
+            translations={day.vimeoIdTranslations || {}}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div>
+          <WorkoutTranslatableDropzone
+            name="thumbnailOne"
+            label="Thumbnail One"
+            selectedLanguages={selectedLanguages}
+            value={day.thumbnailOne}
+            translations={day.thumbnailOneTranslations || {}}
+            onChange={handleChange}
+            onDelete={(key) => {
+              handleChange(key, null);
+            }}
+          />
+        </div>
         {!isPumpDay && (
           <WorkoutTranslatableInput
             name="vimeoIdTwo"
