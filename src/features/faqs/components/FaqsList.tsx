@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Table } from '@/components/Elements';
 import { Faq } from '@/types';
 import { DeleteFaq } from './DeleteFaq';
@@ -8,20 +7,22 @@ import Pagination from '@/components/Elements/Pagination';
 export const FaqsList = ({
   getValue,
   faqsData,
+  currentPage,
+  setCurrentPage,
+  perPage,
 }: {
   getValue: (item: any, field: string) => any;
   faqsData: any;
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  perPage: number;
 }) => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const perPage = 10;
-
   if (!faqsData?.faqs) return <>No Data Found</>;
-  const startIndex = (currentPage - 1) * perPage;
-  const paginatedFaqs = faqsData.faqs.slice(startIndex, startIndex + perPage);
+
   return (
     <>
       <Table<Faq>
-        data={paginatedFaqs}
+        data={faqsData.faqs}
         columns={[
           {
             title: 'Question',

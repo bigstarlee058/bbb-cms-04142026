@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ContentLayout } from '@/components/Layout';
 import { FaqsList } from './components/FaqsList';
 import { CreateFaq } from './components/CreateFaq';
@@ -9,8 +9,14 @@ import { LanguageSwitcher, useListTranslations } from '@/components/Language';
 import { fetchFaqs } from './api';
 
 export const Faqs = () => {
-  const { setCurrentPage } = useUserStore();
-  const { data: faqsData, isLoading } = useQuery(['get-faqs'], () => fetchFaqs({}));
+  const { setCurrentPage: setCurrentPageStore } = useUserStore();
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 10;
+
+  const { data: faqsData, isLoading } = useQuery(
+    ['get-faqs', currentPage],
+    () => fetchFaqs({ page: currentPage, perPage })
+  );
 
   const {
     selectedLang,
@@ -24,7 +30,7 @@ export const Faqs = () => {
   });
 
   useEffect(() => {
-    setCurrentPage("faqs");
+    setCurrentPageStore("faqs");
   }, []);
 
   if (isLoading) {
@@ -50,8 +56,14 @@ export const Faqs = () => {
         </div>
         <CreateFaq />
       </div>
-      <div className="mt-4">
-        <FaqsList getValue={getValue} faqsData={faqsData} />
+      <div className="mt-2">
+        <FaqsList
+          getValue={getValue}
+          faqsData={faqsData}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          perPage={perPage}
+        />
       </div>
     </ContentLayout>
   );
