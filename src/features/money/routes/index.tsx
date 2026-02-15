@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Upsells } from '../components/Upsells';
 
-export const MoneyRoutes = () => {
+export const UpsellsRoutes = () => {
   return (
     <Routes>
-      <Route path="upsells" element={<Upsells />} />
-      <Route path="*" element={<Navigate to="upsells" />} />
+      <Route path="/" element={<Upsells />} />
+      <Route path="/upsells*" element={<Navigate to="upsells" />} />
     </Routes>
   );
 };

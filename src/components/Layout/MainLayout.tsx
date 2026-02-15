@@ -82,11 +82,9 @@ const SideNavigation = () => {
       icon: UsersIcon
     },
     checkAccess({ allowedRoles: [ROLES.ADMIN] }) && {
-      title: 'Money',
+      title: 'Upsells',
       icon: CashIcon,
-      submenu: [
-        { title: 'Upsells', path: './money/upsells', icon: GiftIcon },
-      ]
+      path: './upsells'
     },
     {
       title: 'Modals',
