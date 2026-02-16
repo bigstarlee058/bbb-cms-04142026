@@ -10,8 +10,10 @@ import Pagination from '@/components/Elements/Pagination';
 import { Month } from '@/types';
 import { useWorkoutContext } from '../WorkoutContext';
 import { v4 as uuid } from 'uuid';
+import { useLockStore } from '@/stores/lock';
 
 export const WorkoutList = () => {
+  const { isReadOnly } = useLockStore();
   const [allMonths, setAllMonths] = useState([]);
   const [loadingMonths, setLoadingMonths] = useState(true);
   const [scrollTarget, setScrollTarget] = useState<{ type: string; monthIndex: number; weekLocalId?: string; dayLocalId?: string; expandIfCollapsed?: boolean } | null>(null);
@@ -379,6 +381,7 @@ export const WorkoutList = () => {
           <Button
             variant="danger"
             onClick={handleAddMonth}
+            disabled={isReadOnly}
             startIcon={<PlusIcon className="h-4 w-4" />}
           >
             Add Month

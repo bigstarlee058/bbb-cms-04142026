@@ -7,12 +7,13 @@ import SaveIcon from "@/lib/icons/SaveIcon";
 import { ArrowNarrowUpIcon } from "@heroicons/react/solid";
 import { cleanupNestedTranslations } from "@/utils/translationHelper";
 import { useWorkoutContext } from '../../WorkoutContext';
-
+import { useLockStore } from '@/stores/lock';
 export const SaveConfirmation = ({ allMonths }) => {
   // Access the client
   const queryClient = useQueryClient();
   const { selectedLanguagesByMonth } = useWorkoutContext();
   const { addNotification } = useNotificationStore();
+  const { isReadOnly } = useLockStore();
   const { mutate, isSuccess, isLoading } = useMutation(updateWorkouts, {
     onSuccess: (message: string) => {
       addNotification({
@@ -107,6 +108,13 @@ export const SaveConfirmation = ({ allMonths }) => {
   };
 
   const handleSaveWorkouts = () => {
+    if (isReadOnly) {
+      addNotification({
+        type: 'error',
+        title: 'You do not have the editing lock. Cannot save.',
+      });
+      return;
+    }
     const incomplete = hasIncompleteItems(allMonths);
     if (incomplete) {
       const itemName = incomplete.itemTitle
@@ -124,6 +132,13 @@ export const SaveConfirmation = ({ allMonths }) => {
   };
 
   const handlePublishWorkouts = () => {
+    if (isReadOnly) {
+      addNotification({
+        type: 'error',
+        title: 'You do not have the editing lock. Cannot save.',
+      });
+      return;
+    }
     const incomplete = hasIncompleteItems(allMonths);
     if (incomplete) {
       const itemName = incomplete.itemTitle
@@ -171,7 +186,7 @@ export const SaveConfirmation = ({ allMonths }) => {
         body={`Are you sure you want to save these workouts?`}
         isDone={isSuccess}
         triggerButton={
-          <Button variant="danger" startIcon={<SaveIcon className="mr-2" width="20" height="20" />}>Save</Button>
+          <Button variant="danger" disabled={isReadOnly} startIcon={<SaveIcon className="mr-2" width="20" height="20" />}>Save</Button>
         }
         confirmButton={
           <Button
@@ -191,7 +206,7 @@ export const SaveConfirmation = ({ allMonths }) => {
         body={`Are you sure you want to publish these workouts?`}
         isDone={isSuccess}
         triggerButton={
-          <Button variant="danger" className="ml-2" startIcon={<ArrowNarrowUpIcon className="mr-2" width="20" height="20" />}>Publish</Button>
+          <Button variant="danger" className="ml-2" disabled={isReadOnly} startIcon={<ArrowNarrowUpIcon className="mr-2" width="20" height="20" />}>Publish</Button>
         }
         confirmButton={
           <Button
