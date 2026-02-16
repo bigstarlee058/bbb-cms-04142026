@@ -1,4 +1,4 @@
-import create from 'zustand';
+import {create} from 'zustand';
 
 type LockedBy = { id: string; name: string } | null;
 
