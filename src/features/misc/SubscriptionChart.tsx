@@ -23,12 +23,14 @@ interface SubscriptionStatsResponse {
     dates: string[];
     free: number[];
     monthly: number[];
+    quarterly: number[];
     yearly: number[];
     totals: number[];
     paid: number[];
     growth: {
         free: number[];
         monthly: number[];
+        quarterly: number[];
         yearly: number[];
         totals: number[];
         paid: number[];
@@ -73,7 +75,7 @@ const SubscriptionChart: React.FC = () => {
     const [selectedStartDate, setSelectedStartDate] = useState('');
     const [selectedEndDate, setSelectedEndDate] = useState('');
     const [cumulativeTotals, setCumulativeTotals] = useState<number[]>([]);
-    const [viewType, setViewType] = useState<'total' | 'growth'>('total');
+    const [viewType, setViewType] = useState<'total' | 'growth'>('growth');
     const getDateLabel = (): string => {
         switch (dateFilter.value) {
             case 'today':
@@ -159,7 +161,7 @@ const SubscriptionChart: React.FC = () => {
 
             const response = await axios.get<SubscriptionStatsResponse>('/users/subscription-stats', { params });
 
-            const { dates, free, monthly, yearly, paid, totals, growth } = response.data;
+            const { dates, free, monthly, quarterly, yearly, paid, totals, growth } = response.data;
             setCumulativeTotals(totals);
 
             setChartData({
@@ -186,6 +188,14 @@ const SubscriptionChart: React.FC = () => {
                         data: viewType === 'total' ? monthly : growth.monthly,
                         borderColor: 'rgb(59, 130, 246)',
                         backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Quarterly',
+                        data: viewType === 'total' ? quarterly : growth.quarterly,
+                        borderColor: 'rgb(251, 146, 60)',
+                        backgroundColor: 'rgba(251, 146, 60, 0.1)',
                         fill: true,
                         tension: 0.4
                     },
@@ -235,8 +245,8 @@ const SubscriptionChart: React.FC = () => {
                         const index = tooltipItems[0].dataIndex;
                         const total =
                             viewType === 'growth'
-                                ? chartData.datasets
-                                    .filter(ds => ds.label?.toLowerCase() !== 'paid')
+                                ? chartData!.datasets
+                                    .filter(ds => !['paid', 'Paid'].includes(ds.label || ''))
                                     .reduce((sum, ds) => sum + (ds.data[index] || 0), 0)
                                 : cumulativeTotals[index] || 0;
                         return `─────────────────\n  Total Users: ${total.toLocaleString()}`;
@@ -358,21 +368,25 @@ const SubscriptionChart: React.FC = () => {
             </div>
             <div className="flex justify-center items-center gap-6 pt-6 border-t mt-4">
                 {(() => {
-                    const datasetLatest = chartData.datasets
-                        .filter(ds => ds.label?.toLowerCase() !== 'paid')
-                        .map(ds => {
-                            const last = viewType === 'growth'
-                                ? ds.data.reduce((a, b) => a + b, 0)
-                                : (ds.data.length ? ds.data[ds.data.length - 1] : 0);
-                            return typeof last === 'number' ? last : Number(last || 0);
-                        });
+                    const getLatest = (label: string) => {
+                        const ds = chartData.datasets.find(d => d.label === label);
+                        if (!ds) return 0;
+                        return viewType === 'growth'
+                            ? ds.data.reduce((a, b) => a + b, 0)
+                            : (ds.data.length ? ds.data[ds.data.length - 1] : 0);
+                    };
 
-                    const currentTotal = datasetLatest.reduce((a, b) => a + b, 0);
+                    const freeVal = getLatest('Free');
+                    const monthlyVal = getLatest('Monthly');
+                    const quarterlyVal = getLatest('Quarterly');
+                    const yearlyVal = getLatest('Yearly');
+                    const currentTotal = freeVal + monthlyVal + quarterlyVal + yearlyVal;
 
                     const items = [
-                        { label: 'Total Free', color: 'text-slate-500', latest: datasetLatest[0] },
-                        { label: 'Total Monthly', color: 'text-blue-500', latest: datasetLatest[1] },
-                        { label: 'Total Yearly', color: 'text-green-500', latest: datasetLatest[2] },
+                        { label: 'Total Free', color: 'text-slate-500', latest: freeVal },
+                        { label: 'Total Monthly', color: 'text-blue-500', latest: monthlyVal },
+                        { label: 'Total Quarterly', color: 'text-orange-400', latest: quarterlyVal },
+                        { label: 'Total Yearly', color: 'text-green-500', latest: yearlyVal },
                     ];
 
                     return (
