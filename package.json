@@ -5,7 +5,7 @@
   "homepage": "",
   "proxy": "http://localhost:5004",
   "scripts": {
-    "start": "serve -s build",
+    "start": "serve -s build -l $PORT",
     "dev": "craco start",
     "build": "craco build",
     "test": "craco test"
