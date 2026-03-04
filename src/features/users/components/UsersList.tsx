@@ -11,7 +11,7 @@ import { UserDetail } from '../UserDetail';
 import { ManageSubscription } from './ManageSubscription';
 import { fetchLanguages } from '@/lib/api';
 export const UsersList = () => {
-  const { search, sortBy, subscription, source } = useFilteringStore();
+  const { search, sortBy, subscription, source, language } = useFilteringStore();
   const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<Filters>({
@@ -22,6 +22,7 @@ export const UsersList = () => {
     sortBy: undefined,
     subscription:undefined,
     source: undefined,
+    language: undefined,
   });
 
   const { data, isLoading, isFetching, } = useQuery(
@@ -30,9 +31,12 @@ export const UsersList = () => {
     { keepPreviousData: true }
   );
 
-
   useEffect(() => {
-    setFilters((prev) => ({ ...prev, search, page: 1 ,subscription:undefined}));
+    setFilters((prev) => ({ ...prev, language: language?.value, page: 1 }));
+    setCurrentPage(1);
+  }, [language]);
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, search, page: 1, subscription: undefined }));
     setCurrentPage(1);
   }, [search]);
 
@@ -41,7 +45,7 @@ export const UsersList = () => {
     setCurrentPage(1);
   }, [sortBy]);
   useEffect(() => {
-    setFilters((prev) => ({ ...prev, subscription:subscription?.value, page: 1 }));
+    setFilters((prev) => ({ ...prev, subscription: subscription?.value, page: 1 }));
     setCurrentPage(1);
   }, [subscription]);
   useEffect(() => {
@@ -58,7 +62,44 @@ export const UsersList = () => {
       </div>
     );
   }
+  const ActiveFiltersBar = ({
+    totalCount,
+    sortBy,
+    subscription,
+    source,
+    language,
+    search,
+    fetchedLanguages,
+  }: {
+    totalCount: number;
+    sortBy: string | undefined;
+    subscription: string | undefined;
+    source: string | undefined;
+    language: string | undefined;
+    search: string | undefined;
+    fetchedLanguages: { key: string; name: string }[];
+  }) => {
+    const getLanguageLabel = (langKey: string) => {
+      if (langKey === 'en') return 'English';
+      const found = fetchedLanguages.find((l) => l.key === langKey);
+      return found?.name || langKey;
+    };
 
+    const parts = [
+      `${totalCount.toLocaleString()} results`,
+      sortBy && `Sort: ${sortBy}`,
+      subscription && subscription !== '' && `Sub: ${subscription.charAt(0).toUpperCase() + subscription.slice(1)}`,
+      source && source !== '' && `Src: ${source.charAt(0).toUpperCase() + source.slice(1)}`,
+      language && language !== '' && `Lang: ${getLanguageLabel(language)}`,
+      search && search !== '' && `"${search}"`,
+    ].filter(Boolean);
+
+    return (
+      <div className="w-full px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
+        {parts.join('  ·  ')}
+      </div>
+    );
+  };
   if (!data) return null;
 
   return (
@@ -68,7 +109,15 @@ export const UsersList = () => {
           <Spinner size="lg" />
         </div>
       )}
-
+      <ActiveFiltersBar
+        totalCount={data.totalCount}
+        sortBy={filters.sortBy}
+        subscription={filters.subscription}
+        source={filters.source}
+        language={filters.language}
+        search={filters.search}
+        fetchedLanguages={fetchedLanguages}
+      />
       <Table<User>
         data={data.users}
         columns={[
@@ -78,7 +127,7 @@ export const UsersList = () => {
             title: 'Source',
             field: 'singuptype',
             Cell({ entry: { singuptype } }) {
-              return <span>{singuptype ==="mobile"?"Mobile":"Wordpress"}</span>;
+              return <span>{singuptype === "mobile" ? "Mobile" : "Wordpress"}</span>;
             },
           },
           {
@@ -99,7 +148,7 @@ export const UsersList = () => {
             title: 'Subscription',
             field: 'subscription',
             Cell({ entry }) {
-              const { subscription,rcUserId, _id, name, email } = entry;
+              const { subscription, rcUserId, _id, name, email } = entry;
               const isActive = subscription?.end_date
                 ? new Date(subscription.end_date) > new Date()
                 : false;
@@ -141,7 +190,7 @@ export const UsersList = () => {
 
                   {showSubscriptionPopup && (
                     <ManageSubscription
-                      id={rcUserId||_id}
+                      id={rcUserId || _id}
                       name={name}
                       email={email}
                       uid={entry.uid}
@@ -165,7 +214,7 @@ export const UsersList = () => {
             field: '_id',
             Cell({ entry }) {
               const systemName = entry?.deviceInfo?.systemName;
-              const osVersion = entry?.deviceInfo?.osVersion;    
+              const osVersion = entry?.deviceInfo?.osVersion;
               if (!systemName) return <div>-</div>;
               return <div>{osVersion ? `${systemName} ${osVersion}` : systemName}</div>;
             },

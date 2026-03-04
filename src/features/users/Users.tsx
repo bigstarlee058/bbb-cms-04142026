@@ -13,7 +13,7 @@ export const Users = () => {
 
   return (
     <ContentLayout title="">
-      <div className="mt-4">
+      <div className="mt-1">
         <Authorization
           forbiddenFallback={<div>Only admin can view this.</div>}
           allowedRoles={[ROLES.ADMIN]}

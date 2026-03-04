@@ -45,6 +45,9 @@ import { SavePumpDays } from '@/features/pumpdays/SavePumpDays';
 import { usePumpDaysContext } from '@/features/pumpdays/PumpDaysContext';
 import WeightClockIcon from '../Elements/Icon/WeightClockIcon';
 import { ExportData } from '@/features/users/components/custom/ExportData';
+import { useQuery } from 'react-query';
+import { fetchLanguages } from '@/lib/api';
+
 const WrenchScrewdriverIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -382,7 +385,8 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [monthCover, setMonthCover] = React.useState('');
 
   const { currentPage } = useUserStore();
-  const { setSearchBoxValue, setSortByValue, sortBy, subscription, setSubscriptionByValue, source, setSourceByValue } = useFilteringStore();
+  const { setSearchBoxValue, setSortByValue, sortBy, subscription, setSubscriptionByValue, source, setSourceByValue, language,
+    setLanguageByValue } = useFilteringStore();
   const { months } = useWorkoutContext();
   const { days } = usePumpDaysContext();
   const { pathname } = useLocation();
@@ -399,6 +403,23 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   const handleSubscriptionOptionChange = (val: any) => {
     setSubscriptionByValue(val.label, val.value);
+  };
+  const { data: fetchedLanguages = [] } = useQuery('languages', fetchLanguages);
+
+  const languageOptions = [
+    { label: 'All', value: '' },
+    { label: 'English', value: 'en' }, // 👈 hardcoded default
+    ...fetchedLanguages
+      .filter((lang) => lang.key !== 'en') // 👈 prevent duplicate if API returns 'en'
+      .map((lang) => ({
+        label: lang.name,
+        value: lang.key
+      }))
+  ];
+
+  // Add handler
+  const handleLanguageOptionChange = (val: any) => {
+    setLanguageByValue(val.label, val.value);
   };
   const fetchSetting = async () => {
     try {
@@ -432,7 +453,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
-  useEffect(() => {}, [currentPage]);
+  useEffect(() => { }, [currentPage]);
   useEffect(() => {
     fetchSetting();
   }, []);
@@ -504,6 +525,17 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                           options={userSource}
                           value={source}
                           onChange={handleSourceOptionChange}
+                        />
+                      </div>
+                      <div className="p-1">
+                        <ReactSelect
+                          styles={reactSelectStylesConfig}
+                          className="w-40 shrink hover:shrink-0 whitespace-nowrap"
+                          placeholder="Language"
+                          name="language"
+                          options={languageOptions}
+                          value={language}
+                          onChange={handleLanguageOptionChange}
                         />
                       </div>
                       <div className="p-1"><ExportData /></div>

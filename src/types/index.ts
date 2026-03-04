@@ -356,7 +356,8 @@ export interface Filters {
   sortOrder?: number;
   filter?: any;
   lastId?: string;
-  source?: string
+  source?: string;
+  language?: string | undefined;
 }
 
 export interface TitleFilters {
