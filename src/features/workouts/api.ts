@@ -253,9 +253,13 @@ export const updateWorkouts = async (months: Month[]) => {
 
         week.days.forEach((day) => {
           processField(day, 'thumbnail');
+          processTranslations(day, 'thumbnailTranslations');
           processField(day, 'thumbnailOne');
+          processTranslations(day, 'thumbnailOneTranslations');
           processField(day, 'thumbnailTwo');
+          processTranslations(day, 'thumbnailTwoTranslations');
           processField(day, 'thumbnailThree');
+          processTranslations(day, 'thumbnailThreeTranslations');
         });
       });
     });

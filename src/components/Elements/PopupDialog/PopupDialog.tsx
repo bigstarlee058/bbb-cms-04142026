@@ -104,14 +104,37 @@ export const PopupDialog = ({
   }, [workoutsHistory, formatDateToLocal]);
 
   const subscriptionType = React.useMemo(() => {
-    const subscription = userData?.subscription;
-    const isActive = subscription?.end_date ? new Date(subscription.end_date) > new Date() : false;
-    if (!isActive) return 'Free';
-    const type = subscription?.subscription_type || '';
-    if (type.toLowerCase().includes('month')) return 'Monthly';
-    if (type.toLowerCase().includes('year')) return 'Yearly';
-    return 'Free';
-  }, [userData?.subscription]);
+  const subscription = userData?.subscription;
+  
+  const isActive = subscription?.end_date 
+    ? new Date(subscription.end_date) > new Date() 
+    : false;
+  if (!isActive) return 'Free';
+
+  const type = (subscription?.subscription_type || '').toLowerCase();
+
+  if (type.includes('year') || type.includes('annual')) {
+    return 'Yearly';
+  } 
+  
+  if (type.includes('quarter') || type.includes('3month')) {
+    return 'Quarterly';
+  } 
+  
+  if (type.includes('month')) {
+    return 'Monthly';
+  } 
+  
+  if (type.includes('week')) {
+    return 'Weekly';
+  } 
+  
+  if (type.includes('trial')) {
+    return 'Trial';
+  }
+  return 'Monthly';
+  
+}, [userData?.subscription]);
 
   const platform = React.useMemo(() => {
     const systemName = userData?.deviceInfo?.systemName;

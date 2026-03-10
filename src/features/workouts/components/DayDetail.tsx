@@ -121,7 +121,7 @@ export const DayDetail = ({
           hasHeight={isPumpDay ? false : true}
         />
       </div>
-      <div className="w-1/2 ml-4 mr-4 mt-6">
+      <div className="w-1/2 ml-4 mr-4 ">
         <div>
           <WorkoutTranslatableDropzone
             name="thumbnail"
@@ -148,7 +148,7 @@ export const DayDetail = ({
           />
         </div>
 
-        <div>
+        <div className='mt-4'>
           <WorkoutTranslatableDropzone
             name="thumbnailOne"
             label="Thumbnail One"
@@ -173,18 +173,22 @@ export const DayDetail = ({
           />
         )}
         {!isPumpDay && (
-          <Dropzone
-            defaultImg={day.thumbnailTwo}
-            onDrop={(img) => {
-              handleChange('thumbnailTwo', img);
+          <div className='mt-2 mb-2'>
+          <WorkoutTranslatableDropzone
+            name="thumbnailTwo"
+            label="Thumbnail Two"
+            selectedLanguages={selectedLanguages}
+            value={day.thumbnailTwo}
+            translations={day.thumbnailTwoTranslations || {}}
+            onChange={handleChange}
+            onDelete={(key) => {
+              handleChange(key, null);
             }}
-            onDelete={() => {
-              handleChange('thumbnailTwo', null);
-            }}
-            file={day.thumbnailTwo}
           />
+        </div>
         )}
         {!isPumpDay && (
+          <div className='mb-4'>
           <WorkoutTranslatableInput
             name="vimeoIdThree"
             translationField="vimeoIdThreeTranslations"
@@ -194,18 +198,22 @@ export const DayDetail = ({
             translations={day.vimeoIdThreeTranslations || {}}
             onChange={handleChange}
           />
+          </div>
         )}
         {!isPumpDay && (
-          <Dropzone
-            defaultImg={day.thumbnailThree}
-            onDrop={(img) => {
-              handleChange('thumbnailThree', img);
+          <div className='mt-2 mb-2'>
+          <WorkoutTranslatableDropzone
+            name="thumbnailThree"
+            label="Thumbnail Three"
+            selectedLanguages={selectedLanguages}
+            value={day.thumbnailThree}
+            translations={day.thumbnailThreeTranslations || {}}
+            onChange={handleChange}
+            onDelete={(key) => {
+              handleChange(key, null);
             }}
-            onDelete={() => {
-              handleChange('thumbnailThree', null);
-            }}
-            file={day.thumbnailThree}
           />
+        </div>
         )}
         {!isPumpDay && (
           <div className="flex mt-3">
