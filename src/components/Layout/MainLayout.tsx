@@ -408,16 +408,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   const languageOptions = [
     { label: 'All', value: '' },
-    { label: 'English', value: 'en' }, // 👈 hardcoded default
+    { label: 'English', value: 'en' },
     ...fetchedLanguages
-      .filter((lang) => lang.key !== 'en') // 👈 prevent duplicate if API returns 'en'
+      .filter((lang) => lang.key !== 'en') 
       .map((lang) => ({
         label: lang.name,
         value: lang.key
       }))
   ];
 
-  // Add handler
   const handleLanguageOptionChange = (val: any) => {
     setLanguageByValue(val.label, val.value);
   };

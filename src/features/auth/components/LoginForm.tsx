@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation } from 'react-query';
 import { fetchMe } from '@/features/users';
 import { Button } from '@/components/Elements';
 import { Field } from '@/components/Form';
@@ -10,35 +10,30 @@ import { useAuthStore } from '@/stores/auth';
 import { userLoginSchema } from '@/utils/yup';
 import { useNotificationStore } from '@/stores/notifications';
 import { ErrorMessage } from '@/types';
+import storage from '@/utils/storage';
 
 interface FormikState {
   email: string;
   password: string;
 }
 
-type LoginFormProps = {
-  onSuccess: () => void;
-};
-
 export const LoginForm = () => {
   const { mutate } = useMutation(login);
   const navigate = useNavigate();
-  const { user, setUser, setIsLogged, isLogged } = useAuthStore();
+  const { setUser, setIsLogged, isLogged } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const { addNotification } = useNotificationStore();
-
-  // useEffect(() => {
-  //   console.log("this is login page", user);
-  //   if(user) {
-  //     console.log("this is login page user", user);
-  //     navigate('/app');
-  //   }
-  // }, [user, navigate]);
-
+  
   const initialValues: FormikState = {
     email: '',
     password: '',
   };
+
+  useEffect(() => {
+    if (isLogged) {
+      navigate('/app', { replace: true });
+    }
+  }, [isLogged, navigate]);
 
   const formik = useFormik({
     initialValues,
@@ -46,9 +41,14 @@ export const LoginForm = () => {
     onSubmit: async (values) => {
       setLoading(true);
       mutate(values, {
-        onSuccess: async (resp: { success: boolean; data: { uid: string; _id: string }; message?: string }) => {
+        onSuccess: async (resp: any) => {
           setLoading(false);
-          if (resp.success) {            
+          
+          if (resp.success) {
+            if (resp.data?.token) {
+               storage.setToken(resp.data.token);
+            }
+            
             const newUser = await fetchMe();
             if(newUser?.role == 1) {
               setIsLogged(true);
@@ -59,13 +59,11 @@ export const LoginForm = () => {
               sessionStorage.clear();
               window.location.href = '/';
             }
-          } else {
-            console.log("Error", resp.message || "Unexpected Error");
           }
         },
         onError: (err: ErrorMessage) => {
           addNotification({
-            type: 'success',
+            type: 'error',
             title: err.message
           });
           setLoading(false);

@@ -75,10 +75,6 @@ export const protectedRoutes = [
         element: <ScreensRoutes />,
         children: [{ path: 'backgroundScreens', element: <BackgroundScreens /> }]
       },
-      // {
-      //   element: <TutorialsRoutes />,
-      //   children: [{ path: 'backgroundTutorials', element: <BackgroundTutorials /> }]
-      // },
       {
         element: <VersionRoutes />,
         children: [{ path: 'versionManage', element: <VersionManage /> }]
