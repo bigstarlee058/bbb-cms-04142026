@@ -12,7 +12,7 @@ export interface Download {
   pdf: string;
   pdfTranslations?: Record<string, string>;
   releaseDate: string;
-  isFeatured: boolean;
+  monthId?: string;
   createdAt: string;
   updatedAt: string;
 }

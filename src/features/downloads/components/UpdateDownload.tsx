@@ -13,10 +13,16 @@ import { LanguageSelector } from '@/components/Language/LanguageSelector';
 import { useTranslations } from '@/hooks/useTranslations';
 import { TranslatableInput } from '@/components/Form/TranslatableInput';
 import { TranslatableTextarea } from '@/components/Form/TranslatableTextarea';
-import {TranslatablePdfDropzone } from "@/components/Form/TranslatablePdfDropZone";
+import { TranslatablePdfDropzone } from "@/components/Form/TranslatablePdfDropZone";
 import { prepareTranslations } from '@/utils/translationHelper';
 import * as Yup from 'yup';
-
+import { fetchWorkouts } from '@/features/workouts/api';
+import ReactSelect, { SingleValue } from 'react-select';
+import reactSelectStylesConfig from '@/lib/react-select';
+type WorkoutOption = {
+  value: string;
+  label: string;
+};
 interface FormikState {
   title: string;
   titleTranslations: Record<string, string>;
@@ -26,13 +32,14 @@ interface FormikState {
   pdfTranslations: Record<string, any>;
   deletePdf: boolean;
   releaseDate: string;
-  isFeatured: boolean;
+  monthId: string;
 }
 
 const updateDownloadSchema = Yup.object().shape({
   title: Yup.string().required('Title is required'),
   description: Yup.string().required('Description is required'),
   releaseDate: Yup.string().required('Release date is required'),
+  monthId: Yup.string().required('Select a Month'),
 });
 
 export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; downloads: any }) => {
@@ -70,7 +77,10 @@ export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; 
   useEffect(() => {
     syncLanguages();
   }, [downloadData, fetchedLanguages]);
-
+  const { data: workoutsData, isLoading: workoutsLoading } = useQuery(
+    ['get-workouts'],
+    () => fetchWorkouts({ page: 1, perPage: 1000 })
+  );
   const { mutate, isLoading, isSuccess } = useMutation(updateDownload, {
     onSuccess: (message: string) => {
       addNotification({ type: 'success', title: message });
@@ -86,7 +96,8 @@ export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; 
     pdfTranslations: downloadData?.pdfTranslations ?? {},
     deletePdf: false,
     releaseDate: downloadData?.releaseDate ?? '',
-    isFeatured: !!downloadData?.isFeatured,
+    monthId: downloadData?.monthId ?? '',
+
   };
 
   const onSubmit = (values: FormikState) => {
@@ -100,6 +111,28 @@ export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; 
     const payload = { ...values, ...translations };
     mutate({ downloadId, ...payload });
   };
+  const formatDateRange = (startDate: string, endDate: string): string => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const startMonth = start.getMonth() + 1;
+    const startDay = start.getDate();
+    const endMonth = end.getMonth() + 1;
+    const endDay = end.getDate();
+    const year = end.getFullYear();
+
+    return `${startMonth}/${startDay} - ${endMonth}/${endDay}, ${year}`;
+  };
+
+  const workoutOptions: WorkoutOption[] = (workoutsData?.months || [])
+    .slice()
+    .sort((a: any, b: any) =>
+      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    )
+    .map((workout: any) => ({
+      value: workout._id,
+      label: `Month ${workout.index} | ${workout.title} | ${formatDateRange(workout.startDate, workout.endDate)}`,
+    }));
 
   const formik = useFormik({
     initialValues,
@@ -107,7 +140,9 @@ export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; 
     validationSchema: updateDownloadSchema,
     onSubmit,
   });
-
+  const selectedWorkoutOption = workoutOptions.find(
+    (opt) => opt.value === formik.values.monthId
+  ) || null;
   const isoToLocalInput = (isoString: string) => {
     if (!isoString) return '';
     const date = new Date(isoString);
@@ -138,6 +173,27 @@ export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; 
           onToggle={handleLanguageToggle}
         />
         <form id="update-download" onSubmit={formik.handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Select a Month
+            </label>
+            <ReactSelect<WorkoutOption>
+              styles={reactSelectStylesConfig}
+              className="w-full"
+              placeholder="Select a month"
+              name="monthId"
+              options={workoutOptions}
+              value={selectedWorkoutOption}
+              onChange={(option: SingleValue<WorkoutOption>) =>
+                formik.setFieldValue('monthId', option?.value || '')
+              }
+              isLoading={workoutsLoading}
+              isClearable
+            />
+            {formik.touched.monthId && formik.errors.monthId && (
+              <p className="mt-1 text-sm text-red-600">{formik.errors.monthId}</p>
+            )}
+          </div>
           <TranslatableInput
             formik={formik}
             name="title"
@@ -175,6 +231,6 @@ export const UpdateDownload = ({ downloadId, downloads }: { downloadId: string; 
           </div>
         </form>
       </FormDrawer>
-    </Authorization>
+    </Authorization >
   );
 };
