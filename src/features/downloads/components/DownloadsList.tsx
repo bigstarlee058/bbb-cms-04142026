@@ -1,4 +1,4 @@
-import { Table, Button } from '@/components/Elements';
+import { Table } from '@/components/Elements';
 import { formatDate } from '@/utils/format';
 import { Download } from '../api';
 import { DeleteDownload } from './DeleteDownload';
@@ -32,6 +32,31 @@ export const DownloadsList = ({
       <Table<Download>
         data={downloadData.downloads}
         columns={[
+
+          {
+            title: 'Month',
+            field: 'monthId',
+            Cell({ entry }: { entry: any }) {
+              const formatDateRange = (startDate: string, endDate: string): string => {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const startMonth = start.getMonth() + 1;
+                const startDay = start.getDate();
+                const endMonth = end.getMonth() + 1;
+                const endDay = end.getDate();
+                const year = end.getFullYear();
+                return `${startMonth}/${startDay} - ${endMonth}/${endDay}, ${year}`;
+              };
+
+              return entry.month?.index ? (
+                <span >
+                  Month {entry.month.index} | {formatDateRange(entry.month.startDate, entry.month.endDate)}
+                </span>
+              ) : (
+                <span>-</span>
+              );
+            },
+          },
           {
             title: 'Title',
             field: 'title',
