@@ -51,14 +51,31 @@ export const PopupDialog = ({
   const [sourceFilter, setSourceFilter] = React.useState<string>("");
   const [actionFilter, setActionFilter] = React.useState<string>("");
   const [expandedEventId, setExpandedEventId] = React.useState<string | null>(null);
-  const formatDateToLocal = React.useCallback((dateInput: string | Date): string => {
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return date.toLocaleString(undefined, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour12: false,
-    }).replace(',', '');
+  const formatDateToLocal = React.useCallback((dateInput: string | Date | null | undefined): string => {
+    if (!dateInput) return 'N/A';
+
+    try {
+      let dateStr: string;
+
+      if (dateInput instanceof Date) {
+        if (isNaN(dateInput.getTime())) return 'N/A';
+        dateStr = dateInput.toISOString();
+      } else if (typeof dateInput === 'string') {
+        dateStr = dateInput.trim();
+        if (!dateStr) return 'N/A';
+      } else {
+        return 'N/A';
+      }
+
+      const [datePart] = dateStr.replace('Z', '').split('T');
+      const [year, month, day] = datePart.split('-');
+
+      if (!year || !month || !day) return 'N/A';
+
+      return `${month}/${day}/${year}`;
+    } catch {
+      return 'N/A';
+    }
   }, []);
 
   const groupedWorkouts = React.useMemo(() => {
@@ -210,6 +227,33 @@ export const PopupDialog = ({
       setIsLoadingTemp(false);
     }
   };
+  const formatExactUserDate = React.useCallback((dateInput: string | Date | null | undefined): string => {
+  if (!dateInput) return 'N/A';
+
+  try {
+    let dateStr: string;
+
+    if (dateInput instanceof Date) {
+      if (isNaN(dateInput.getTime())) return 'N/A';
+      dateStr = dateInput.toISOString();
+    } else if (typeof dateInput === 'string') {
+      dateStr = dateInput.trim();
+      if (!dateStr) return 'N/A';
+    } else {
+      return 'N/A';
+    }
+
+    const [datePart, timePart] = dateStr.replace('Z', '').split('T');
+    const [year, month, day] = datePart.split('-');
+    const [hour, minute] = (timePart || '00:00').split(':');
+
+    if (!year || !month || !day) return 'N/A';
+
+    return `${month}/${day}/${year} ${hour}:${minute}`;
+  } catch {
+    return 'N/A';
+  }
+}, []);
   const generatePassword = () => {
     const chars = "0123456789";
     let pass = "";
@@ -292,7 +336,7 @@ export const PopupDialog = ({
           </div>
         );
 
-            case 1:
+      case 1:
         return (
           <div className="space-y-6 max-h-[500px] overflow-auto px-2 relative">
             {isLoading || !userData ? (
@@ -319,8 +363,8 @@ export const PopupDialog = ({
                     {group.workouts.map((ex, exIndex) => {
                       const rawWeight = Number(ex.weight) || 0;
                       const isMetric = userData?.settings?.isEnabledMetricUnits ?? false;
-                      const finalWeight = isMetric 
-                        ? rawWeight * 0.45359237 
+                      const finalWeight = isMetric
+                        ? rawWeight * 0.45359237
                         : rawWeight;
                       const displayWeight = parseFloat(finalWeight.toFixed(2));
                       const unitLabel = isMetric ? 'kg' : 'lbs';
@@ -329,14 +373,18 @@ export const PopupDialog = ({
                           key={`${ex.date}_${exIndex}`}
                           className={`p-4 rounded-lg border ${
                             ex.status === 'Completed'
-                              ? 'bg-green-50 border-green-300'
-                              : 'bg-red-50 border-red-300'
-                          }`}
+                            ? 'bg-green-50 border-green-300'
+                            : 'bg-red-50 border-red-300'
+                            }`}
                         >
                           <h5 className="text-md font-medium text-gray-800">
                             {ex.exerciseTitle}
                           </h5>
                           <ul className="mt-2 text-sm text-gray-600 space-y-1">
+                            <li>
+                              <span className="font-semibold">Date:</span>{' '}
+                              {formatExactUserDate(ex.date)}
+                            </li>
                             <li>
                               <span className="font-semibold">Sets:</span> {ex.sets}
                             </li>
@@ -354,9 +402,9 @@ export const PopupDialog = ({
                           <p
                             className={`mt-3 text-sm font-semibold ${
                               ex.status === 'Completed'
-                                ? 'text-green-600'
-                                : 'text-red-600'
-                            }`}
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                              }`}
                           >
                             {ex.status}
                           </p>
