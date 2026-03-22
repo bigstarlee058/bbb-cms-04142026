@@ -8,10 +8,12 @@ import { ArrowNarrowUpIcon } from "@heroicons/react/solid";
 import { cleanupNestedTranslations } from "@/utils/translationHelper";
 import { useWorkoutContext } from '../../WorkoutContext';
 import { useLockStore } from '@/stores/lock';
+import { useState } from 'react';
 export const SaveConfirmation = ({ allMonths }) => {
   // Access the client
+  const [deleteToggles, setDeleteToggles] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
-  const { selectedLanguagesByMonth } = useWorkoutContext();
+  const { selectedLanguagesByMonth, setSelectedLanguagesForMonth } = useWorkoutContext();
   const { addNotification } = useNotificationStore();
   const { isReadOnly } = useLockStore();
   const { mutate, isSuccess, isLoading } = useMutation(updateWorkouts, {
@@ -26,6 +28,108 @@ export const SaveConfirmation = ({ allMonths }) => {
       console.error('Error updating workouts:', err);
     },
   });
+
+  const getExistingLangsForMonth = (month: any) => {
+    const existingLangs = new Set<string>();
+    const collectTranslationKeys = (obj: any) => {
+      if (!obj || typeof obj !== 'object') return;
+
+      Object.keys(obj).forEach(key => {
+        if (key.endsWith('Translations') && obj[key] && typeof obj[key] === 'object') {
+          Object.keys(obj[key]).forEach(langKey => {
+            if (obj[key][langKey] && String(obj[key][langKey]).trim() !== '') {
+              existingLangs.add(langKey);
+            }
+          });
+        } else if (Array.isArray(obj[key])) {
+          obj[key].forEach(item => collectTranslationKeys(item));
+        } else if (typeof obj[key] === 'object' && obj[key] !== null && !(obj[key] instanceof File) && !(obj[key] instanceof Date)) {
+          collectTranslationKeys(obj[key]);
+        }
+      });
+    };
+    collectTranslationKeys(month);
+    return Array.from(existingLangs);
+  };
+
+  const getDroppedLanguagesWarnings = () => {
+    const dropped: any[] = [];
+
+    allMonths.forEach((month, index) => {
+      if (selectedLanguagesByMonth[month.localId] !== undefined) {
+        const existing = getExistingLangsForMonth(month);
+        const selected = selectedLanguagesByMonth[month.localId];
+        const droppedLangs = existing.filter(l => !selected.includes(l));
+
+        if (droppedLangs.length > 0) {
+          dropped.push({
+            monthLocalId: month.localId, 
+            monthIndex: month.index !== undefined ? month.index : index + 1,
+            monthTitle: month.title || 'Untitled',
+            langs: droppedLangs
+          });
+        }
+      }
+    });
+    return dropped;
+  };
+
+  const renderDialogBody = (actionText: string) => {
+    const warnings = getDroppedLanguagesWarnings();
+
+    if (warnings.length === 0) {
+      return `Are you sure you want to ${actionText} these workouts?`;
+    }
+    const allKept = warnings.every(w => (deleteToggles[w.monthLocalId] ?? false) === false);
+
+    return (
+      <div className="flex flex-col gap-4 text-left">
+        <div className="text-red-600 font-bold leading-tight">
+          WARNING: Unselected languages will lose their data.<br />
+          <span className="text-gray-700 font-medium text-sm">Toggle ON to confirm deletion, or leave OFF to KEEP translations.</span>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {warnings.map((w, i) => {
+            const isDeleting = deleteToggles[w.monthLocalId] ?? false;
+            return (
+              <div key={i} className="flex items-center gap-3 bg-gray-50 p-2 rounded-md border border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setDeleteToggles(prev => ({ ...prev, [w.monthLocalId]: !isDeleting }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${isDeleting ? 'bg-red-600' : 'bg-gray-200'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isDeleting ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                  />
+                </button>
+                <div className="flex flex-col text-sm">
+                  <span className={`font-semibold ${isDeleting ? 'text-red-600' : 'text-green-600'}`}>
+                    {isDeleting ? 'Deleting:' : 'Keeping:'} {w.langs.join(', ').toUpperCase()}
+                  </span>
+                  <span className="font-medium text-gray-600">
+                    {w.monthIndex} | {w.monthTitle}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {allKept && (
+          <div className="text-green-700 bg-green-50 p-3 rounded-md border border-green-200 text-sm font-medium">
+            All dropped translations will be RESTORED and saved.
+          </div>
+        )}
+
+        <div className="mt-2 text-gray-800 font-medium">
+          Are you sure you want to {actionText} these workouts?
+        </div>
+      </div>
+    );
+  };
 
   const autoFillMissingTranslations = (obj: any, selectedLangs: string[]): any => {
     if (!obj || typeof obj !== 'object' || obj instanceof File || obj instanceof Date) return obj;
@@ -56,13 +160,29 @@ export const SaveConfirmation = ({ allMonths }) => {
 
     return updated;
   };
-  const cleanupMonthsData = (months: any[]) => {
+    const cleanupMonthsData = (months: any[]) => {
     return months.map(month => {
-      const selectedLanguages = selectedLanguagesByMonth[month.localId] || [];
+      let finalSelectedLanguages = selectedLanguagesByMonth[month.localId] !== undefined
+        ? [...selectedLanguagesByMonth[month.localId]]
+        : getExistingLangsForMonth(month);
+      const isDeleting = deleteToggles[month.localId] ?? false;
+      if (!isDeleting) {
+        const existingLangs = getExistingLangsForMonth(month);
+        let restoredAny = false;
 
-      const autoFilled = autoFillMissingTranslations(month, selectedLanguages);
+        existingLangs.forEach(lang => {
+          if (!finalSelectedLanguages.includes(lang)) {
+            finalSelectedLanguages.push(lang);
+            restoredAny = true;
+          }
+        });
 
-      return cleanupNestedTranslations(autoFilled, selectedLanguages);
+        if (restoredAny) {
+          setSelectedLanguagesForMonth(month.localId, finalSelectedLanguages);
+        }
+      }
+      const autoFilled = autoFillMissingTranslations(month, finalSelectedLanguages);
+      return cleanupNestedTranslations(autoFilled, finalSelectedLanguages);
     });
   };
 
@@ -183,7 +303,7 @@ export const SaveConfirmation = ({ allMonths }) => {
       <ConfirmationDialog
         icon="danger"
         title={`Save Workouts`}
-        body={`Are you sure you want to save these workouts?`}
+        body={renderDialogBody('save')}
         isDone={isSuccess}
         triggerButton={
           <Button variant="danger" disabled={isReadOnly} startIcon={<SaveIcon className="mr-2" width="20" height="20" />}>Save</Button>
@@ -203,7 +323,7 @@ export const SaveConfirmation = ({ allMonths }) => {
       <ConfirmationDialog
         icon="danger"
         title={`Publish Workouts`}
-        body={`Are you sure you want to publish these workouts?`}
+        body={renderDialogBody('publish')}
         isDone={isSuccess}
         triggerButton={
           <Button variant="danger" className="ml-2" disabled={isReadOnly} startIcon={<ArrowNarrowUpIcon className="mr-2" width="20" height="20" />}>Publish</Button>

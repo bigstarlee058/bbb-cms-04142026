@@ -319,7 +319,7 @@ export const WorkoutList = () => {
       });
     });
   }, [paginatedMonths.length]);
-  const handleDuplicateMonth = useCallback((realMonthIndex: number) => {
+    const handleDuplicateMonth = useCallback((realMonthIndex: number) => {
     const origin = allMonths[realMonthIndex];
     if (!origin) return;
 
@@ -344,16 +344,26 @@ export const WorkoutList = () => {
         });
       });
     });
+
     setAllMonths((prev) => {
-      const updated = [...prev];
-      const newMonthIndex = realMonthIndex + 1;
-      updated.splice(newMonthIndex, 0, newMonth);
+      
+      const lastMonth = prev[prev.length - 1];
+      newMonth.index = lastMonth?.index !== undefined 
+        ? lastMonth.index + 1 
+        : prev.length + 1;
+      const updated = [...prev, newMonth];
+      const newMonthIndex = updated.length - 1;
+      
       safeUpdateMonths(updated, { syncPage: false });
+      
       const newPage = Math.floor(newMonthIndex / filters.perPage) + 1;
       setCurrentPage(newPage);
+      setScrollTarget({ type: 'month', monthIndex: newMonthIndex });
+      
       requestAnimationFrame(() => {
-        Object.values(monthRefs.current).forEach((el) => el && rowVirtualizer.measureElement(el));
-        scrollToMonth(newMonthIndex);
+        Object.values(monthRefs.current).forEach((el) => {
+          if (el) rowVirtualizer.measureElement(el);
+        });
       });
 
       return updated;
