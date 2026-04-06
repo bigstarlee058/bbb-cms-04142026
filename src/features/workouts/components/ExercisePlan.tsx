@@ -7,7 +7,7 @@ import { useQuery } from 'react-query';
 import { fetchExerciseTitles } from '../api';
 import { ExtraExercise, SelectOption, TitleResponse } from '@/types';
 import _ from 'lodash';
-
+import { useFixTranslationsStore } from '@/stores/fixTranslations';
 const EXTRA_EXERCISE_OPTIONS: SelectOption[] = [
   {
     label: 'Warm-up Set',
@@ -42,7 +42,7 @@ export const ExercisePlan = ({
 }) => {
   const [checkedStates, setCheckedStates] = useState([false, false, false]);
   const [isCollapsed, setIsCollapsed] = useState(true);
-
+  const openFixModal = useFixTranslationsStore((state) => state.open);
   const { data: titles, isLoading } = useQuery('get-exercise-titles', () => fetchExerciseTitles({ filterString: '' }));
 
   useEffect(() => {
@@ -166,7 +166,7 @@ export const ExercisePlan = ({
   const updateExerciseDetail = (key, value) => {
     const keys = key.split('.');
     let updatedExercise = { ...exercise };
-    
+
     if (keys.length === 1) {
       updatedExercise = { ...exercise, [key]: value };
     } else {
@@ -319,6 +319,34 @@ export const ExercisePlan = ({
     }
   };
 
+  const selectedTitleData = titles?.find((t) => t.id === exercise.exerciseId);
+
+  const translationErrors = selectedLanguages.reduce<string[]>((acc, lang) => {
+  if (!selectedTitleData) return acc;
+
+  const missingFields: string[] = [];
+
+  const titleTranslation = selectedTitleData.titleTranslations?.[lang];
+  if (!titleTranslation || titleTranslation.trim() === '') {
+    missingFields.push('Title is missing');
+  } else if (titleTranslation === selectedTitleData.title) {
+    missingFields.push('Title is not translated');
+  }
+
+  const vimeoTranslation = selectedTitleData.vimeoIdTranslations?.[lang];
+  if (!vimeoTranslation || vimeoTranslation.trim() === '') {
+    missingFields.push('Vimeo ID is missing');
+  } else if (vimeoTranslation === selectedTitleData.vimeoId) {
+    missingFields.push('Vimeo ID is not translated');
+  }
+
+  if (missingFields.length > 0) {
+    acc.push(`[${lang.toUpperCase()}] ${missingFields.join(' · ')}`);
+  }
+
+  return acc;
+}, []);
+
   return (
     <>
       <div
@@ -327,10 +355,10 @@ export const ExercisePlan = ({
           exercise.typeId === 1
             ? { backgroundColor: '#77F3E6' }
             : exercise.typeId === 2
-            ? { backgroundColor: '#6AD9CD' }
-            : exercise.typeId === 3
-            ? { backgroundColor: '#5BBAB0' }
-            : { backgroundColor: '#48948C' }
+              ? { backgroundColor: '#6AD9CD' }
+              : exercise.typeId === 3
+                ? { backgroundColor: '#5BBAB0' }
+                : { backgroundColor: '#48948C' }
         }
       >
         <div className="flex mb-2 justify-between items-center">
@@ -384,14 +412,40 @@ export const ExercisePlan = ({
               <Select
                 label=""
                 options={titles?.map(({ title, id }) => ({ label: title, id: id })) || []}
-                value={titles?.map((title) => {
-                  if (title.id === exercise.exerciseId) return { label: title?.title || '', value: title.id };
-                })}
+                value={
+                  selectedTitleData
+                    ? { label: selectedTitleData.title || '', value: selectedTitleData.id }
+                    : null
+                }
                 isLoading={isLoading}
                 onChange={(newValue: TitleResponse) => {
                   handleChange('exerciseId', newValue.id);
                 }}
               />
+                {translationErrors.length > 0 && (
+                <div className="mt-2 bg-white bg-opacity-90 rounded p-2 border border-red-400">
+                  <div className="flex items-center justify-between gap-2">
+                  {translationErrors.map((error, idx) => (
+                    
+                      <p className="text-red-600 text-xs font-semibold">{error}</p>
+                      
+                    
+                  ))}
+                  <Button
+                        variant="danger"
+                        className="text-xs px-2 py-0.5 h-6 min-h-0"
+                        onClick={() =>
+                          openFixModal(
+                            exercise.exerciseId,
+                            selectedTitleData!,
+                            selectedLanguages
+                          )
+                        }
+                      >Fix</Button>
+                  </div>
+                  
+                </div>
+              )}
             </div>
           </div>
           <div className='mt-2'>
@@ -473,20 +527,20 @@ export const ExercisePlan = ({
               ))}
             </>
           ) : null}
-        <Button
-          variant="danger"
-          onClick={handleAddExtraExerciseClick}
-          className="mt-4"
-        >
-          Add Set
-        </Button>
+          <Button
+            variant="danger"
+            onClick={handleAddExtraExerciseClick}
+            className="mt-4"
+          >
+            Add Set
+          </Button>
         </div>
       </div>
       {(!isPumpDay && exerciseIndex === months[monthIndex].weeks[weekIndex].days[dayIndex].exercises.length - 1) ||
-      (isPumpDay && !isCircuit && exerciseIndex === days[dayIndex].exercises.length - 1) ||
-      (isPumpDay &&
-        isCircuit &&
-        exerciseIndex === days[dayIndex].circuits[circuitIndex].circuitExercises.length - 1) ? (
+        (isPumpDay && !isCircuit && exerciseIndex === days[dayIndex].exercises.length - 1) ||
+        (isPumpDay &&
+          isCircuit &&
+          exerciseIndex === days[dayIndex].circuits[circuitIndex].circuitExercises.length - 1) ? (
         <Button
           variant="danger"
           onClick={handleAddExerciseClick}

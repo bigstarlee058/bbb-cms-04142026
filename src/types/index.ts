@@ -366,6 +366,10 @@ export interface TitleFilters {
 export interface TitleResponse {
   title: string;
   id: string;
+  vimeoId?: string;
+  titleTranslations?: Record<string, string>;
+  vimeoIdTranslations?: Record<string, string>;
+  thumbnail?: string;
 }
 export interface WorkoutsResponse {
   count: number;

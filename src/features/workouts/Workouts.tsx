@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user';
 import { useLock } from '@/hooks/useLock';
 import { LockDialog } from '@/components/LockDialog';
 import { Spinner } from '@/components/Elements';
-
+import { FixTranslationsModal } from './components/FixTranslationsModal';
 export const Workouts = () => {
   const { setCurrentPage } = useUserStore();
   const navigate = useNavigate();
@@ -43,6 +43,7 @@ export const Workouts = () => {
         onViewOnly={goReadOnly}
         onTakeOver={takeOver}
       />
+      <FixTranslationsModal />
       <div className="mt-2">
         <WorkoutList />
       </div>

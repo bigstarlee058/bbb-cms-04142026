@@ -7,6 +7,24 @@ interface UploadResponse {
   url: string[];
 }
 
+export interface TranslationUpdateData {
+  titleTranslations: Record<string, string>;
+  vimeoIdTranslations: Record<string, string>;
+}
+
+export const updateExerciseTranslations = async (id: string, data: TranslationUpdateData) => {
+  try {
+    const result = (await axios.put(`/exercises/admin/translations/${id}`, data)) as TitleResponse;
+    return result;
+  } catch (err: any) {
+    const error: ErrorMessage = {
+      status: true,
+      message: err as string
+    };
+    return Promise.reject(error);
+  }
+};
+
 export const fetchAchievementsIndividualTitles = async (filters: TitleFilters) => {
   try {
     const result = (await axios.get(`/achievements-individual/admin/titlefilter`, { params: filters })) as TitleResponse[];
